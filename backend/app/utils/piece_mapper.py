@@ -20,22 +20,29 @@ PIECE_SPECS = {
     "EI-050": {"family": "EI", "largo_cm": 50,  "ancho_cm": 20, "refuerzos": 2, "material": "Acero carbono 3mm"},
     "EI-075": {"family": "EI", "largo_cm": 75,  "ancho_cm": 20, "refuerzos": 3, "material": "Acero carbono 3mm"},
     "EI-120": {"family": "EI", "largo_cm": 120, "ancho_cm": 20, "refuerzos": 4, "material": "Acero carbono 3mm"},
+    # ── Viga UM (clase detectada en Roboflow) ────────────────────────────
+    "UM-1200": {"family": "UM", "largo_cm": 120, "ancho_cm": 20, "alto_cm": 15, "refuerzos": 0, "material": "Acero carbono 3mm"},
+    # ── Clases especiales ────────────────────────────────────────────────
+    "GENERICO": {"family": "GEN", "descripcion": "Pieza sin clasificar específica", "material": "Acero carbono 3mm"},
+    "NULO":     {"family": "NULL", "descripcion": "Anotación vacía en dataset"},
 }
 
-# Alias: si Roboflow entrenó con nombres distintos, mapearlos aquí
+# Alias: nombres exactos de clases entrenadas en Roboflow
+# Proyecto: reconocimiento-de-piezas (139 imágenes)
+# Clases detectadas: EI, null, PM, Reconocimiento-de-Piezas, UM 1200 × 200 × 150
 CLASS_ALIAS: dict[str, str] = {
-    "panel_muro_50":    "PM-050",
-    "panel_muro_60":    "PM-060",
-    "panel_muro_75":    "PM-075",
-    "panel_muro_90":    "PM-090",
-    "panel_muro_120":   "PM-120",
-    "panel_muro_150":   "PM-150",
-    "pma_50":  "PMA-050",
-    "pma_75":  "PMA-075",
-    "pma_120": "PMA-120",
-    "ei_50":   "EI-050",
-    "ei_75":   "EI-075",
-    "ei_120":  "EI-120",
+    # ── Clases reales de Roboflow (tal como vienen en la respuesta) ──────
+    "ei":                        "EI-050",   # Esquinero Interno — dimensión por confirmar
+    "pm":                        "PM-120",   # Panel Muro — dimensión por confirmar
+    "um_1200_×_200_×_150":       "UM-1200",  # Viga UM 1200×200×150
+    "um 1200 × 200 × 150":       "UM-1200",
+    "reconocimiento-de-piezas":  "GENERICO", # Clase genérica de proyecto
+    "reconocimiento_de_piezas":  "GENERICO",
+    "null":                      "NULO",     # Anotación vacía / sin clase
+
+    # ── Aliases legacy (por si acaso) ───────────────────────────────────
+    "panel_muro":   "PM-120",
+    "esquinero":    "EI-050",
 }
 
 
