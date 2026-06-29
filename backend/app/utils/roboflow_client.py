@@ -1,53 +1,44 @@
 """
-Cliente Roboflow — singleton para reutilizar el modelo.
-Soporta tanto hosted inference (API) como modelo local YOLOv8.
+Cliente Roboflow via API REST — sin dependencias adicionales.
+Usa requests directamente contra la Roboflow Hosted Inference API.
 """
 
 import os
+import base64
+import requests
 import logging
 
 logger = logging.getLogger(__name__)
 
-_model = None
 
+def predict_image(image_path: str) -> list[dict]:
+    """
+    Envía imagen a Roboflow Hosted Inference y retorna predicciones.
+    No requiere roboflow SDK ni inference-sdk — solo requests.
+    """
+    api_key  = os.environ["ROBOFLOW_API_KEY"]
+    project  = os.environ.get("ROBOFLOW_PROJECT", "reconocimiento-de-piezas-rllp1")
+    version  = os.environ.get("ROBOFLOW_VERSION", "4")
 
-def get_model():
-    global _model
-    if _model is not None:
-        return _model
+    # Leer y codificar imagen en base64
+    with open(image_path, "rb") as f:
+        img_b64 = base64.b64encode(f.read()).decode("utf-8")
 
-    api_key     = os.environ["ROBOFLOW_API_KEY"]
-    project     = os.environ.get("ROBOFLOW_PROJECT", "reconocimiento-de-piezas-rllp1")
-    version_num = int(os.environ.get("ROBOFLOW_VERSION", "4"))
+    url = f"https://detect.roboflow.com/{project}/{version}"
+    params = {"api_key": api_key}
+    headers = {"Content-Type": "application/x-www-form-urlencoded"}
 
-    # Intentar primero con inference SDK (hosted) — más ligero en Render free tier
-    try:
-        from inference_sdk import InferenceHTTPClient
-        _model = InferenceHTTPClient(
-            api_url="https://detect.roboflow.com",
-            api_key=api_key,
-        )
-        # Guardar proyecto/versión para usarlo en predict
-        _model._rf_project = project
-        _model._rf_version = version_num
-        _model._mode = "inference_sdk"
-        logger.info("Modelo cargado via inference_sdk (hosted)")
-        return _model
-    except ImportError:
-        pass
+    response = requests.post(
+        url,
+        params=params,
+        data=img_b64,
+        headers=headers,
+        timeout=30,
+    )
 
-    # Fallback: Roboflow SDK clásico
-    try:
-        from roboflow import Roboflow
-        rf = Roboflow(api_key=api_key)
-        workspace = rf.workspace()
-        proj = workspace.project(project)
-        _model = proj.version(version_num).model
-        if _model is not None:
-            _model._mode = "roboflow_sdk"
-            logger.info("Modelo cargado via roboflow SDK")
-            return _model
-    except Exception as e:
-        logger.error("roboflow SDK falló: %s", e)
+    if not response.ok:
+        raise RuntimeError(f"Roboflow API error {response.status_code}: {response.text}")
 
-    raise RuntimeError("No se pudo cargar el modelo. Verifica ROBOFLOW_API_KEY, ROBOFLOW_PROJECT y ROBOFLOW_VERSION.")
+    data = response.json()
+    logger.info("Roboflow response: %s predictions", len(data.get("predictions", [])))
+    return data.get("predictions", [])

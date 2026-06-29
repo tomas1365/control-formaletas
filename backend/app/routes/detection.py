@@ -1,14 +1,13 @@
 """
-Servicio de detección — soporta inference_sdk (hosted) y roboflow SDK clásico.
+Ruta de detección — usa API REST de Roboflow directamente.
 """
 
-import os
 import uuid
 import time
 from pathlib import Path
 from flask import Blueprint, request, jsonify, current_app
 from werkzeug.utils import secure_filename
-from app.utils.roboflow_client import get_model
+from app.utils.roboflow_client import predict_image
 from app.utils.piece_mapper import map_detections_to_specs
 
 detection_bp = Blueprint("detection", __name__)
@@ -17,52 +16,6 @@ ALLOWED_EXT = {"png", "jpg", "jpeg", "webp"}
 
 def _allowed(filename: str) -> bool:
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXT
-
-
-def _run_inference(model, image_path: str, project: str, version: int) -> list[dict]:
-    """Ejecuta inferencia según el modo del modelo."""
-    mode = getattr(model, "_mode", "roboflow_sdk")
-
-    if mode == "inference_sdk":
-        result = model.infer(
-            image_path,
-            model_id=f"{project}/{version}",
-        )
-        # inference_sdk retorna objeto con .predictions
-        if hasattr(result, "predictions"):
-            preds = result.predictions
-        elif isinstance(result, dict):
-            preds = result.get("predictions", [])
-        elif isinstance(result, list) and len(result) > 0:
-            # lista de resultados por imagen
-            first = result[0]
-            preds = getattr(first, "predictions", first.get("predictions", []) if isinstance(first, dict) else [])
-        else:
-            preds = []
-
-        # Normalizar a formato estándar
-        normalized = []
-        for p in preds:
-            if hasattr(p, "class_name"):
-                normalized.append({
-                    "class": p.class_name,
-                    "confidence": p.confidence,
-                    "x": p.x, "y": p.y,
-                    "width": p.width, "height": p.height,
-                })
-            elif isinstance(p, dict):
-                normalized.append({
-                    "class": p.get("class") or p.get("class_name", ""),
-                    "confidence": p.get("confidence", 0),
-                    "x": p.get("x", 0), "y": p.get("y", 0),
-                    "width": p.get("width", 0), "height": p.get("height", 0),
-                })
-        return normalized
-
-    else:
-        # roboflow SDK clásico
-        result = model.predict(image_path, confidence=40, overlap=30).json()
-        return result.get("predictions", [])
 
 
 @detection_bp.post("/")
@@ -82,14 +35,8 @@ def detect():
 
     try:
         t0 = time.perf_counter()
-        model = get_model()
-
-        project = os.environ.get("ROBOFLOW_PROJECT", "reconocimiento-de-piezas-rllp1")
-        version = int(os.environ.get("ROBOFLOW_VERSION", "4"))
-
-        predictions = _run_inference(model, str(save_path), project, version)
+        predictions = predict_image(str(save_path))
         elapsed_ms = round((time.perf_counter() - t0) * 1000)
-
         enriched = map_detections_to_specs(predictions)
 
         return jsonify({
