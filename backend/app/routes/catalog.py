@@ -1,12 +1,12 @@
 from flask import Blueprint, jsonify
-from app.utils.piece_mapper import PIECE_SPECS
+from app.utils.piece_mapper import PIECE_SPECS, get_catalog_list
 
 catalog_bp = Blueprint("catalog", __name__)
 
 
 @catalog_bp.get("/")
 def get_catalog():
-    items = [{"code": k, **v} for k, v in PIECE_SPECS.items()]
+    items = get_catalog_list()
     return jsonify({"ok": True, "total": len(items), "pieces": items})
 
 
