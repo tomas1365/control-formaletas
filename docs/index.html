@@ -6,257 +6,132 @@
 <meta name="theme-color" content="#0a1628">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>UNISPAN — Captura Dataset</title>
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #0a1628; --surface: #102a43; --surface2: #1a3a5c;
+  --border: rgba(99,125,152,0.25); --amber: #f59e0b; --amber2: #fbbf24;
+  --steel: #627d98; --text: #e2e8f0; --text2: #94a3b8;
+  --ok: #22c55e; --danger: #ef4444; --radius: 14px;
+}
+body { background: var(--bg); color: var(--text); font-family: -apple-system,'Inter',sans-serif; min-height: 100dvh; display: flex; flex-direction: column; }
 
-  :root {
-    --bg:       #0a1628;
-    --surface:  #102a43;
-    --border:   rgba(99,125,152,0.25);
-    --amber:    #f59e0b;
-    --amber2:   #fbbf24;
-    --steel:    #627d98;
-    --text:     #e2e8f0;
-    --text2:    #94a3b8;
-    --ok:       #22c55e;
-    --danger:   #ef4444;
-    --radius:   14px;
-  }
+header { background: rgba(10,22,40,.95); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); padding: 14px 16px; display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 100; }
+.logo { width: 36px; height: 36px; background: var(--amber); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 16px; color: #0a1628; flex-shrink: 0; }
+header h1 { font-size: 15px; font-weight: 700; }
+header p  { font-size: 11px; color: var(--steel); }
 
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: -apple-system, 'Inter', sans-serif;
-    min-height: 100dvh;
-    display: flex;
-    flex-direction: column;
-  }
+/* Tabs */
+.tabs { display: flex; border-bottom: 1px solid var(--border); background: var(--bg); position: sticky; top: 64px; z-index: 99; }
+.tab { flex: 1; padding: 12px 8px; font-size: 12px; font-weight: 600; text-align: center; color: var(--steel); border-bottom: 2px solid transparent; cursor: pointer; transition: all .15s; }
+.tab.active { color: var(--amber); border-bottom-color: var(--amber); }
 
-  /* ── Header ── */
-  header {
-    background: rgba(10,22,40,0.95);
-    backdrop-filter: blur(12px);
-    border-bottom: 1px solid var(--border);
-    padding: 14px 16px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-  }
-  .logo {
-    width: 36px; height: 36px;
-    background: var(--amber);
-    border-radius: 10px;
-    display: flex; align-items: center; justify-content: center;
-    font-weight: 800; font-size: 16px; color: #0a1628;
-    flex-shrink: 0;
-  }
-  header h1 { font-size: 15px; font-weight: 700; line-height: 1.2; }
-  header p  { font-size: 11px; color: var(--steel); }
+main { flex: 1; padding: 14px; display: flex; flex-direction: column; gap: 12px; }
+.page { display: none; flex-direction: column; gap: 12px; }
+.page.active { display: flex; }
 
-  /* ── Main ── */
-  main { flex: 1; padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; }
+.card-title { font-size: 11px; font-weight: 700; color: var(--steel); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 10px; }
 
-  /* ── Config card ── */
-  .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 16px;
-  }
-  .card-title {
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--steel);
-    text-transform: uppercase;
-    letter-spacing: .06em;
-    margin-bottom: 12px;
-  }
+label { font-size: 13px; color: var(--text2); display: block; margin-bottom: 4px; }
+input, select, textarea { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; color: var(--text); font-size: 14px; margin-bottom: 10px; outline: none; -webkit-appearance: none; }
+input:focus, select:focus { border-color: var(--amber); }
+input[type="file"] { display: none; }
+input[type="password"] { letter-spacing: 2px; }
 
-  label { font-size: 13px; color: var(--text2); display: block; margin-bottom: 4px; }
-  input, select {
-    width: 100%;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 10px 12px;
-    color: var(--text);
-    font-size: 14px;
-    margin-bottom: 10px;
-    outline: none;
-    -webkit-appearance: none;
-  }
-  input:focus, select:focus { border-color: var(--amber); }
-  input[type="password"] { letter-spacing: 2px; }
+/* Catálogo selector */
+.cat-search { position: relative; margin-bottom: 8px; }
+.cat-search input { margin-bottom: 0; padding-left: 36px; }
+.cat-search .ico { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 14px; }
+.cat-families { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+.fam-btn { padding: 5px 12px; border-radius: 99px; font-size: 11px; font-weight: 700; border: 1.5px solid var(--border); color: var(--steel); cursor: pointer; transition: all .15s; }
+.fam-btn.active { background: rgba(245,158,11,.15); border-color: var(--amber); color: var(--amber); }
+.cat-list { max-height: 220px; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; }
+.cat-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; background: var(--bg); border-radius: 10px; cursor: pointer; border: 1.5px solid transparent; transition: all .15s; }
+.cat-item:active, .cat-item.selected { border-color: var(--amber); background: rgba(245,158,11,.08); }
+.cat-item .ci-code { font-weight: 700; font-size: 13px; font-family: monospace; color: var(--amber); }
+.cat-item .ci-spec { font-size: 11px; color: var(--steel); margin-top: 2px; }
+.cat-item .ci-copy { font-size: 18px; padding: 4px 8px; }
+.selected-clase { background: rgba(245,158,11,.12); border: 1.5px solid var(--amber); border-radius: 10px; padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.selected-clase .sc-code { font-family: monospace; font-weight: 700; font-size: 15px; color: var(--amber); }
+.selected-clase .sc-clear { font-size: 18px; cursor: pointer; color: var(--steel); }
 
-  /* ── Clase selector ── */
-  .clases-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
-  }
-  .clase-btn {
-    background: var(--bg);
-    border: 1.5px solid var(--border);
-    border-radius: 10px;
-    padding: 10px 6px;
-    color: var(--text2);
-    font-size: 12px;
-    font-weight: 600;
-    text-align: center;
-    cursor: pointer;
-    transition: all .15s;
-    user-select: none;
-  }
-  .clase-btn.active {
-    background: rgba(245,158,11,.12);
-    border-color: var(--amber);
-    color: var(--amber);
-  }
-  .clase-btn .code { font-size: 10px; color: var(--steel); margin-top: 2px; }
+/* Clases rápidas */
+.quick-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 6px; margin-bottom: 8px; }
+.quick-btn { background: var(--bg); border: 1.5px solid var(--border); border-radius: 10px; padding: 8px 4px; color: var(--text2); font-size: 11px; font-weight: 600; text-align: center; cursor: pointer; transition: all .15s; }
+.quick-btn.active { background: rgba(245,158,11,.12); border-color: var(--amber); color: var(--amber); }
 
-  /* ── Captura ── */
-  .capture-zone {
-    border: 2px dashed var(--border);
-    border-radius: var(--radius);
-    min-height: 200px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    cursor: pointer;
-    transition: border-color .2s;
-    position: relative;
-    overflow: hidden;
-  }
-  .capture-zone.has-img { border-style: solid; border-color: var(--amber); }
-  .capture-zone img {
-    width: 100%; height: 100%;
-    object-fit: cover;
-    position: absolute; inset: 0;
-    border-radius: calc(var(--radius) - 2px);
-  }
-  .capture-zone .overlay {
-    position: absolute; inset: 0;
-    background: rgba(10,22,40,.55);
-    display: flex; align-items: center; justify-content: center;
-    border-radius: calc(var(--radius) - 2px);
-  }
-  .capture-icon { font-size: 40px; }
-  .capture-hint { font-size: 13px; color: var(--steel); }
+/* Capture zone */
+.capture-zone { border: 2px dashed var(--border); border-radius: var(--radius); min-height: 180px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; cursor: pointer; transition: border-color .2s; position: relative; overflow: hidden; }
+.capture-zone.has-img { border-style: solid; border-color: var(--amber); }
+.capture-zone img { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; }
+.capture-zone .overlay { position: absolute; inset: 0; background: rgba(10,22,40,.5); display: flex; align-items: center; justify-content: center; }
+.capture-hint { font-size: 12px; color: var(--steel); }
+.capture-icon { font-size: 36px; }
 
-  input[type="file"] { display: none; }
+/* Progress */
+.prog-wrap { background: var(--bg); border-radius: 99px; height: 5px; overflow: hidden; display: none; margin-top: 10px; }
+.prog-wrap.show { display: block; }
+.prog-bar { height: 100%; background: var(--amber); border-radius: 99px; transition: width .3s; width: 0%; }
 
-  /* ── Botones acción ── */
-  .btn-row { display: flex; gap: 10px; }
-  .btn {
-    flex: 1;
-    padding: 14px;
-    border-radius: 12px;
-    font-size: 14px;
-    font-weight: 700;
-    cursor: pointer;
-    border: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    transition: opacity .15s, transform .1s;
-    -webkit-tap-highlight-color: transparent;
-  }
-  .btn:active { transform: scale(.97); }
-  .btn:disabled { opacity: .4; cursor: not-allowed; }
-  .btn-cam  { background: var(--surface); color: var(--text); border: 1.5px solid var(--border); }
-  .btn-up   { background: var(--amber); color: #0a1628; }
-  .btn-up.loading { background: #b45309; }
+/* Buttons */
+.btn-row { display: flex; gap: 8px; }
+.btn { flex: 1; padding: 13px; border-radius: 12px; font-size: 13px; font-weight: 700; cursor: pointer; border: none; display: flex; align-items: center; justify-content: center; gap: 6px; transition: opacity .15s, transform .1s; -webkit-tap-highlight-color: transparent; }
+.btn:active { transform: scale(.97); }
+.btn:disabled { opacity: .4; cursor: not-allowed; }
+.btn-cam  { background: var(--surface); color: var(--text); border: 1.5px solid var(--border); }
+.btn-up   { background: var(--amber); color: #0a1628; }
+.btn-up.loading { background: #b45309; }
+.btn-sm   { padding: 8px 14px; font-size: 12px; border-radius: 9px; flex: none; }
+.btn-danger { background: rgba(239,68,68,.15); color: var(--danger); border: 1.5px solid rgba(239,68,68,.3); }
+.btn-ok   { background: rgba(34,197,94,.15); color: var(--ok); border: 1.5px solid rgba(34,197,94,.3); }
 
-  /* ── Progress ── */
-  .progress-wrap {
-    background: var(--bg);
-    border-radius: 99px;
-    height: 6px;
-    overflow: hidden;
-    display: none;
-  }
-  .progress-wrap.show { display: block; }
-  .progress-bar {
-    height: 100%;
-    background: var(--amber);
-    border-radius: 99px;
-    transition: width .3s;
-    width: 0%;
-  }
+/* Counters */
+.counter { display: flex; gap: 8px; }
+.counter-item { flex: 1; background: var(--bg); border-radius: 10px; padding: 10px; text-align: center; }
+.counter-num { font-size: 22px; font-weight: 800; color: var(--amber); }
+.counter-lbl { font-size: 10px; color: var(--steel); margin-top: 1px; }
 
-  /* ── Log de subidas ── */
-  .log-list { display: flex; flex-direction: column; gap: 8px; max-height: 260px; overflow-y: auto; }
-  .log-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    background: var(--bg);
-    border-radius: 10px;
-    padding: 10px 12px;
-    font-size: 12px;
-  }
-  .log-thumb {
-    width: 40px; height: 40px;
-    border-radius: 7px;
-    object-fit: cover;
-    flex-shrink: 0;
-  }
-  .log-info { flex: 1; min-width: 0; }
-  .log-name { font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .log-meta { color: var(--steel); margin-top: 2px; }
-  .log-status { font-size: 16px; flex-shrink: 0; }
+/* Log list */
+.log-list { display: flex; flex-direction: column; gap: 6px; }
+.log-item { display: flex; align-items: center; gap: 10px; background: var(--bg); border-radius: 10px; padding: 10px; font-size: 12px; border: 1.5px solid transparent; }
+.log-item.error { border-color: rgba(239,68,68,.3); }
+.log-thumb { width: 44px; height: 44px; border-radius: 8px; object-fit: cover; flex-shrink: 0; }
+.log-info { flex: 1; min-width: 0; }
+.log-name { font-weight: 700; color: var(--text); font-family: monospace; }
+.log-meta { color: var(--steel); margin-top: 2px; font-size: 11px; }
+.log-actions { display: flex; gap: 4px; flex-shrink: 0; }
+.log-status { font-size: 16px; }
+.log-edit-form { display: none; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border); }
+.log-edit-form.show { display: block; }
+.log-edit-form input { margin-bottom: 6px; font-size: 12px; padding: 7px 10px; }
+.log-edit-row { display: flex; gap: 6px; }
 
-  /* ── Contador ── */
-  .counter {
-    display: flex;
-    gap: 10px;
-  }
-  .counter-item {
-    flex: 1;
-    background: var(--bg);
-    border-radius: 10px;
-    padding: 12px;
-    text-align: center;
-  }
-  .counter-num { font-size: 24px; font-weight: 800; color: var(--amber); }
-  .counter-lbl { font-size: 11px; color: var(--steel); margin-top: 2px; }
+/* Toast */
+.toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 11px 18px; font-size: 13px; font-weight: 600; transition: transform .3s; z-index: 300; white-space: nowrap; box-shadow: 0 8px 32px rgba(0,0,0,.4); }
+.toast.show { transform: translateX(-50%) translateY(0); }
+.toast.ok  { border-color: var(--ok); color: var(--ok); }
+.toast.err { border-color: var(--danger); color: var(--danger); }
 
-  /* ── Toast ── */
-  .toast {
-    position: fixed;
-    bottom: 20px; left: 50%;
-    transform: translateX(-50%) translateY(80px);
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 12px 20px;
-    font-size: 13px;
-    font-weight: 600;
-    transition: transform .3s;
-    z-index: 200;
-    white-space: nowrap;
-    box-shadow: 0 8px 32px rgba(0,0,0,.4);
-  }
-  .toast.show { transform: translateX(-50%) translateY(0); }
-  .toast.ok   { border-color: var(--ok); color: var(--ok); }
-  .toast.err  { border-color: var(--danger); color: var(--danger); }
+/* Modal */
+.modal-bg { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.6); z-index: 200; align-items: flex-end; }
+.modal-bg.show { display: flex; }
+.modal { background: var(--surface); border-radius: 20px 20px 0 0; padding: 20px 16px 32px; width: 100%; max-height: 80vh; overflow-y: auto; }
+.modal-title { font-size: 15px; font-weight: 700; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; }
+.modal-close { font-size: 22px; cursor: pointer; color: var(--steel); }
 
-  .section-divider {
-    display: flex; align-items: center; gap: 10px;
-    color: var(--steel); font-size: 11px; font-weight: 600;
-    text-transform: uppercase; letter-spacing: .06em;
-  }
-  .section-divider::before, .section-divider::after {
-    content: ''; flex: 1; height: 1px; background: var(--border);
-  }
+/* Catalog page grid */
+.ref-grid { display: flex; flex-direction: column; gap: 6px; }
+.ref-card { background: var(--bg); border-radius: 10px; padding: 12px; display: flex; align-items: center; gap: 10px; }
+.ref-fam { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 11px; flex-shrink: 0; }
+.ref-fam.PM { background: rgba(59,130,246,.15); color: #60a5fa; }
+.ref-fam.PB { background: rgba(168,85,247,.15); color: #c084fc; }
+.ref-fam.EI { background: rgba(245,158,11,.15); color: var(--amber); }
+.ref-info { flex: 1; min-width: 0; }
+.ref-code { font-family: monospace; font-weight: 700; font-size: 13px; }
+.ref-spec { font-size: 11px; color: var(--steel); margin-top: 2px; }
+.ref-copy { font-size: 20px; cursor: pointer; padding: 4px; }
 </style>
 </head>
 <body>
@@ -269,50 +144,67 @@
   </div>
 </header>
 
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('captura')">📸 Captura</div>
+  <div class="tab" onclick="switchTab('historial')">📋 Historial</div>
+  <div class="tab" onclick="switchTab('catalogo')">📖 Catálogo</div>
+</div>
+
 <main>
 
-  <!-- Contadores -->
+<!-- ══ TAB CAPTURA ══════════════════════════════════════════════════════ -->
+<div class="page active" id="page-captura">
+
   <div class="counter">
-    <div class="counter-item">
-      <div class="counter-num" id="cnt-session">0</div>
-      <div class="counter-lbl">Esta sesión</div>
+    <div class="counter-item"><div class="counter-num" id="cnt-session">0</div><div class="counter-lbl">Sesión</div></div>
+    <div class="counter-item"><div class="counter-num" id="cnt-total">0</div><div class="counter-lbl">Total</div></div>
+    <div class="counter-item"><div class="counter-num" id="cnt-ok" style="color:var(--ok)">0</div><div class="counter-lbl">Exitosas</div></div>
+  </div>
+
+  <!-- Clase seleccionada -->
+  <div class="card">
+    <div class="card-title">🏷️ Clase / Referencia</div>
+
+    <!-- Seleccionada actualmente -->
+    <div id="selected-display" style="display:none" class="selected-clase">
+      <div>
+        <div class="sc-code" id="selected-code">—</div>
+        <div style="font-size:11px;color:var(--steel);margin-top:2px" id="selected-spec"></div>
+      </div>
+      <span class="sc-clear" onclick="clearClase()">✕</span>
     </div>
-    <div class="counter-item">
-      <div class="counter-num" id="cnt-total">0</div>
-      <div class="counter-lbl">Total subidas</div>
+
+    <!-- Clases recientes -->
+    <div id="recientes-wrap">
+      <div style="font-size:11px;color:var(--steel);margin-bottom:6px">Recientes:</div>
+      <div class="quick-grid" id="recientes-grid"></div>
     </div>
-    <div class="counter-item">
-      <div class="counter-num" id="cnt-ok" style="color:var(--ok)">0</div>
-      <div class="counter-lbl">Exitosas</div>
+
+    <button class="btn btn-cam" style="width:100%;margin-bottom:0" onclick="openCatalogModal()">
+      📖 Buscar en catálogo
+    </button>
+
+    <div style="margin-top:8px">
+      <label>O escribe clase personalizada</label>
+      <input type="text" id="clase-custom" placeholder="ej. PM-2400x600" style="margin-bottom:0"
+             oninput="onCustomInput(this.value)">
     </div>
   </div>
 
-  <!-- Config -->
+  <!-- Configuración -->
   <div class="card">
-    <div class="card-title">⚙️ Configuración Roboflow</div>
-    <label>API Key</label>
+    <div class="card-title">⚙️ Configuración</div>
+    <label>API Key Roboflow</label>
     <input type="password" id="api-key" placeholder="rf_xxxxxxxxxxxxxx" autocomplete="off">
-    <label>Workspace</label>
-    <input type="text" id="workspace" value="tomas1365" autocomplete="off">
-    <label>Proyecto</label>
-    <input type="text" id="project" value="reconocimiento-de-piezas-rllp1" autocomplete="off">
-    <label>Split</label>
-    <select id="split">
-      <option value="train">Train (entrenamiento)</option>
-      <option value="valid">Valid (validación)</option>
-      <option value="test">Test (prueba)</option>
-    </select>
-  </div>
-
-  <!-- Clase -->
-  <div class="card">
-    <div class="card-title">🏷️ Clase de la pieza</div>
-    <div class="clases-grid" id="clases-grid">
-      <!-- generado por JS -->
-    </div>
-    <div style="margin-top:10px">
-      <label>Clase personalizada</label>
-      <input type="text" id="clase-custom" placeholder="ej. PM-2400x600" style="margin-bottom:0">
+    <div style="display:flex;gap:8px">
+      <div style="flex:1">
+        <label>Split</label>
+        <select id="split">
+          <option value="train">Train</option>
+          <option value="valid">Valid</option>
+          <option value="test">Test</option>
+        </select>
+      </div>
     </div>
   </div>
 
@@ -324,197 +216,360 @@
       <span class="capture-hint">Toca para tomar foto o seleccionar</span>
     </div>
     <input type="file" id="file-input" accept="image/*" capture="environment">
-
-    <div class="progress-wrap" id="progress-wrap" style="margin-top:12px">
-      <div class="progress-bar" id="progress-bar"></div>
+    <div class="prog-wrap" id="prog-wrap">
+      <div class="prog-bar" id="prog-bar"></div>
     </div>
   </div>
 
-  <!-- Botones -->
   <div class="btn-row">
-    <button class="btn btn-cam" onclick="document.getElementById('file-input').click()">
-      📷 Cámara
-    </button>
-    <button class="btn btn-up" id="btn-upload" onclick="uploadImage()" disabled>
-      ⬆️ Subir
-    </button>
+    <button class="btn btn-cam" onclick="document.getElementById('file-input').click()">📷 Cámara</button>
+    <button class="btn btn-up" id="btn-upload" onclick="uploadImage()" disabled>⬆️ Subir</button>
   </div>
 
-  <!-- Historial sesión -->
-  <div class="section-divider">Historial de sesión</div>
-  <div class="log-list" id="log-list">
-    <div style="text-align:center;color:var(--steel);font-size:13px;padding:20px">
-      Las imágenes subidas aparecerán aquí
+</div>
+
+<!-- ══ TAB HISTORIAL ════════════════════════════════════════════════════ -->
+<div class="page" id="page-historial">
+  <div class="card">
+    <div class="card-title">📋 Imágenes subidas esta sesión</div>
+    <div class="log-list" id="log-list">
+      <p style="color:var(--steel);font-size:13px;text-align:center;padding:20px">
+        Las imágenes subidas aparecerán aquí
+      </p>
     </div>
   </div>
+</div>
+
+<!-- ══ TAB CATÁLOGO ═════════════════════════════════════════════════════ -->
+<div class="page" id="page-catalogo">
+  <div class="card">
+    <div class="card-title">📖 Catálogo UNISPAN — 122 referencias</div>
+    <div class="cat-search" style="margin-bottom:8px">
+      <span class="ico">🔍</span>
+      <input type="text" id="cat-main-search" placeholder="Buscar código..." oninput="renderCatalogPage(this.value)" style="margin-bottom:0;padding-left:36px">
+    </div>
+    <div class="cat-families" id="cat-main-families"></div>
+    <div class="ref-grid" id="cat-main-grid"></div>
+  </div>
+</div>
 
 </main>
+
+<!-- ══ MODAL CATÁLOGO ═══════════════════════════════════════════════════ -->
+<div class="modal-bg" id="modal-bg" onclick="closeModal(event)">
+  <div class="modal">
+    <div class="modal-title">
+      <span>Seleccionar referencia</span>
+      <span class="modal-close" onclick="closeCatalogModal()">✕</span>
+    </div>
+    <div class="cat-search">
+      <span class="ico">🔍</span>
+      <input type="text" id="modal-search" placeholder="Buscar código..." oninput="renderModal(this.value)" style="margin-bottom:8px;padding-left:36px">
+    </div>
+    <div class="cat-families" id="modal-families"></div>
+    <div class="cat-list" id="modal-list"></div>
+  </div>
+</div>
 
 <div class="toast" id="toast"></div>
 
 <script>
-// ── Clases predefinidas ───────────────────────────────────────────────────────
-const CLASES = [
-  { label: "PM", desc: "Panel Muro" },
-  { label: "PB", desc: "Panel Borde" },
-  { label: "EI", desc: "Esquinero" },
-  { label: "PM-2400", desc: "2400mm" },
-  { label: "PM-1200", desc: "1200mm" },
-  { label: "EI-1200", desc: "EI 1200" },
-];
+// ── Catálogo completo generado ───────────────────────────────────────────────
+const CATALOG = [];
 
-let selectedClase = "PM";
+const PM_LARGOS = [2400,1200,900,800,750,600];
+const PM_ANCHOS = [600,550,500,450,420,400,380,350,320,300];
+const PB_LARGOS = [2400,1200,900,800,750,600];
+const PB_ANCHOS = [270,250,230,200,150,120,100,90,80];
+const EI_LARGOS = [2400,1200,900,800,600];
+
+PM_LARGOS.forEach(l => PM_ANCHOS.forEach(a => {
+  CATALOG.push({
+    code: `PM-${l}x${a}`,
+    family: "PM",
+    largo_mm: l, ancho_mm: a,
+    area_m2: +(l*a/1e6).toFixed(4),
+    spec: `${l}×${a}mm | ${+(l*a/1e6).toFixed(4)}m²`,
+  });
+}));
+PB_LARGOS.forEach(l => PB_ANCHOS.forEach(a => {
+  CATALOG.push({
+    code: `PB-${l}x${a}`,
+    family: "PB",
+    largo_mm: l, ancho_mm: a,
+    area_m2: +(l*a/1e6).toFixed(4),
+    spec: `${l}×${a}mm | ${+(l*a/1e6).toFixed(4)}m²`,
+  });
+}));
+EI_LARGOS.forEach(l => {
+  CATALOG.push({
+    code: `EI-${l}x150x150`,
+    family: "EI",
+    largo_mm: l, ancho_mm: 150,
+    spec: `${l}×150×150mm`,
+  });
+});
+
+// ── Estado ───────────────────────────────────────────────────────────────────
+let selectedClase = "";
+let selectedSpec  = "";
 let selectedFile  = null;
 let sessionCount  = 0;
-let totalCount    = parseInt(localStorage.getItem("rf_total") || "0");
-let okCount       = parseInt(localStorage.getItem("rf_ok") || "0");
+let totalCount    = +localStorage.getItem("rf_total")||0;
+let okCount       = +localStorage.getItem("rf_ok")||0;
+let recientes     = JSON.parse(localStorage.getItem("rf_recientes")||"[]");
+let modalFamFilter= "ALL";
+let catFamFilter  = "ALL";
+let uploadLog     = []; // [{id, file, url, clase, split, ok, imageId, rfId}]
 
-// Init
+const savedKey = localStorage.getItem("rf_api_key");
+if (savedKey) document.getElementById("api-key").value = savedKey;
+document.getElementById("api-key").addEventListener("blur", () =>
+  localStorage.setItem("rf_api_key", document.getElementById("api-key").value.trim()));
+
 document.getElementById("cnt-total").textContent = totalCount;
 document.getElementById("cnt-ok").textContent    = okCount;
 
-// Cargar API key guardada
-const savedKey = localStorage.getItem("rf_api_key");
-if (savedKey) document.getElementById("api-key").value = savedKey;
+// ── Tabs ─────────────────────────────────────────────────────────────────────
+function switchTab(name) {
+  document.querySelectorAll(".tab").forEach((t,i) => {
+    const pages = ["captura","historial","catalogo"];
+    t.classList.toggle("active", pages[i] === name);
+  });
+  document.querySelectorAll(".page").forEach(p =>
+    p.classList.toggle("active", p.id === "page-"+name));
+  if (name === "catalogo") renderCatalogPage("");
+}
 
-// Guardar API key al cambiar
-document.getElementById("api-key").addEventListener("blur", () => {
-  localStorage.setItem("rf_api_key", document.getElementById("api-key").value.trim());
-});
+// ── Clase ────────────────────────────────────────────────────────────────────
+function selectClase(code, spec) {
+  selectedClase = code;
+  selectedSpec  = spec || "";
+  document.getElementById("selected-code").textContent = code;
+  document.getElementById("selected-spec").textContent = spec || "";
+  document.getElementById("selected-display").style.display = "flex";
+  document.getElementById("clase-custom").value = "";
+  addReciente(code, spec);
+  closeCatalogModal();
+}
 
-// Render clases grid
-const grid = document.getElementById("clases-grid");
-CLASES.forEach(c => {
-  const btn = document.createElement("div");
-  btn.className = "clase-btn" + (c.label === selectedClase ? " active" : "");
-  btn.innerHTML = `<div>${c.label}</div><div class="code">${c.desc}</div>`;
-  btn.onclick = () => {
-    document.querySelectorAll(".clase-btn").forEach(b => b.classList.remove("active"));
-    btn.classList.add("active");
-    selectedClase = c.label;
-    document.getElementById("clase-custom").value = "";
-  };
-  grid.appendChild(btn);
-});
+function clearClase() {
+  selectedClase = "";
+  selectedSpec  = "";
+  document.getElementById("selected-display").style.display = "none";
+  document.getElementById("clase-custom").value = "";
+}
 
-document.getElementById("clase-custom").addEventListener("input", e => {
-  if (e.target.value.trim()) {
-    document.querySelectorAll(".clase-btn").forEach(b => b.classList.remove("active"));
-    selectedClase = e.target.value.trim().toUpperCase();
+function onCustomInput(val) {
+  selectedClase = val.trim().toUpperCase();
+  selectedSpec  = "";
+  if (val) {
+    document.getElementById("selected-display").style.display = "none";
   }
-});
+}
 
-// File input
+function addReciente(code, spec) {
+  recientes = [{ code, spec }, ...recientes.filter(r => r.code !== code)].slice(0, 6);
+  localStorage.setItem("rf_recientes", JSON.stringify(recientes));
+  renderRecientes();
+}
+
+function renderRecientes() {
+  const grid = document.getElementById("recientes-grid");
+  grid.innerHTML = "";
+  recientes.forEach(r => {
+    const btn = document.createElement("div");
+    btn.className = "quick-btn" + (r.code === selectedClase ? " active" : "");
+    btn.textContent = r.code;
+    btn.title = r.spec;
+    btn.onclick = () => selectClase(r.code, r.spec);
+    grid.appendChild(btn);
+  });
+  document.getElementById("recientes-wrap").style.display = recientes.length ? "" : "none";
+}
+renderRecientes();
+
+// ── Modal catálogo ────────────────────────────────────────────────────────────
+function openCatalogModal() {
+  document.getElementById("modal-bg").classList.add("show");
+  document.getElementById("modal-search").value = "";
+  modalFamFilter = "ALL";
+  renderModalFamilies();
+  renderModal("");
+  setTimeout(() => document.getElementById("modal-search").focus(), 100);
+}
+function closeCatalogModal() {
+  document.getElementById("modal-bg").classList.remove("show");
+}
+function closeModal(e) {
+  if (e.target === document.getElementById("modal-bg")) closeCatalogModal();
+}
+
+function renderModalFamilies() {
+  const wrap = document.getElementById("modal-families");
+  wrap.innerHTML = "";
+  ["ALL","PM","PB","EI"].forEach(f => {
+    const b = document.createElement("div");
+    b.className = "fam-btn" + (f === modalFamFilter ? " active" : "");
+    b.textContent = f === "ALL" ? "Todas" : f;
+    b.onclick = () => { modalFamFilter = f; renderModalFamilies(); renderModal(document.getElementById("modal-search").value); };
+    wrap.appendChild(b);
+  });
+}
+
+function renderModal(q) {
+  const list = document.getElementById("modal-list");
+  list.innerHTML = "";
+  const filtered = CATALOG.filter(c =>
+    (modalFamFilter === "ALL" || c.family === modalFamFilter) &&
+    (!q || c.code.toLowerCase().includes(q.toLowerCase()))
+  ).slice(0, 60);
+
+  if (!filtered.length) {
+    list.innerHTML = '<p style="color:var(--steel);font-size:13px;text-align:center;padding:20px">Sin resultados</p>';
+    return;
+  }
+  filtered.forEach(c => {
+    const item = document.createElement("div");
+    item.className = "cat-item";
+    item.innerHTML = `
+      <div onclick="selectClase('${c.code}','${c.spec}');renderRecientes()">
+        <div class="ci-code">${c.code}</div>
+        <div class="ci-spec">${c.spec}</div>
+      </div>
+      <span class="ci-copy" onclick="copyCode('${c.code}')" title="Copiar">📋</span>`;
+    list.appendChild(item);
+  });
+}
+renderModalFamilies();
+renderModal("");
+
+// ── Catálogo tab ──────────────────────────────────────────────────────────────
+function renderCatalogPage(q) {
+  // Families
+  const fwrap = document.getElementById("cat-main-families");
+  fwrap.innerHTML = "";
+  ["ALL","PM","PB","EI"].forEach(f => {
+    const b = document.createElement("div");
+    b.className = "fam-btn" + (f === catFamFilter ? " active" : "");
+    b.textContent = f === "ALL" ? "Todas" : f;
+    b.onclick = () => { catFamFilter = f; renderCatalogPage(document.getElementById("cat-main-search").value); };
+    fwrap.appendChild(b);
+  });
+
+  const grid = document.getElementById("cat-main-grid");
+  grid.innerHTML = "";
+  const filtered = CATALOG.filter(c =>
+    (catFamFilter === "ALL" || c.family === catFamFilter) &&
+    (!q || c.code.toLowerCase().includes(q.toLowerCase()))
+  ).slice(0, 80);
+
+  filtered.forEach(c => {
+    const card = document.createElement("div");
+    card.className = "ref-card";
+    card.innerHTML = `
+      <div class="ref-fam ${c.family}">${c.family}</div>
+      <div class="ref-info">
+        <div class="ref-code">${c.code}</div>
+        <div class="ref-spec">${c.spec}</div>
+      </div>
+      <span class="ref-copy" onclick="copyCode('${c.code}')" title="Copiar código">📋</span>`;
+    grid.appendChild(card);
+  });
+}
+
+function copyCode(code) {
+  navigator.clipboard?.writeText(code).then(() => showToast(`📋 ${code} copiado`, "ok"))
+    .catch(() => {
+      const ta = document.createElement("textarea");
+      ta.value = code; document.body.appendChild(ta);
+      ta.select(); document.execCommand("copy");
+      document.body.removeChild(ta);
+      showToast(`📋 ${code} copiado`, "ok");
+    });
+}
+
+// ── File input ────────────────────────────────────────────────────────────────
 document.getElementById("file-input").addEventListener("change", e => {
   const f = e.target.files[0];
   if (!f) return;
   selectedFile = f;
   const url = URL.createObjectURL(f);
   const zone = document.getElementById("capture-zone");
-  zone.innerHTML = `
-    <img src="${url}" alt="preview">
-    <div class="overlay">
-      <span style="color:white;font-size:13px;font-weight:600">✓ ${f.name.slice(0,30)}</span>
-    </div>`;
+  zone.innerHTML = `<img src="${url}"><div class="overlay"><span style="color:#fff;font-size:12px;font-weight:700">✓ Lista para subir</span></div>`;
   zone.classList.add("has-img");
   document.getElementById("btn-upload").disabled = false;
 });
 
-// Upload
+// ── Upload ────────────────────────────────────────────────────────────────────
 async function uploadImage() {
-  const apiKey    = document.getElementById("api-key").value.trim();
-  const workspace = document.getElementById("workspace").value.trim();
-  const project   = document.getElementById("project").value.trim();
-  const split     = document.getElementById("split").value;
-  const clase     = selectedClase;
+  const apiKey = document.getElementById("api-key").value.trim();
+  const split  = document.getElementById("split").value;
+  const clase  = selectedClase || document.getElementById("clase-custom").value.trim().toUpperCase();
 
-  if (!apiKey)     { showToast("⚠️ Ingresa tu API Key", "err"); return; }
+  if (!apiKey)  { showToast("⚠️ Ingresa tu API Key", "err"); return; }
+  if (!clase)   { showToast("⚠️ Selecciona una clase", "err"); return; }
   if (!selectedFile) { showToast("⚠️ Selecciona una imagen", "err"); return; }
-  if (!clase)      { showToast("⚠️ Selecciona una clase", "err"); return; }
 
   const btn = document.getElementById("btn-upload");
-  btn.disabled = true;
-  btn.innerHTML = "⏳ Subiendo…";
-  btn.classList.add("loading");
+  btn.disabled = true; btn.innerHTML = "⏳ Subiendo…"; btn.classList.add("loading");
+  const pw = document.getElementById("prog-wrap");
+  const pb = document.getElementById("prog-bar");
+  pw.classList.add("show"); pb.style.width = "30%";
 
-  // Progress animation
-  const pw = document.getElementById("progress-wrap");
-  const pb = document.getElementById("progress-bar");
-  pw.classList.add("show");
-  pb.style.width = "30%";
+  const project   = "reconocimiento-de-piezas-rllp1";
+  const logId     = Date.now();
+  const ext       = selectedFile.name.split(".").pop() || "jpg";
+  const fileName  = `${clase}_${logId}.${ext}`;
+  const fileObj   = selectedFile;
+  const previewUrl= URL.createObjectURL(fileObj);
 
   try {
-    // Convertir a base64
-    const b64 = await fileToBase64(selectedFile);
+    const b64 = await fileToB64(fileObj);
     pb.style.width = "60%";
 
-    // Nombre del archivo con clase incluida para facilitar re-etiquetado
-    const ts   = Date.now();
-    const ext  = selectedFile.name.split(".").pop() || "jpg";
-    const name = `${clase}_${ts}.${ext}`;
-
-    // Subir a Roboflow Upload API
-    const url = `https://api.roboflow.com/dataset/${project}/upload` +
-                `?api_key=${apiKey}&name=${encodeURIComponent(name)}` +
-                `&split=${split}&annotation_labelmap=${encodeURIComponent(clase)}`;
-
+    const url = `https://api.roboflow.com/dataset/${project}/upload?api_key=${apiKey}&name=${encodeURIComponent(fileName)}&split=${split}`;
     const res = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: b64.split(",")[1],
     });
-
     pb.style.width = "90%";
     const data = await res.json();
-
-    if (!res.ok || data.error) {
-      throw new Error(data.error || `HTTP ${res.status}`);
-    }
-
+    if (!res.ok || data.error) throw new Error(data.error || `HTTP ${res.status}`);
     pb.style.width = "100%";
 
-    // Actualizar contadores
-    sessionCount++;
-    totalCount++;
-    okCount++;
+    sessionCount++; totalCount++; okCount++;
     localStorage.setItem("rf_total", totalCount);
     localStorage.setItem("rf_ok", okCount);
     document.getElementById("cnt-session").textContent = sessionCount;
     document.getElementById("cnt-total").textContent   = totalCount;
     document.getElementById("cnt-ok").textContent      = okCount;
 
-    // Log
-    addLog(selectedFile, clase, split, true, "");
-    showToast(`✅ ${clase} subida a ${split}`, "ok");
-
-    // Reset
+    const entry = { id: logId, url: previewUrl, clase, split, ok: true, file: fileObj, imageId: data.id || "" };
+    uploadLog.unshift(entry);
+    addLogItem(entry);
+    addReciente(clase, "");
+    showToast(`✅ ${clase} → ${split}`, "ok");
     resetCapture();
 
-  } catch (err) {
-    pb.style.width = "100%";
+  } catch(err) {
     pb.style.background = "var(--danger)";
-    addLog(selectedFile, clase, split, false, err.message);
-    showToast(`❌ ${err.message.slice(0, 50)}`, "err");
-    setTimeout(() => {
-      pb.style.background = "var(--amber)";
-      pb.style.width = "0%";
-      pw.classList.remove("show");
-    }, 2000);
+    const entry = { id: logId, url: previewUrl, clase, split, ok: false, error: err.message, file: fileObj };
+    uploadLog.unshift(entry);
+    addLogItem(entry);
+    showToast(`❌ ${err.message.slice(0,50)}`, "err");
+    setTimeout(() => { pb.style.background="var(--amber)"; pb.style.width="0%"; pw.classList.remove("show"); }, 2000);
   } finally {
-    setTimeout(() => {
-      pb.style.width = "0%";
-      pw.classList.remove("show");
-    }, 1500);
-    btn.disabled = false;
-    btn.innerHTML = "⬆️ Subir";
-    btn.classList.remove("loading");
+    setTimeout(() => { pb.style.width="0%"; pw.classList.remove("show"); }, 1500);
+    btn.disabled=false; btn.innerHTML="⬆️ Subir"; btn.classList.remove("loading");
   }
 }
 
-function fileToBase64(file) {
-  return new Promise((res, rej) => {
+function fileToB64(file) {
+  return new Promise((res,rej) => {
     const r = new FileReader();
-    r.onload  = () => res(r.result);
+    r.onload = () => res(r.result);
     r.onerror = () => rej(new Error("Error leyendo archivo"));
     r.readAsDataURL(file);
   });
@@ -529,29 +584,117 @@ function resetCapture() {
   document.getElementById("btn-upload").disabled = true;
 }
 
-function addLog(file, clase, split, ok, errMsg) {
+// ── Log + edición ─────────────────────────────────────────────────────────────
+function addLogItem(entry) {
   const list = document.getElementById("log-list");
-  // Quitar placeholder
-  if (list.children.length === 1 && list.children[0].style.textAlign === "center") {
-    list.innerHTML = "";
-  }
-  const url   = URL.createObjectURL(file);
-  const item  = document.createElement("div");
-  item.className = "log-item";
+  if (list.querySelector("p")) list.innerHTML = "";
+
+  const item = document.createElement("div");
+  item.className = "log-item" + (entry.ok ? "" : " error");
+  item.id = "log-" + entry.id;
   item.innerHTML = `
-    <img class="log-thumb" src="${url}" alt="">
-    <div class="log-info">
-      <div class="log-name">${clase} → ${split}</div>
-      <div class="log-meta">${ok ? "✓ Subida exitosa" : "✗ " + errMsg}</div>
+    <img class="log-thumb" src="${entry.url}" alt="">
+    <div class="log-info" style="flex:1;min-width:0">
+      <div class="log-name">${entry.clase}</div>
+      <div class="log-meta">${entry.ok ? "✓ " + entry.split : "✗ " + (entry.error||"")}</div>
+      <!-- Editar -->
+      <div class="log-edit-form" id="edit-${entry.id}">
+        <input type="text" id="edit-input-${entry.id}" value="${entry.clase}" placeholder="Nueva clase">
+        <select id="edit-split-${entry.id}" style="margin-bottom:6px;font-size:12px;padding:7px 10px">
+          <option value="train" ${entry.split==="train"?"selected":""}>Train</option>
+          <option value="valid" ${entry.split==="valid"?"selected":""}>Valid</option>
+          <option value="test"  ${entry.split==="test" ?"selected":""}>Test</option>
+        </select>
+        <div class="log-edit-row">
+          <button class="btn btn-danger btn-sm" onclick="cancelEdit(${entry.id})">Cancelar</button>
+          <button class="btn btn-ok btn-sm" onclick="saveEdit(${entry.id})">💾 Guardar</button>
+        </div>
+      </div>
     </div>
-    <span class="log-status">${ok ? "✅" : "❌"}</span>`;
+    <div class="log-actions">
+      <span style="cursor:pointer;font-size:18px" onclick="toggleEdit(${entry.id})" title="Corregir">✏️</span>
+      <span class="log-status">${entry.ok ? "✅" : "❌"}</span>
+    </div>`;
   list.insertBefore(item, list.firstChild);
 }
 
+function toggleEdit(id) {
+  const form = document.getElementById("edit-"+id);
+  form.classList.toggle("show");
+}
+function cancelEdit(id) {
+  document.getElementById("edit-"+id).classList.remove("show");
+}
+
+async function saveEdit(id) {
+  const apiKey   = document.getElementById("api-key").value.trim();
+  const newClase = document.getElementById("edit-input-"+id).value.trim().toUpperCase();
+  const newSplit = document.getElementById("edit-split-"+id).value;
+  const entry    = uploadLog.find(e => e.id === id);
+
+  if (!newClase) { showToast("⚠️ Escribe la clase correcta","err"); return; }
+  if (!entry)    { showToast("⚠️ Entrada no encontrada","err"); return; }
+  if (!apiKey)   { showToast("⚠️ Ingresa tu API Key","err"); return; }
+
+  const project = "reconocimiento-de-piezas-rllp1";
+  const btn = document.querySelector(`#edit-${id} .btn-ok`);
+  btn.disabled = true;
+  btn.textContent = "⏳ Procesando…";
+
+  try {
+    // PASO 1 — Eliminar imagen incorrecta de Roboflow (si tenemos el imageId)
+    if (entry.imageId) {
+      showToast("🗑️ Eliminando imagen incorrecta…", "");
+      try {
+        await fetch(
+          `https://api.roboflow.com/dataset/${project}/images/${entry.imageId}?api_key=${apiKey}`,
+          { method: "DELETE" }
+        );
+      } catch(e) {
+        // Si falla el delete, continuar igual — lo importante es subir la correcta
+        console.warn("Delete falló:", e);
+      }
+    }
+
+    // PASO 2 — Subir imagen con clase corregida
+    showToast("⬆️ Subiendo versión corregida…", "");
+    const b64      = await fileToB64(entry.file);
+    const fileName = `${newClase}_${Date.now()}.jpg`;
+    const res = await fetch(
+      `https://api.roboflow.com/dataset/${project}/upload?api_key=${apiKey}&name=${encodeURIComponent(fileName)}&split=${newSplit}`,
+      { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: b64.split(",")[1] }
+    );
+    const data = await res.json();
+    if (!res.ok || data.error) throw new Error(data.error || `HTTP ${res.status}`);
+
+    // PASO 3 — Actualizar registro local
+    entry.clase   = newClase;
+    entry.split   = newSplit;
+    entry.ok      = true;
+    entry.imageId = data.id || "";
+
+    // Actualizar UI
+    const item = document.getElementById("log-"+id);
+    item.classList.remove("error");
+    item.querySelector(".log-name").textContent = newClase;
+    item.querySelector(".log-meta").textContent = `✓ ${newSplit} (corregida ✔)`;
+    item.querySelector(".log-status").textContent = "✅";
+    cancelEdit(id);
+    showToast(`✅ Corregida → ${newClase}`, "ok");
+
+  } catch(err) {
+    showToast(`❌ ${err.message.slice(0,50)}`, "err");
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "💾 Guardar";
+  }
+}
+
+// ── Toast ─────────────────────────────────────────────────────────────────────
 function showToast(msg, type) {
   const t = document.getElementById("toast");
   t.textContent = msg;
-  t.className   = `toast ${type} show`;
+  t.className = `toast ${type} show`;
   setTimeout(() => t.classList.remove("show"), 2800);
 }
 </script>
