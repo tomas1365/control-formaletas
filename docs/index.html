@@ -8,140 +8,139 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>UNISPAN — Captura Dataset</title>
 <style>
-* { box-sizing: border-box; margin: 0; padding: 0; }
+* { box-sizing: border-box; margin: 0; padding: 0; touch-action: manipulation; }
 :root {
-  --bg: #0a1628; --surface: #102a43; --surface2: #1a3a5c;
-  --border: rgba(99,125,152,0.25); --amber: #f59e0b; --amber2: #fbbf24;
-  --steel: #627d98; --text: #e2e8f0; --text2: #94a3b8;
-  --ok: #22c55e; --danger: #ef4444; --radius: 14px;
+  --bg:#0a1628; --surface:#102a43; --border:rgba(99,125,152,0.25);
+  --amber:#f59e0b; --steel:#627d98; --text:#e2e8f0; --text2:#94a3b8;
+  --ok:#22c55e; --danger:#ef4444; --radius:14px;
 }
-body { background: var(--bg); color: var(--text); font-family: -apple-system,'Inter',sans-serif; min-height: 100dvh; display: flex; flex-direction: column; }
+body { background:var(--bg); color:var(--text); font-family:-apple-system,'Inter',sans-serif; min-height:100dvh; display:flex; flex-direction:column; }
 
-header { background: rgba(10,22,40,.95); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); padding: 14px 16px; display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 100; }
-.logo { width: 36px; height: 36px; background: var(--amber); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 16px; color: #0a1628; flex-shrink: 0; }
-header h1 { font-size: 15px; font-weight: 700; }
-header p  { font-size: 11px; color: var(--steel); }
+header { background:rgba(10,22,40,.95); backdrop-filter:blur(12px); border-bottom:1px solid var(--border); padding:14px 16px; display:flex; align-items:center; gap:12px; position:sticky; top:0; z-index:100; }
+.logo { width:36px; height:36px; background:var(--amber); border-radius:10px; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:16px; color:#0a1628; flex-shrink:0; }
+header h1 { font-size:15px; font-weight:700; }
+header p  { font-size:11px; color:var(--steel); }
 
-/* Tabs */
-.tabs { display: flex; border-bottom: 1px solid var(--border); background: var(--bg); position: sticky; top: 64px; z-index: 99; }
-.tab { flex: 1; padding: 12px 8px; font-size: 12px; font-weight: 600; text-align: center; color: var(--steel); border-bottom: 2px solid transparent; cursor: pointer; transition: all .15s; }
-.tab.active { color: var(--amber); border-bottom-color: var(--amber); }
+.tabs { display:flex; border-bottom:1px solid var(--border); background:var(--bg); position:sticky; top:64px; z-index:99; }
+.tab { flex:1; padding:12px 8px; font-size:12px; font-weight:600; text-align:center; color:var(--steel); border-bottom:2px solid transparent; cursor:pointer; transition:all .15s; }
+.tab.active { color:var(--amber); border-bottom-color:var(--amber); }
 
-main { flex: 1; padding: 14px; display: flex; flex-direction: column; gap: 12px; }
-.page { display: none; flex-direction: column; gap: 12px; }
-.page.active { display: flex; }
+main { flex:1; padding:14px; display:flex; flex-direction:column; gap:12px; }
+.page { display:none; flex-direction:column; gap:12px; }
+.page.active { display:flex; }
 
-.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; }
-.card-title { font-size: 11px; font-weight: 700; color: var(--steel); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 10px; }
+.card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:14px; }
+.card-title { font-size:11px; font-weight:700; color:var(--steel); text-transform:uppercase; letter-spacing:.06em; margin-bottom:10px; }
 
-label { font-size: 13px; color: var(--text2); display: block; margin-bottom: 4px; }
-input, select, textarea { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; color: var(--text); font-size: 14px; margin-bottom: 10px; outline: none; -webkit-appearance: none; }
-input:focus, select:focus { border-color: var(--amber); }
-input[type="file"] { display: none; }
-input[type="password"] { letter-spacing: 2px; }
+label { font-size:13px; color:var(--text2); display:block; margin-bottom:4px; }
+input, select { width:100%; background:var(--bg); border:1px solid var(--border); border-radius:10px; padding:10px 12px; color:var(--text); font-size:14px; margin-bottom:10px; outline:none; -webkit-appearance:none; }
+input:focus, select:focus { border-color:var(--amber); }
+input[type="file"] { display:none; }
+input[type="password"] { letter-spacing:2px; }
 
-/* Catálogo selector */
-.cat-search { position: relative; margin-bottom: 8px; }
-.cat-search input { margin-bottom: 0; padding-left: 36px; }
-.cat-search .ico { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 14px; }
-.cat-families { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
-.fam-btn { padding: 5px 12px; border-radius: 99px; font-size: 11px; font-weight: 700; border: 1.5px solid var(--border); color: var(--steel); cursor: pointer; transition: all .15s; }
-.fam-btn.active { background: rgba(245,158,11,.15); border-color: var(--amber); color: var(--amber); }
-.cat-list { max-height: 220px; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; }
-.cat-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; background: var(--bg); border-radius: 10px; cursor: pointer; border: 1.5px solid transparent; transition: all .15s; }
-.cat-item:active, .cat-item.selected { border-color: var(--amber); background: rgba(245,158,11,.08); }
-.cat-item .ci-code { font-weight: 700; font-size: 13px; font-family: monospace; color: var(--amber); }
-.cat-item .ci-spec { font-size: 11px; color: var(--steel); margin-top: 2px; }
-.cat-item .ci-copy { font-size: 18px; padding: 4px 8px; }
-.selected-clase { background: rgba(245,158,11,.12); border: 1.5px solid var(--amber); border-radius: 10px; padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
-.selected-clase .sc-code { font-family: monospace; font-weight: 700; font-size: 15px; color: var(--amber); }
-.selected-clase .sc-clear { font-size: 18px; cursor: pointer; color: var(--steel); }
+/* Catalog modal */
+.cat-search { position:relative; margin-bottom:8px; }
+.cat-search input { margin-bottom:0; padding-left:36px; }
+.cat-search .ico { position:absolute; left:12px; top:50%; transform:translateY(-50%); font-size:14px; }
+.cat-families { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:8px; }
+.fam-btn { padding:5px 12px; border-radius:99px; font-size:11px; font-weight:700; border:1.5px solid var(--border); color:var(--steel); cursor:pointer; transition:all .15s; }
+.fam-btn.active { background:rgba(245,158,11,.15); border-color:var(--amber); color:var(--amber); }
+.cat-list { max-height:220px; overflow-y:auto; display:flex; flex-direction:column; gap:4px; }
+.cat-item { display:flex; align-items:center; justify-content:space-between; padding:10px 12px; background:var(--bg); border-radius:10px; cursor:pointer; border:1.5px solid transparent; transition:all .15s; }
+.cat-item .ci-code { font-weight:700; font-size:13px; font-family:monospace; color:var(--amber); }
+.cat-item .ci-spec { font-size:11px; color:var(--steel); margin-top:2px; }
+.cat-item .ci-copy { font-size:18px; padding:4px 8px; }
 
-/* Clases rápidas */
-.quick-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 6px; margin-bottom: 8px; }
-.quick-btn { background: var(--bg); border: 1.5px solid var(--border); border-radius: 10px; padding: 8px 4px; color: var(--text2); font-size: 11px; font-weight: 600; text-align: center; cursor: pointer; transition: all .15s; }
-.quick-btn.active { background: rgba(245,158,11,.12); border-color: var(--amber); color: var(--amber); }
+.selected-clase { background:rgba(245,158,11,.12); border:1.5px solid var(--amber); border-radius:10px; padding:10px 14px; display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+.selected-clase .sc-code { font-family:monospace; font-weight:700; font-size:15px; color:var(--amber); }
+.selected-clase .sc-clear { font-size:18px; cursor:pointer; color:var(--steel); }
 
-/* Capture zone */
-.capture-zone { border: 2px dashed var(--border); border-radius: var(--radius); min-height: 180px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; cursor: pointer; transition: border-color .2s; position: relative; overflow: hidden; }
-.capture-zone.has-img { border-style: solid; border-color: var(--amber); }
-.capture-zone img { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; }
-.capture-zone .overlay { position: absolute; inset: 0; background: rgba(10,22,40,.5); display: flex; align-items: center; justify-content: center; }
-.capture-hint { font-size: 12px; color: var(--steel); }
-.capture-icon { font-size: 36px; }
+.quick-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; margin-bottom:8px; }
+.quick-btn { background:var(--bg); border:1.5px solid var(--border); border-radius:10px; padding:8px 4px; color:var(--text2); font-size:11px; font-weight:600; text-align:center; cursor:pointer; transition:all .15s; }
+.quick-btn.active { background:rgba(245,158,11,.12); border-color:var(--amber); color:var(--amber); }
+
+/* ── BBOX CANVAS ── */
+.bbox-wrap { position:relative; border-radius:12px; overflow:hidden; background:#000; touch-action:none; }
+.bbox-img { width:100%; display:block; user-select:none; -webkit-user-drag:none; }
+#bbox-canvas { position:absolute; inset:0; width:100%; height:100%; cursor:crosshair; touch-action:none; }
+.bbox-hint { font-size:12px; color:var(--steel); text-align:center; margin-top:6px; }
+.bbox-status { display:flex; align-items:center; gap:8px; margin-top:8px; padding:8px 12px; border-radius:10px; font-size:12px; font-weight:600; }
+.bbox-status.none { background:rgba(239,68,68,.1); color:var(--danger); border:1px solid rgba(239,68,68,.2); }
+.bbox-status.drawn { background:rgba(34,197,94,.1); color:var(--ok); border:1px solid rgba(34,197,94,.2); }
+.bbox-actions { display:flex; gap:8px; margin-top:8px; }
+
+/* Capture zone (before image) */
+.capture-zone { border:2px dashed var(--border); border-radius:var(--radius); min-height:180px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; cursor:pointer; transition:border-color .2s; }
+.capture-zone.has-img { display:none; }
 
 /* Progress */
-.prog-wrap { background: var(--bg); border-radius: 99px; height: 5px; overflow: hidden; display: none; margin-top: 10px; }
-.prog-wrap.show { display: block; }
-.prog-bar { height: 100%; background: var(--amber); border-radius: 99px; transition: width .3s; width: 0%; }
+.prog-wrap { background:var(--bg); border-radius:99px; height:5px; overflow:hidden; display:none; margin-top:10px; }
+.prog-wrap.show { display:block; }
+.prog-bar { height:100%; background:var(--amber); border-radius:99px; transition:width .3s; width:0%; }
 
 /* Buttons */
-.btn-row { display: flex; gap: 8px; }
-.btn { flex: 1; padding: 13px; border-radius: 12px; font-size: 13px; font-weight: 700; cursor: pointer; border: none; display: flex; align-items: center; justify-content: center; gap: 6px; transition: opacity .15s, transform .1s; -webkit-tap-highlight-color: transparent; }
-.btn:active { transform: scale(.97); }
-.btn:disabled { opacity: .4; cursor: not-allowed; }
-.btn-cam  { background: var(--surface); color: var(--text); border: 1.5px solid var(--border); }
-.btn-up   { background: var(--amber); color: #0a1628; }
-.btn-up.loading { background: #b45309; }
-.btn-sm   { padding: 8px 14px; font-size: 12px; border-radius: 9px; flex: none; }
-.btn-danger { background: rgba(239,68,68,.15); color: var(--danger); border: 1.5px solid rgba(239,68,68,.3); }
-.btn-ok   { background: rgba(34,197,94,.15); color: var(--ok); border: 1.5px solid rgba(34,197,94,.3); }
+.btn-row { display:flex; gap:8px; }
+.btn { flex:1; padding:13px; border-radius:12px; font-size:13px; font-weight:700; cursor:pointer; border:none; display:flex; align-items:center; justify-content:center; gap:6px; transition:opacity .15s, transform .1s; -webkit-tap-highlight-color:transparent; }
+.btn:active { transform:scale(.97); }
+.btn:disabled { opacity:.4; cursor:not-allowed; }
+.btn-cam   { background:var(--surface); color:var(--text); border:1.5px solid var(--border); }
+.btn-up    { background:var(--amber); color:#0a1628; }
+.btn-up.loading { background:#b45309; }
+.btn-sm    { padding:8px 14px; font-size:12px; border-radius:9px; flex:none; }
+.btn-danger { background:rgba(239,68,68,.15); color:var(--danger); border:1.5px solid rgba(239,68,68,.3); }
+.btn-ok    { background:rgba(34,197,94,.15); color:var(--ok); border:1.5px solid rgba(34,197,94,.3); }
+.btn-ghost { background:var(--surface); color:var(--text2); border:1.5px solid var(--border); }
 
 /* Counters */
-.counter { display: flex; gap: 8px; }
-.counter-item { flex: 1; background: var(--bg); border-radius: 10px; padding: 10px; text-align: center; }
-.counter-num { font-size: 22px; font-weight: 800; color: var(--amber); }
-.counter-lbl { font-size: 10px; color: var(--steel); margin-top: 1px; }
+.counter { display:flex; gap:8px; }
+.counter-item { flex:1; background:var(--bg); border-radius:10px; padding:10px; text-align:center; }
+.counter-num { font-size:22px; font-weight:800; color:var(--amber); }
+.counter-lbl { font-size:10px; color:var(--steel); margin-top:1px; }
 
-/* Log list */
-.log-list { display: flex; flex-direction: column; gap: 6px; }
-.log-item { display: flex; align-items: center; gap: 10px; background: var(--bg); border-radius: 10px; padding: 10px; font-size: 12px; border: 1.5px solid transparent; }
-.log-item.error { border-color: rgba(239,68,68,.3); }
-.log-thumb { width: 44px; height: 44px; border-radius: 8px; object-fit: cover; flex-shrink: 0; }
-.log-info { flex: 1; min-width: 0; }
-.log-name { font-weight: 700; color: var(--text); font-family: monospace; }
-.log-meta { color: var(--steel); margin-top: 2px; font-size: 11px; }
-.log-actions { display: flex; gap: 4px; flex-shrink: 0; }
-.log-status { font-size: 16px; }
-.log-edit-form { display: none; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border); }
-.log-edit-form.show { display: block; }
-.log-edit-form input { margin-bottom: 6px; font-size: 12px; padding: 7px 10px; }
-.log-edit-row { display: flex; gap: 6px; }
+/* Log */
+.log-list { display:flex; flex-direction:column; gap:6px; }
+.log-item { display:flex; align-items:center; gap:10px; background:var(--bg); border-radius:10px; padding:10px; font-size:12px; border:1.5px solid transparent; }
+.log-item.error { border-color:rgba(239,68,68,.3); }
+.log-thumb { width:44px; height:44px; border-radius:8px; object-fit:cover; flex-shrink:0; }
+.log-info { flex:1; min-width:0; }
+.log-name { font-weight:700; color:var(--text); font-family:monospace; }
+.log-meta { color:var(--steel); margin-top:2px; font-size:11px; }
+.log-edit-form { display:none; margin-top:8px; padding-top:8px; border-top:1px solid var(--border); }
+.log-edit-form.show { display:block; }
+.log-edit-form input { margin-bottom:6px; font-size:12px; padding:7px 10px; }
+.log-edit-row { display:flex; gap:6px; }
 
-/* Toast */
-.toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 11px 18px; font-size: 13px; font-weight: 600; transition: transform .3s; z-index: 300; white-space: nowrap; box-shadow: 0 8px 32px rgba(0,0,0,.4); }
-.toast.show { transform: translateX(-50%) translateY(0); }
-.toast.ok  { border-color: var(--ok); color: var(--ok); }
-.toast.err { border-color: var(--danger); color: var(--danger); }
+/* Catalog page */
+.ref-grid { display:flex; flex-direction:column; gap:6px; }
+.ref-card { background:var(--bg); border-radius:10px; padding:12px; display:flex; align-items:center; gap:10px; }
+.ref-fam { width:36px; height:36px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:11px; flex-shrink:0; }
+.ref-fam.PM { background:rgba(59,130,246,.15); color:#60a5fa; }
+.ref-fam.PB { background:rgba(168,85,247,.15); color:#c084fc; }
+.ref-fam.EI { background:rgba(245,158,11,.15); color:var(--amber); }
+.ref-info { flex:1; min-width:0; }
+.ref-code { font-family:monospace; font-weight:700; font-size:13px; }
+.ref-spec { font-size:11px; color:var(--steel); margin-top:2px; }
+.ref-copy { font-size:20px; cursor:pointer; padding:4px; }
 
 /* Modal */
-.modal-bg { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.6); z-index: 200; align-items: flex-end; }
-.modal-bg.show { display: flex; }
-.modal { background: var(--surface); border-radius: 20px 20px 0 0; padding: 20px 16px 32px; width: 100%; max-height: 80vh; overflow-y: auto; }
-.modal-title { font-size: 15px; font-weight: 700; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; }
-.modal-close { font-size: 22px; cursor: pointer; color: var(--steel); }
+.modal-bg { display:none; position:fixed; inset:0; background:rgba(0,0,0,.6); z-index:200; align-items:flex-end; }
+.modal-bg.show { display:flex; }
+.modal { background:var(--surface); border-radius:20px 20px 0 0; padding:20px 16px 32px; width:100%; max-height:80vh; overflow-y:auto; }
+.modal-title { font-size:15px; font-weight:700; margin-bottom:14px; display:flex; justify-content:space-between; align-items:center; }
+.modal-close { font-size:22px; cursor:pointer; color:var(--steel); }
 
-/* Catalog page grid */
-.ref-grid { display: flex; flex-direction: column; gap: 6px; }
-.ref-card { background: var(--bg); border-radius: 10px; padding: 12px; display: flex; align-items: center; gap: 10px; }
-.ref-fam { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 11px; flex-shrink: 0; }
-.ref-fam.PM { background: rgba(59,130,246,.15); color: #60a5fa; }
-.ref-fam.PB { background: rgba(168,85,247,.15); color: #c084fc; }
-.ref-fam.EI { background: rgba(245,158,11,.15); color: var(--amber); }
-.ref-info { flex: 1; min-width: 0; }
-.ref-code { font-family: monospace; font-weight: 700; font-size: 13px; }
-.ref-spec { font-size: 11px; color: var(--steel); margin-top: 2px; }
-.ref-copy { font-size: 20px; cursor: pointer; padding: 4px; }
+/* Toast */
+.toast { position:fixed; bottom:20px; left:50%; transform:translateX(-50%) translateY(80px); background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:11px 18px; font-size:13px; font-weight:600; transition:transform .3s; z-index:300; white-space:nowrap; box-shadow:0 8px 32px rgba(0,0,0,.4); }
+.toast.show { transform:translateX(-50%) translateY(0); }
+.toast.ok  { border-color:var(--ok); color:var(--ok); }
+.toast.err { border-color:var(--danger); color:var(--danger); }
 </style>
 </head>
 <body>
 
 <header>
   <div class="logo">U</div>
-  <div>
-    <h1>UNISPAN Dataset</h1>
-    <p>Captura de imágenes para entrenamiento IA</p>
-  </div>
+  <div><h1>UNISPAN Dataset</h1><p>Captura con anotación directa</p></div>
 </header>
 
 <div class="tabs">
@@ -152,7 +151,7 @@ input[type="password"] { letter-spacing: 2px; }
 
 <main>
 
-<!-- ══ TAB CAPTURA ══════════════════════════════════════════════════════ -->
+<!-- ══ TAB CAPTURA ══ -->
 <div class="page active" id="page-captura">
 
   <div class="counter">
@@ -161,11 +160,9 @@ input[type="password"] { letter-spacing: 2px; }
     <div class="counter-item"><div class="counter-num" id="cnt-ok" style="color:var(--ok)">0</div><div class="counter-lbl">Exitosas</div></div>
   </div>
 
-  <!-- Clase seleccionada -->
+  <!-- Clase -->
   <div class="card">
     <div class="card-title">🏷️ Clase / Referencia</div>
-
-    <!-- Seleccionada actualmente -->
     <div id="selected-display" style="display:none" class="selected-clase">
       <div>
         <div class="sc-code" id="selected-code">—</div>
@@ -173,52 +170,58 @@ input[type="password"] { letter-spacing: 2px; }
       </div>
       <span class="sc-clear" onclick="clearClase()">✕</span>
     </div>
-
-    <!-- Clases recientes -->
-    <div id="recientes-wrap">
+    <div id="recientes-wrap" style="display:none">
       <div style="font-size:11px;color:var(--steel);margin-bottom:6px">Recientes:</div>
       <div class="quick-grid" id="recientes-grid"></div>
     </div>
-
-    <button class="btn btn-cam" style="width:100%;margin-bottom:0" onclick="openCatalogModal()">
-      📖 Buscar en catálogo
-    </button>
-
-    <div style="margin-top:8px">
-      <label>O escribe clase personalizada</label>
-      <input type="text" id="clase-custom" placeholder="ej. PM-2400x600" style="margin-bottom:0"
-             oninput="onCustomInput(this.value)">
-    </div>
+    <button class="btn btn-cam" style="width:100%;margin-bottom:8px" onclick="openCatalogModal()">📖 Buscar en catálogo</button>
+    <label>O escribe clase personalizada</label>
+    <input type="text" id="clase-custom" placeholder="ej. PM-2400x600" style="margin-bottom:0" oninput="onCustomInput(this.value)">
   </div>
 
-  <!-- Configuración -->
+  <!-- Config -->
   <div class="card">
     <div class="card-title">⚙️ Configuración</div>
     <label>API Key Roboflow</label>
     <input type="password" id="api-key" placeholder="rf_xxxxxxxxxxxxxx" autocomplete="off">
-    <div style="display:flex;gap:8px">
-      <div style="flex:1">
-        <label>Split</label>
-        <select id="split">
-          <option value="train">Train</option>
-          <option value="valid">Valid</option>
-          <option value="test">Test</option>
-        </select>
-      </div>
-    </div>
+    <label>Split</label>
+    <select id="split">
+      <option value="train">Train</option>
+      <option value="valid">Valid</option>
+      <option value="test">Test</option>
+    </select>
   </div>
 
-  <!-- Captura -->
+  <!-- Imagen + BBox -->
   <div class="card">
-    <div class="card-title">📸 Imagen</div>
+    <div class="card-title">📸 Imagen y recuadro</div>
+
+    <!-- Zona antes de seleccionar imagen -->
     <div class="capture-zone" id="capture-zone" onclick="document.getElementById('file-input').click()">
-      <span class="capture-icon">📷</span>
-      <span class="capture-hint">Toca para tomar foto o seleccionar</span>
+      <span style="font-size:36px">📷</span>
+      <span style="font-size:12px;color:var(--steel)">Toca para tomar foto o seleccionar</span>
     </div>
     <input type="file" id="file-input" accept="image/*" capture="environment">
-    <div class="prog-wrap" id="prog-wrap">
-      <div class="prog-bar" id="prog-bar"></div>
+
+    <!-- Canvas para dibujar bbox -->
+    <div id="bbox-section" style="display:none">
+      <div class="bbox-wrap" id="bbox-wrap">
+        <img id="bbox-img" class="bbox-img" alt="imagen">
+        <canvas id="bbox-canvas"></canvas>
+      </div>
+      <p class="bbox-hint">👆 Dibuja un recuadro alrededor de la pieza</p>
+
+      <div class="bbox-status none" id="bbox-status">
+        ⚠️ Sin recuadro — dibuja uno para subir con anotación
+      </div>
+
+      <div class="bbox-actions">
+        <button class="btn btn-ghost btn-sm" onclick="clearBbox()">🗑️ Borrar recuadro</button>
+        <button class="btn btn-ghost btn-sm" onclick="document.getElementById('file-input').click()">📷 Cambiar foto</button>
+      </div>
     </div>
+
+    <div class="prog-wrap" id="prog-wrap"><div class="prog-bar" id="prog-bar"></div></div>
   </div>
 
   <div class="btn-row">
@@ -228,22 +231,20 @@ input[type="password"] { letter-spacing: 2px; }
 
 </div>
 
-<!-- ══ TAB HISTORIAL ════════════════════════════════════════════════════ -->
+<!-- ══ TAB HISTORIAL ══ -->
 <div class="page" id="page-historial">
   <div class="card">
-    <div class="card-title">📋 Imágenes subidas esta sesión</div>
+    <div class="card-title">📋 Historial de sesión</div>
     <div class="log-list" id="log-list">
-      <p style="color:var(--steel);font-size:13px;text-align:center;padding:20px">
-        Las imágenes subidas aparecerán aquí
-      </p>
+      <p style="color:var(--steel);font-size:13px;text-align:center;padding:20px">Las imágenes subidas aparecerán aquí</p>
     </div>
   </div>
 </div>
 
-<!-- ══ TAB CATÁLOGO ═════════════════════════════════════════════════════ -->
+<!-- ══ TAB CATÁLOGO ══ -->
 <div class="page" id="page-catalogo">
   <div class="card">
-    <div class="card-title">📖 Catálogo UNISPAN — 122 referencias</div>
+    <div class="card-title">📖 Catálogo UNISPAN</div>
     <div class="cat-search" style="margin-bottom:8px">
       <span class="ico">🔍</span>
       <input type="text" id="cat-main-search" placeholder="Buscar código..." oninput="renderCatalogPage(this.value)" style="margin-bottom:0;padding-left:36px">
@@ -255,7 +256,7 @@ input[type="password"] { letter-spacing: 2px; }
 
 </main>
 
-<!-- ══ MODAL CATÁLOGO ═══════════════════════════════════════════════════ -->
+<!-- Modal catálogo -->
 <div class="modal-bg" id="modal-bg" onclick="closeModal(event)">
   <div class="modal">
     <div class="modal-title">
@@ -274,330 +275,366 @@ input[type="password"] { letter-spacing: 2px; }
 <div class="toast" id="toast"></div>
 
 <script>
-// ── Catálogo completo generado ───────────────────────────────────────────────
+// ── Catálogo ──────────────────────────────────────────────────────────────────
 const CATALOG = [];
+const PM_LARGOS=[2400,1200,900,800,750,600], PM_ANCHOS=[600,550,500,450,420,400,380,350,320,300];
+const PB_LARGOS=[2400,1200,900,800,750,600], PB_ANCHOS=[270,250,230,200,150,120,100,90,80];
+const EI_LARGOS=[2400,1200,900,800,600];
+PM_LARGOS.forEach(l=>PM_ANCHOS.forEach(a=>CATALOG.push({code:`PM-${l}x${a}`,family:"PM",spec:`${l}×${a}mm | ${+(l*a/1e6).toFixed(4)}m²`})));
+PB_LARGOS.forEach(l=>PB_ANCHOS.forEach(a=>CATALOG.push({code:`PB-${l}x${a}`,family:"PB",spec:`${l}×${a}mm | ${+(l*a/1e6).toFixed(4)}m²`})));
+EI_LARGOS.forEach(l=>CATALOG.push({code:`EI-${l}x150x150`,family:"EI",spec:`${l}×150×150mm`}));
 
-const PM_LARGOS = [2400,1200,900,800,750,600];
-const PM_ANCHOS = [600,550,500,450,420,400,380,350,320,300];
-const PB_LARGOS = [2400,1200,900,800,750,600];
-const PB_ANCHOS = [270,250,230,200,150,120,100,90,80];
-const EI_LARGOS = [2400,1200,900,800,600];
+// ── Estado ────────────────────────────────────────────────────────────────────
+const PROJECT = "reconocimiento-de-piezas-rllp1";
+let selectedClase="", selectedSpec="", selectedFile=null;
+let sessionCount=0, totalCount=+localStorage.getItem("rf_total")||0, okCount=+localStorage.getItem("rf_ok")||0;
+let recientes=JSON.parse(localStorage.getItem("rf_recientes")||"[]");
+let modalFamFilter="ALL", catFamFilter="ALL", uploadLog=[];
+// BBox state
+let bbox=null, drawing=false, startX=0, startY=0;
+let imgNaturalW=0, imgNaturalH=0, imgDisplayW=0, imgDisplayH=0;
 
-PM_LARGOS.forEach(l => PM_ANCHOS.forEach(a => {
-  CATALOG.push({
-    code: `PM-${l}x${a}`,
-    family: "PM",
-    largo_mm: l, ancho_mm: a,
-    area_m2: +(l*a/1e6).toFixed(4),
-    spec: `${l}×${a}mm | ${+(l*a/1e6).toFixed(4)}m²`,
-  });
-}));
-PB_LARGOS.forEach(l => PB_ANCHOS.forEach(a => {
-  CATALOG.push({
-    code: `PB-${l}x${a}`,
-    family: "PB",
-    largo_mm: l, ancho_mm: a,
-    area_m2: +(l*a/1e6).toFixed(4),
-    spec: `${l}×${a}mm | ${+(l*a/1e6).toFixed(4)}m²`,
-  });
-}));
-EI_LARGOS.forEach(l => {
-  CATALOG.push({
-    code: `EI-${l}x150x150`,
-    family: "EI",
-    largo_mm: l, ancho_mm: 150,
-    spec: `${l}×150×150mm`,
-  });
-});
+const savedKey=localStorage.getItem("rf_api_key");
+if(savedKey) document.getElementById("api-key").value=savedKey;
+document.getElementById("api-key").addEventListener("blur",()=>localStorage.setItem("rf_api_key",document.getElementById("api-key").value.trim()));
+document.getElementById("cnt-total").textContent=totalCount;
+document.getElementById("cnt-ok").textContent=okCount;
 
-// ── Estado ───────────────────────────────────────────────────────────────────
-let selectedClase = "";
-let selectedSpec  = "";
-let selectedFile  = null;
-let sessionCount  = 0;
-let totalCount    = +localStorage.getItem("rf_total")||0;
-let okCount       = +localStorage.getItem("rf_ok")||0;
-let recientes     = JSON.parse(localStorage.getItem("rf_recientes")||"[]");
-let modalFamFilter= "ALL";
-let catFamFilter  = "ALL";
-let uploadLog     = []; // [{id, file, url, clase, split, ok, imageId, rfId}]
-
-const savedKey = localStorage.getItem("rf_api_key");
-if (savedKey) document.getElementById("api-key").value = savedKey;
-document.getElementById("api-key").addEventListener("blur", () =>
-  localStorage.setItem("rf_api_key", document.getElementById("api-key").value.trim()));
-
-document.getElementById("cnt-total").textContent = totalCount;
-document.getElementById("cnt-ok").textContent    = okCount;
-
-// ── Tabs ─────────────────────────────────────────────────────────────────────
-function switchTab(name) {
-  document.querySelectorAll(".tab").forEach((t,i) => {
-    const pages = ["captura","historial","catalogo"];
-    t.classList.toggle("active", pages[i] === name);
-  });
-  document.querySelectorAll(".page").forEach(p =>
-    p.classList.toggle("active", p.id === "page-"+name));
-  if (name === "catalogo") renderCatalogPage("");
+// ── Tabs ──────────────────────────────────────────────────────────────────────
+function switchTab(name){
+  document.querySelectorAll(".tab").forEach((t,i)=>t.classList.toggle("active",["captura","historial","catalogo"][i]===name));
+  document.querySelectorAll(".page").forEach(p=>p.classList.toggle("active",p.id==="page-"+name));
+  if(name==="catalogo") renderCatalogPage("");
 }
 
-// ── Clase ────────────────────────────────────────────────────────────────────
-function selectClase(code, spec) {
-  selectedClase = code;
-  selectedSpec  = spec || "";
-  document.getElementById("selected-code").textContent = code;
-  document.getElementById("selected-spec").textContent = spec || "";
-  document.getElementById("selected-display").style.display = "flex";
-  document.getElementById("clase-custom").value = "";
-  addReciente(code, spec);
-  closeCatalogModal();
+// ── Clase ─────────────────────────────────────────────────────────────────────
+function selectClase(code,spec){
+  selectedClase=code; selectedSpec=spec||"";
+  document.getElementById("selected-code").textContent=code;
+  document.getElementById("selected-spec").textContent=spec||"";
+  document.getElementById("selected-display").style.display="flex";
+  document.getElementById("clase-custom").value="";
+  addReciente(code,spec); closeCatalogModal();
 }
-
-function clearClase() {
-  selectedClase = "";
-  selectedSpec  = "";
-  document.getElementById("selected-display").style.display = "none";
-  document.getElementById("clase-custom").value = "";
+function clearClase(){
+  selectedClase=""; selectedSpec="";
+  document.getElementById("selected-display").style.display="none";
+  document.getElementById("clase-custom").value="";
 }
-
-function onCustomInput(val) {
-  selectedClase = val.trim().toUpperCase();
-  selectedSpec  = "";
-  if (val) {
-    document.getElementById("selected-display").style.display = "none";
-  }
+function onCustomInput(val){
+  selectedClase=val.trim().toUpperCase(); selectedSpec="";
+  if(val) document.getElementById("selected-display").style.display="none";
 }
-
-function addReciente(code, spec) {
-  recientes = [{ code, spec }, ...recientes.filter(r => r.code !== code)].slice(0, 6);
-  localStorage.setItem("rf_recientes", JSON.stringify(recientes));
+function addReciente(code,spec){
+  recientes=[{code,spec},...recientes.filter(r=>r.code!==code)].slice(0,6);
+  localStorage.setItem("rf_recientes",JSON.stringify(recientes));
   renderRecientes();
 }
-
-function renderRecientes() {
-  const grid = document.getElementById("recientes-grid");
-  grid.innerHTML = "";
-  recientes.forEach(r => {
-    const btn = document.createElement("div");
-    btn.className = "quick-btn" + (r.code === selectedClase ? " active" : "");
-    btn.textContent = r.code;
-    btn.title = r.spec;
-    btn.onclick = () => selectClase(r.code, r.spec);
+function renderRecientes(){
+  const grid=document.getElementById("recientes-grid");
+  grid.innerHTML="";
+  recientes.forEach(r=>{
+    const btn=document.createElement("div");
+    btn.className="quick-btn"+(r.code===selectedClase?" active":"");
+    btn.textContent=r.code; btn.title=r.spec;
+    btn.onclick=()=>selectClase(r.code,r.spec);
     grid.appendChild(btn);
   });
-  document.getElementById("recientes-wrap").style.display = recientes.length ? "" : "none";
+  document.getElementById("recientes-wrap").style.display=recientes.length?"":"none";
 }
 renderRecientes();
 
-// ── Modal catálogo ────────────────────────────────────────────────────────────
-function openCatalogModal() {
+// ── Modal ─────────────────────────────────────────────────────────────────────
+function openCatalogModal(){
   document.getElementById("modal-bg").classList.add("show");
-  document.getElementById("modal-search").value = "";
-  modalFamFilter = "ALL";
-  renderModalFamilies();
-  renderModal("");
-  setTimeout(() => document.getElementById("modal-search").focus(), 100);
+  document.getElementById("modal-search").value="";
+  modalFamFilter="ALL"; renderModalFamilies(); renderModal("");
+  setTimeout(()=>document.getElementById("modal-search").focus(),100);
 }
-function closeCatalogModal() {
-  document.getElementById("modal-bg").classList.remove("show");
-}
-function closeModal(e) {
-  if (e.target === document.getElementById("modal-bg")) closeCatalogModal();
-}
+function closeCatalogModal(){ document.getElementById("modal-bg").classList.remove("show"); }
+function closeModal(e){ if(e.target===document.getElementById("modal-bg")) closeCatalogModal(); }
 
-function renderModalFamilies() {
-  const wrap = document.getElementById("modal-families");
-  wrap.innerHTML = "";
-  ["ALL","PM","PB","EI"].forEach(f => {
-    const b = document.createElement("div");
-    b.className = "fam-btn" + (f === modalFamFilter ? " active" : "");
-    b.textContent = f === "ALL" ? "Todas" : f;
-    b.onclick = () => { modalFamFilter = f; renderModalFamilies(); renderModal(document.getElementById("modal-search").value); };
+function renderModalFamilies(){
+  const wrap=document.getElementById("modal-families"); wrap.innerHTML="";
+  ["ALL","PM","PB","EI"].forEach(f=>{
+    const b=document.createElement("div");
+    b.className="fam-btn"+(f===modalFamFilter?" active":"");
+    b.textContent=f==="ALL"?"Todas":f;
+    b.onclick=()=>{modalFamFilter=f;renderModalFamilies();renderModal(document.getElementById("modal-search").value);};
     wrap.appendChild(b);
   });
 }
-
-function renderModal(q) {
-  const list = document.getElementById("modal-list");
-  list.innerHTML = "";
-  const filtered = CATALOG.filter(c =>
-    (modalFamFilter === "ALL" || c.family === modalFamFilter) &&
-    (!q || c.code.toLowerCase().includes(q.toLowerCase()))
-  ).slice(0, 60);
-
-  if (!filtered.length) {
-    list.innerHTML = '<p style="color:var(--steel);font-size:13px;text-align:center;padding:20px">Sin resultados</p>';
-    return;
-  }
-  filtered.forEach(c => {
-    const item = document.createElement("div");
-    item.className = "cat-item";
-    item.innerHTML = `
-      <div onclick="selectClase('${c.code}','${c.spec}');renderRecientes()">
-        <div class="ci-code">${c.code}</div>
-        <div class="ci-spec">${c.spec}</div>
-      </div>
-      <span class="ci-copy" onclick="copyCode('${c.code}')" title="Copiar">📋</span>`;
+function renderModal(q){
+  const list=document.getElementById("modal-list"); list.innerHTML="";
+  const filtered=CATALOG.filter(c=>(modalFamFilter==="ALL"||c.family===modalFamFilter)&&(!q||c.code.toLowerCase().includes(q.toLowerCase()))).slice(0,60);
+  if(!filtered.length){list.innerHTML='<p style="color:var(--steel);font-size:13px;text-align:center;padding:20px">Sin resultados</p>';return;}
+  filtered.forEach(c=>{
+    const item=document.createElement("div"); item.className="cat-item";
+    item.innerHTML=`<div onclick="selectClase('${c.code}','${c.spec}')"><div class="ci-code">${c.code}</div><div class="ci-spec">${c.spec}</div></div><span class="ci-copy" onclick="copyCode('${c.code}')">📋</span>`;
     list.appendChild(item);
   });
 }
-renderModalFamilies();
-renderModal("");
+renderModalFamilies(); renderModal("");
 
-// ── Catálogo tab ──────────────────────────────────────────────────────────────
-function renderCatalogPage(q) {
-  // Families
-  const fwrap = document.getElementById("cat-main-families");
-  fwrap.innerHTML = "";
-  ["ALL","PM","PB","EI"].forEach(f => {
-    const b = document.createElement("div");
-    b.className = "fam-btn" + (f === catFamFilter ? " active" : "");
-    b.textContent = f === "ALL" ? "Todas" : f;
-    b.onclick = () => { catFamFilter = f; renderCatalogPage(document.getElementById("cat-main-search").value); };
+function renderCatalogPage(q){
+  const fwrap=document.getElementById("cat-main-families"); fwrap.innerHTML="";
+  ["ALL","PM","PB","EI"].forEach(f=>{
+    const b=document.createElement("div");
+    b.className="fam-btn"+(f===catFamFilter?" active":"");
+    b.textContent=f==="ALL"?"Todas":f;
+    b.onclick=()=>{catFamFilter=f;renderCatalogPage(document.getElementById("cat-main-search").value);};
     fwrap.appendChild(b);
   });
-
-  const grid = document.getElementById("cat-main-grid");
-  grid.innerHTML = "";
-  const filtered = CATALOG.filter(c =>
-    (catFamFilter === "ALL" || c.family === catFamFilter) &&
-    (!q || c.code.toLowerCase().includes(q.toLowerCase()))
-  ).slice(0, 80);
-
-  filtered.forEach(c => {
-    const card = document.createElement("div");
-    card.className = "ref-card";
-    card.innerHTML = `
-      <div class="ref-fam ${c.family}">${c.family}</div>
-      <div class="ref-info">
-        <div class="ref-code">${c.code}</div>
-        <div class="ref-spec">${c.spec}</div>
-      </div>
-      <span class="ref-copy" onclick="copyCode('${c.code}')" title="Copiar código">📋</span>`;
+  const grid=document.getElementById("cat-main-grid"); grid.innerHTML="";
+  CATALOG.filter(c=>(catFamFilter==="ALL"||c.family===catFamFilter)&&(!q||c.code.toLowerCase().includes(q.toLowerCase()))).slice(0,80).forEach(c=>{
+    const card=document.createElement("div"); card.className="ref-card";
+    card.innerHTML=`<div class="ref-fam ${c.family}">${c.family}</div><div class="ref-info"><div class="ref-code">${c.code}</div><div class="ref-spec">${c.spec}</div></div><span class="ref-copy" onclick="copyCode('${c.code}')">📋</span>`;
     grid.appendChild(card);
   });
 }
 
-function copyCode(code) {
-  navigator.clipboard?.writeText(code).then(() => showToast(`📋 ${code} copiado`, "ok"))
-    .catch(() => {
-      const ta = document.createElement("textarea");
-      ta.value = code; document.body.appendChild(ta);
-      ta.select(); document.execCommand("copy");
-      document.body.removeChild(ta);
-      showToast(`📋 ${code} copiado`, "ok");
-    });
+function copyCode(code){
+  navigator.clipboard?.writeText(code).then(()=>showToast(`📋 ${code} copiado`,"ok"))
+    .catch(()=>{const ta=document.createElement("textarea");ta.value=code;document.body.appendChild(ta);ta.select();document.execCommand("copy");document.body.removeChild(ta);showToast(`📋 ${code} copiado`,"ok");});
 }
 
 // ── File input ────────────────────────────────────────────────────────────────
-document.getElementById("file-input").addEventListener("change", e => {
-  const f = e.target.files[0];
-  if (!f) return;
-  selectedFile = f;
-  const url = URL.createObjectURL(f);
-  const zone = document.getElementById("capture-zone");
-  zone.innerHTML = `<img src="${url}"><div class="overlay"><span style="color:#fff;font-size:12px;font-weight:700">✓ Lista para subir</span></div>`;
-  zone.classList.add("has-img");
-  document.getElementById("btn-upload").disabled = false;
+document.getElementById("file-input").addEventListener("change",e=>{
+  const f=e.target.files[0]; if(!f) return;
+  selectedFile=f;
+  const url=URL.createObjectURL(f);
+  const img=document.getElementById("bbox-img");
+  img.onload=()=>{
+    imgNaturalW=img.naturalWidth; imgNaturalH=img.naturalHeight;
+    initCanvas();
+  };
+  img.src=url;
+  document.getElementById("capture-zone").classList.add("has-img");
+  document.getElementById("bbox-section").style.display="block";
+  document.getElementById("btn-upload").disabled=false;
+  bbox=null; updateBboxStatus();
 });
 
+// ── BBox Canvas ───────────────────────────────────────────────────────────────
+function initCanvas(){
+  const wrap=document.getElementById("bbox-wrap");
+  const canvas=document.getElementById("bbox-canvas");
+  const img=document.getElementById("bbox-img");
+  imgDisplayW=img.offsetWidth; imgDisplayH=img.offsetHeight;
+  canvas.width=imgDisplayW; canvas.height=imgDisplayH;
+  drawCanvas();
+}
+
+function getPos(e, canvas){
+  const rect=canvas.getBoundingClientRect();
+  const touch=e.touches?e.touches[0]:e;
+  return {
+    x:Math.max(0,Math.min(canvas.width, (touch.clientX-rect.left)*(canvas.width/rect.width))),
+    y:Math.max(0,Math.min(canvas.height,(touch.clientY-rect.top)*(canvas.height/rect.height)))
+  };
+}
+
+const canvas=document.getElementById("bbox-canvas");
+
+function onStart(e){
+  e.preventDefault();
+  const img=document.getElementById("bbox-img");
+  imgDisplayW=img.offsetWidth; imgDisplayH=img.offsetHeight;
+  canvas.width=imgDisplayW; canvas.height=imgDisplayH;
+  const pos=getPos(e,canvas);
+  drawing=true; startX=pos.x; startY=pos.y;
+  bbox=null;
+}
+function onMove(e){
+  e.preventDefault();
+  if(!drawing) return;
+  const pos=getPos(e,canvas);
+  bbox={x:Math.min(startX,pos.x),y:Math.min(startY,pos.y),w:Math.abs(pos.x-startX),h:Math.abs(pos.y-startY)};
+  drawCanvas();
+}
+function onEnd(e){
+  e.preventDefault();
+  drawing=false;
+  if(bbox && bbox.w>10 && bbox.h>10){
+    updateBboxStatus();
+  } else {
+    bbox=null; drawCanvas(); updateBboxStatus();
+  }
+}
+
+canvas.addEventListener("mousedown",onStart);
+canvas.addEventListener("mousemove",onMove);
+canvas.addEventListener("mouseup",onEnd);
+canvas.addEventListener("touchstart",onStart,{passive:false});
+canvas.addEventListener("touchmove",onMove,{passive:false});
+canvas.addEventListener("touchend",onEnd,{passive:false});
+
+window.addEventListener("resize",()=>{ if(selectedFile) initCanvas(); });
+
+function drawCanvas(){
+  const ctx=canvas.getContext("2d");
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  if(!bbox) return;
+  // Sombra exterior
+  ctx.fillStyle="rgba(0,0,0,0.3)";
+  ctx.fillRect(0,0,canvas.width,bbox.y);
+  ctx.fillRect(0,bbox.y+bbox.h,canvas.width,canvas.height-bbox.y-bbox.h);
+  ctx.fillRect(0,bbox.y,bbox.x,bbox.h);
+  ctx.fillRect(bbox.x+bbox.w,bbox.y,canvas.width-bbox.x-bbox.w,bbox.h);
+  // Recuadro
+  ctx.strokeStyle="#f59e0b";
+  ctx.lineWidth=3;
+  ctx.strokeRect(bbox.x,bbox.y,bbox.w,bbox.h);
+  // Esquinas
+  const cs=14;
+  ctx.strokeStyle="#fbbf24";
+  ctx.lineWidth=4;
+  [[bbox.x,bbox.y],[bbox.x+bbox.w,bbox.y],[bbox.x,bbox.y+bbox.h],[bbox.x+bbox.w,bbox.y+bbox.h]].forEach(([cx,cy])=>{
+    const dx=cx===bbox.x?1:-1, dy=cy===bbox.y?1:-1;
+    ctx.beginPath(); ctx.moveTo(cx+dx*cs,cy); ctx.lineTo(cx,cy); ctx.lineTo(cx,cy+dy*cs); ctx.stroke();
+  });
+  // Label
+  ctx.fillStyle="#f59e0b";
+  ctx.font="bold 13px -apple-system, sans-serif";
+  const label=selectedClase||"?";
+  const tw=ctx.measureText(label).width;
+  const lx=bbox.x, ly=Math.max(20,bbox.y-6);
+  ctx.fillRect(lx,ly-16,tw+12,20);
+  ctx.fillStyle="#0a1628";
+  ctx.fillText(label,lx+6,ly-2);
+}
+
+function updateBboxStatus(){
+  const el=document.getElementById("bbox-status");
+  if(bbox && bbox.w>10 && bbox.h>10){
+    el.className="bbox-status drawn";
+    el.textContent=`✅ Recuadro dibujado — se subirá con anotación al Dataset`;
+  } else {
+    el.className="bbox-status none";
+    el.textContent=`⚠️ Sin recuadro — dibuja uno para subir con anotación`;
+  }
+}
+
+function clearBbox(){
+  bbox=null;
+  const ctx=canvas.getContext("2d");
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  updateBboxStatus();
+}
+
 // ── Upload ────────────────────────────────────────────────────────────────────
-async function uploadImage() {
-  const apiKey = document.getElementById("api-key").value.trim();
-  const split  = document.getElementById("split").value;
-  const clase  = selectedClase || document.getElementById("clase-custom").value.trim().toUpperCase();
+async function uploadImage(){
+  const apiKey=document.getElementById("api-key").value.trim();
+  const split=document.getElementById("split").value;
+  const clase=selectedClase||document.getElementById("clase-custom").value.trim().toUpperCase();
 
-  if (!apiKey)  { showToast("⚠️ Ingresa tu API Key", "err"); return; }
-  if (!clase)   { showToast("⚠️ Selecciona una clase", "err"); return; }
-  if (!selectedFile) { showToast("⚠️ Selecciona una imagen", "err"); return; }
+  if(!apiKey)  { showToast("⚠️ Ingresa tu API Key","err"); return; }
+  if(!clase)   { showToast("⚠️ Selecciona una clase","err"); return; }
+  if(!selectedFile) { showToast("⚠️ Selecciona una imagen","err"); return; }
+  if(!bbox || bbox.w<10 || bbox.h<10) { showToast("⚠️ Dibuja el recuadro sobre la pieza","err"); return; }
 
-  const btn = document.getElementById("btn-upload");
-  btn.disabled = true; btn.innerHTML = "⏳ Subiendo…"; btn.classList.add("loading");
-  const pw = document.getElementById("prog-wrap");
-  const pb = document.getElementById("prog-bar");
-  pw.classList.add("show"); pb.style.width = "30%";
+  const btn=document.getElementById("btn-upload");
+  btn.disabled=true; btn.innerHTML="⏳ Subiendo…"; btn.classList.add("loading");
+  const pw=document.getElementById("prog-wrap"), pb=document.getElementById("prog-bar");
+  pw.classList.add("show"); pb.style.width="20%";
 
-  const project   = "reconocimiento-de-piezas-rllp1";
-  const logId     = Date.now();
-  const ext       = selectedFile.name.split(".").pop() || "jpg";
-  const fileName  = `${clase}_${logId}.${ext}`;
-  const fileObj   = selectedFile;
-  const previewUrl= URL.createObjectURL(fileObj);
+  const logId=Date.now();
+  const ext=selectedFile.name.split(".").pop()||"jpg";
+  const fileName=`${clase}_${logId}.${ext}`;
+  const previewUrl=URL.createObjectURL(selectedFile);
 
   try {
-    const b64 = await fileToB64(fileObj);
-    pb.style.width = "60%";
+    // Convertir bbox de píxeles display → coordenadas normalizadas (0-1) respecto a imagen natural
+    const scaleX=imgNaturalW/imgDisplayW;
+    const scaleY=imgNaturalH/imgDisplayH;
+    const bx=(bbox.x+bbox.w/2)*scaleX/imgNaturalW;
+    const by=(bbox.y+bbox.h/2)*scaleY/imgNaturalH;
+    const bw=bbox.w*scaleX/imgNaturalW;
+    const bh=bbox.h*scaleY/imgNaturalH;
 
-    const url = `https://api.roboflow.com/dataset/${project}/upload?api_key=${apiKey}&name=${encodeURIComponent(fileName)}&split=${split}`;
-    const res = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: b64.split(",")[1],
-    });
-    pb.style.width = "90%";
-    const data = await res.json();
-    if (!res.ok || data.error) throw new Error(data.error || `HTTP ${res.status}`);
-    pb.style.width = "100%";
+    // Anotación en formato COCO JSON
+    const annotation={
+      boxes:[{label:clase,x:bx,y:by,w:bw,h:bh}],
+      width:imgNaturalW,
+      height:imgNaturalH,
+    };
+
+    pb.style.width="40%";
+
+    // Subir imagen
+    const b64=await fileToB64(selectedFile);
+    pb.style.width="60%";
+
+    const uploadRes=await fetch(
+      `https://api.roboflow.com/dataset/${PROJECT}/upload?api_key=${apiKey}&name=${encodeURIComponent(fileName)}&split=${split}`,
+      {method:"POST", headers:{"Content-Type":"application/x-www-form-urlencoded"}, body:b64.split(",")[1]}
+    );
+    const uploadData=await uploadRes.json();
+    if(!uploadRes.ok||uploadData.error) throw new Error(uploadData.error||`HTTP ${uploadRes.status}`);
+
+    pb.style.width="75%";
+    const imageId=uploadData.id||"";
+
+    // Subir anotación bbox
+    if(imageId){
+      const annoRes=await fetch(
+        `https://api.roboflow.com/dataset/${PROJECT}/annotate/${imageId}?api_key=${apiKey}&name=${encodeURIComponent(fileName)}`,
+        {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(annotation)}
+      );
+      const annoData=await annoRes.json();
+      if(!annoRes.ok||annoData.error) console.warn("Anotación falló:", annoData.error);
+    }
+
+    pb.style.width="100%";
 
     sessionCount++; totalCount++; okCount++;
-    localStorage.setItem("rf_total", totalCount);
-    localStorage.setItem("rf_ok", okCount);
-    document.getElementById("cnt-session").textContent = sessionCount;
-    document.getElementById("cnt-total").textContent   = totalCount;
-    document.getElementById("cnt-ok").textContent      = okCount;
+    localStorage.setItem("rf_total",totalCount); localStorage.setItem("rf_ok",okCount);
+    document.getElementById("cnt-session").textContent=sessionCount;
+    document.getElementById("cnt-total").textContent=totalCount;
+    document.getElementById("cnt-ok").textContent=okCount;
 
-    const entry = { id: logId, url: previewUrl, clase, split, ok: true, file: fileObj, imageId: data.id || "" };
-    uploadLog.unshift(entry);
-    addLogItem(entry);
-    addReciente(clase, "");
-    showToast(`✅ ${clase} → ${split}`, "ok");
+    const entry={id:logId,url:previewUrl,clase,split,ok:true,file:selectedFile,imageId};
+    uploadLog.unshift(entry); addLogItem(entry);
+    addReciente(clase,""); showToast(`✅ ${clase} → Dataset (${split})`,"ok");
     resetCapture();
 
-  } catch(err) {
-    pb.style.background = "var(--danger)";
-    const entry = { id: logId, url: previewUrl, clase, split, ok: false, error: err.message, file: fileObj };
-    uploadLog.unshift(entry);
-    addLogItem(entry);
-    showToast(`❌ ${err.message.slice(0,50)}`, "err");
-    setTimeout(() => { pb.style.background="var(--amber)"; pb.style.width="0%"; pw.classList.remove("show"); }, 2000);
+  } catch(err){
+    pb.style.background="var(--danger)";
+    const entry={id:logId,url:previewUrl,clase,split,ok:false,error:err.message,file:selectedFile};
+    uploadLog.unshift(entry); addLogItem(entry);
+    showToast(`❌ ${err.message.slice(0,50)}`,"err");
+    setTimeout(()=>{pb.style.background="var(--amber)";pb.style.width="0%";pw.classList.remove("show");},2000);
   } finally {
-    setTimeout(() => { pb.style.width="0%"; pw.classList.remove("show"); }, 1500);
+    setTimeout(()=>{pb.style.width="0%";pw.classList.remove("show");},1500);
     btn.disabled=false; btn.innerHTML="⬆️ Subir"; btn.classList.remove("loading");
   }
 }
 
-function fileToB64(file) {
-  return new Promise((res,rej) => {
-    const r = new FileReader();
-    r.onload = () => res(r.result);
-    r.onerror = () => rej(new Error("Error leyendo archivo"));
-    r.readAsDataURL(file);
-  });
+function fileToB64(file){
+  return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=()=>rej(new Error("Error leyendo archivo"));r.readAsDataURL(file);});
 }
 
-function resetCapture() {
-  selectedFile = null;
-  const zone = document.getElementById("capture-zone");
-  zone.innerHTML = `<span class="capture-icon">📷</span><span class="capture-hint">Toca para tomar otra foto</span>`;
-  zone.classList.remove("has-img");
-  document.getElementById("file-input").value = "";
-  document.getElementById("btn-upload").disabled = true;
+function resetCapture(){
+  selectedFile=null; bbox=null;
+  document.getElementById("capture-zone").classList.remove("has-img");
+  document.getElementById("bbox-section").style.display="none";
+  document.getElementById("file-input").value="";
+  document.getElementById("btn-upload").disabled=true;
+  const ctx=canvas.getContext("2d"); ctx.clearRect(0,0,canvas.width,canvas.height);
 }
 
-// ── Log + edición ─────────────────────────────────────────────────────────────
-function addLogItem(entry) {
-  const list = document.getElementById("log-list");
-  if (list.querySelector("p")) list.innerHTML = "";
-
-  const item = document.createElement("div");
-  item.className = "log-item" + (entry.ok ? "" : " error");
-  item.id = "log-" + entry.id;
-  item.innerHTML = `
+// ── Log ───────────────────────────────────────────────────────────────────────
+function addLogItem(entry){
+  const list=document.getElementById("log-list");
+  if(list.querySelector("p")) list.innerHTML="";
+  const item=document.createElement("div");
+  item.className="log-item"+(entry.ok?"":" error");
+  item.id="log-"+entry.id;
+  item.innerHTML=`
     <img class="log-thumb" src="${entry.url}" alt="">
-    <div class="log-info" style="flex:1;min-width:0">
+    <div class="log-info">
       <div class="log-name">${entry.clase}</div>
-      <div class="log-meta">${entry.ok ? "✓ " + entry.split : "✗ " + (entry.error||"")}</div>
-      <!-- Editar -->
+      <div class="log-meta">${entry.ok?"✓ "+entry.split+" (con bbox)":"✗ "+(entry.error||"")}</div>
       <div class="log-edit-form" id="edit-${entry.id}">
         <input type="text" id="edit-input-${entry.id}" value="${entry.clase}" placeholder="Nueva clase">
         <select id="edit-split-${entry.id}" style="margin-bottom:6px;font-size:12px;padding:7px 10px">
@@ -611,127 +648,71 @@ function addLogItem(entry) {
         </div>
       </div>
     </div>
-    <div class="log-actions" style="display:flex;flex-direction:column;align-items:center;gap:4px">
-      <span style="cursor:pointer;font-size:18px" onclick="toggleEdit(${entry.id})" title="Corregir clase">✏️</span>
-      <span style="cursor:pointer;font-size:18px" onclick="deleteEntry(${entry.id})" title="Eliminar de Roboflow">🗑️</span>
-      <span class="log-status">${entry.ok ? "✅" : "❌"}</span>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex-shrink:0">
+      <span style="cursor:pointer;font-size:18px" onclick="toggleEdit(${entry.id})">✏️</span>
+      <span style="cursor:pointer;font-size:18px" onclick="deleteEntry(${entry.id})">🗑️</span>
+      <span class="log-status">${entry.ok?"✅":"❌"}</span>
     </div>`;
-  list.insertBefore(item, list.firstChild);
+  list.insertBefore(item,list.firstChild);
 }
 
-function toggleEdit(id) {
-  const form = document.getElementById("edit-"+id);
-  form.classList.toggle("show");
-}
-function cancelEdit(id) {
-  document.getElementById("edit-"+id).classList.remove("show");
-}
+function toggleEdit(id){ document.getElementById("edit-"+id).classList.toggle("show"); }
+function cancelEdit(id){ document.getElementById("edit-"+id).classList.remove("show"); }
 
-async function saveEdit(id) {
-  const apiKey   = document.getElementById("api-key").value.trim();
-  const newClase = document.getElementById("edit-input-"+id).value.trim().toUpperCase();
-  const newSplit = document.getElementById("edit-split-"+id).value;
-  const entry    = uploadLog.find(e => e.id === id);
-
-  if (!newClase) { showToast("⚠️ Escribe la clase correcta","err"); return; }
-  if (!entry)    { showToast("⚠️ Entrada no encontrada","err"); return; }
-  if (!apiKey)   { showToast("⚠️ Ingresa tu API Key","err"); return; }
-
-  const project = "reconocimiento-de-piezas-rllp1";
-  const btn = document.querySelector(`#edit-${id} .btn-ok`);
-  btn.disabled = true;
-  btn.textContent = "⏳ Procesando…";
-
+async function saveEdit(id){
+  const apiKey=document.getElementById("api-key").value.trim();
+  const newClase=document.getElementById("edit-input-"+id).value.trim().toUpperCase();
+  const newSplit=document.getElementById("edit-split-"+id).value;
+  const entry=uploadLog.find(e=>e.id===id);
+  if(!newClase){showToast("⚠️ Escribe la clase correcta","err");return;}
+  if(!entry){showToast("⚠️ Entrada no encontrada","err");return;}
+  if(!apiKey){showToast("⚠️ Ingresa tu API Key","err");return;}
+  const btn=document.querySelector(`#edit-${id} .btn-ok`);
+  btn.disabled=true; btn.textContent="⏳ Procesando…";
   try {
-    // PASO 1 — Eliminar imagen incorrecta de Roboflow (si tenemos el imageId)
-    if (entry.imageId) {
-      showToast("🗑️ Eliminando imagen incorrecta…", "");
-      try {
-        await fetch(
-          `https://api.roboflow.com/dataset/${project}/images/${entry.imageId}?api_key=${apiKey}`,
-          { method: "DELETE" }
-        );
-      } catch(e) {
-        // Si falla el delete, continuar igual — lo importante es subir la correcta
-        console.warn("Delete falló:", e);
-      }
+    if(entry.imageId){
+      showToast("🗑️ Eliminando imagen incorrecta…","");
+      try{ await fetch(`https://api.roboflow.com/dataset/${PROJECT}/images/${entry.imageId}?api_key=${apiKey}`,{method:"DELETE"}); }catch(e){}
     }
-
-    // PASO 2 — Subir imagen con clase corregida
-    showToast("⬆️ Subiendo versión corregida…", "");
-    const b64      = await fileToB64(entry.file);
-    const fileName = `${newClase}_${Date.now()}.jpg`;
-    const res = await fetch(
-      `https://api.roboflow.com/dataset/${project}/upload?api_key=${apiKey}&name=${encodeURIComponent(fileName)}&split=${newSplit}`,
-      { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: b64.split(",")[1] }
-    );
-    const data = await res.json();
-    if (!res.ok || data.error) throw new Error(data.error || `HTTP ${res.status}`);
-
-    // PASO 3 — Actualizar registro local
-    entry.clase   = newClase;
-    entry.split   = newSplit;
-    entry.ok      = true;
-    entry.imageId = data.id || "";
-
-    // Actualizar UI
-    const item = document.getElementById("log-"+id);
+    showToast("⬆️ Subiendo versión corregida…","");
+    const b64=await fileToB64(entry.file);
+    const fileName=`${newClase}_${Date.now()}.jpg`;
+    const res=await fetch(`https://api.roboflow.com/dataset/${PROJECT}/upload?api_key=${apiKey}&name=${encodeURIComponent(fileName)}&split=${newSplit}`,
+      {method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:b64.split(",")[1]});
+    const data=await res.json();
+    if(!res.ok||data.error) throw new Error(data.error||`HTTP ${res.status}`);
+    entry.clase=newClase; entry.split=newSplit; entry.ok=true; entry.imageId=data.id||"";
+    const item=document.getElementById("log-"+id);
     item.classList.remove("error");
-    item.querySelector(".log-name").textContent = newClase;
-    item.querySelector(".log-meta").textContent = `✓ ${newSplit} (corregida ✔)`;
-    item.querySelector(".log-status").textContent = "✅";
-    cancelEdit(id);
-    showToast(`✅ Corregida → ${newClase}`, "ok");
-
-  } catch(err) {
-    showToast(`❌ ${err.message.slice(0,50)}`, "err");
-  } finally {
-    btn.disabled = false;
-    btn.textContent = "💾 Guardar";
-  }
+    item.querySelector(".log-name").textContent=newClase;
+    item.querySelector(".log-meta").textContent=`✓ ${newSplit} (corregida ✔)`;
+    item.querySelector(".log-status").textContent="✅";
+    cancelEdit(id); showToast(`✅ Corregida → ${newClase}`,"ok");
+  } catch(err){ showToast(`❌ ${err.message.slice(0,50)}`,"err"); }
+  finally{ btn.disabled=false; btn.textContent="💾 Guardar"; }
 }
 
-// ── Eliminar entrada ──────────────────────────────────────────────────────────
-async function deleteEntry(id) {
-  const apiKey = document.getElementById("api-key").value.trim();
-  const entry  = uploadLog.find(e => e.id === id);
-  if (!entry) return;
-
-  if (!confirm(`¿Eliminar "${entry.clase}" de Roboflow?`)) return;
-
-  const project = "reconocimiento-de-piezas-rllp1";
-
-  // Eliminar de Roboflow si tenemos imageId
-  if (entry.imageId && apiKey) {
-    showToast("🗑️ Eliminando de Roboflow…", "");
-    try {
-      await fetch(
-        `https://api.roboflow.com/dataset/${project}/images/${entry.imageId}?api_key=${apiKey}`,
-        { method: "DELETE" }
-      );
-    } catch(e) { console.warn("Delete falló:", e); }
+async function deleteEntry(id){
+  const apiKey=document.getElementById("api-key").value.trim();
+  const entry=uploadLog.find(e=>e.id===id);
+  if(!entry) return;
+  if(!confirm(`¿Eliminar "${entry.clase}" de Roboflow?`)) return;
+  if(entry.imageId&&apiKey){
+    showToast("🗑️ Eliminando de Roboflow…","");
+    try{ await fetch(`https://api.roboflow.com/dataset/${PROJECT}/images/${entry.imageId}?api_key=${apiKey}`,{method:"DELETE"}); }catch(e){}
   }
-
-  // Quitar del log visual y del array
-  const item = document.getElementById("log-"+id);
-  if (item) item.remove();
-  uploadLog = uploadLog.filter(e => e.id !== id);
-
-  // Si no quedan items, mostrar placeholder
-  const list = document.getElementById("log-list");
-  if (!list.children.length) {
-    list.innerHTML = '<p style="color:var(--steel);font-size:13px;text-align:center;padding:20px">Las imágenes subidas aparecerán aquí</p>';
-  }
-
-  showToast("🗑️ Imagen eliminada", "ok");
+  document.getElementById("log-"+id)?.remove();
+  uploadLog=uploadLog.filter(e=>e.id!==id);
+  const list=document.getElementById("log-list");
+  if(!list.children.length) list.innerHTML='<p style="color:var(--steel);font-size:13px;text-align:center;padding:20px">Las imágenes subidas aparecerán aquí</p>';
+  showToast("🗑️ Imagen eliminada","ok");
 }
 
 // ── Toast ─────────────────────────────────────────────────────────────────────
-function showToast(msg, type) {
-  const t = document.getElementById("toast");
-  t.textContent = msg;
-  t.className = `toast ${type} show`;
-  setTimeout(() => t.classList.remove("show"), 2800);
+function showToast(msg,type){
+  const t=document.getElementById("toast");
+  t.textContent=msg; t.className=`toast ${type} show`;
+  setTimeout(()=>t.classList.remove("show"),2800);
 }
 </script>
 </body>
