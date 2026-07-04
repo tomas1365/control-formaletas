@@ -369,10 +369,58 @@ function onEnd(e){
   if(currentBbox&&currentBbox.w>15&&currentBbox.h>15){
     const id=Date.now();
     const color=COLORS[annotations.length%COLORS.length];
-    annotations.push({id,clase:currentClase,bbox:{...currentBbox},color,checked:true});
+    annotations.push({id,clase:currentClase,bbox:{...currentBbox},color,checked:true,isArrume:false,qty:null});
     currentBbox=null; redrawCanvas(); renderAnnoList(); updateButtons();
-    showToast(`✅ ${currentClase} añadida`,"ok");
+    // Preguntar si quiere agregar cantidad
+    showQtyPrompt(id);
   } else { currentBbox=null; redrawCanvas(); }
+}
+
+function showQtyPrompt(annoId){
+  const existing=document.getElementById("qty-prompt");
+  if(existing) existing.remove();
+  const div=document.createElement("div");
+  div.id="qty-prompt";
+  div.style.cssText="position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--surface);border:1.5px solid var(--amber);border-radius:14px;padding:14px 16px;z-index:350;width:90%;max-width:360px;box-shadow:0 8px 32px rgba(0,0,0,.5)";
+  div.innerHTML=`
+    <p style="font-size:13px;font-weight:700;color:var(--amber);margin-bottom:10px">¿Este recuadro es un arrume con cantidad?</p>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+      <input type="number" id="qty-input" placeholder="Cantidad de piezas" min="1" max="999"
+        style="flex:1;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-size:16px;outline:none">
+      <span style="font-size:12px;color:var(--steel)">piezas</span>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button onclick="skipQty()" style="flex:1;padding:10px;border-radius:10px;border:1.5px solid var(--border);background:var(--surface);color:var(--text2);font-size:13px;font-weight:600;cursor:pointer">Sin cantidad</button>
+      <button onclick="addQty(${annoId})" style="flex:1;padding:10px;border-radius:10px;border:none;background:var(--amber);color:#0a1628;font-size:13px;font-weight:700;cursor:pointer">✅ Agregar QTY</button>
+    </div>`;
+  document.body.appendChild(div);
+  document.getElementById("qty-input").focus();
+}
+
+function skipQty(){
+  const p=document.getElementById("qty-prompt"); if(p) p.remove();
+  showToast(`✅ ${annotations[annotations.length-1]?.clase} añadida`,"ok");
+}
+
+function addQty(annoId){
+  const qty=parseInt(document.getElementById("qty-input")?.value);
+  const p=document.getElementById("qty-prompt"); if(p) p.remove();
+  const anno=annotations.find(a=>a.id===annoId);
+  if(!anno) return;
+  if(!qty||qty<1){ showToast("✅ Añadida sin cantidad","ok"); return; }
+  anno.qty=qty; anno.isArrume=true;
+  // Crear anotación QTY automática — recuadro pequeño en esquina superior izquierda del bbox
+  const qtyId=Date.now()+1;
+  const qtyBbox={
+    x: anno.bbox.x + 4,
+    y: anno.bbox.y + 4,
+    w: Math.min(60, anno.bbox.w*0.25),
+    h: Math.min(30, anno.bbox.h*0.2),
+  };
+  const qtyColor="#22c55e";
+  annotations.push({id:qtyId,clase:`QTY-${qty}`,bbox:qtyBbox,color:qtyColor,checked:true,isQty:true,parentId:annoId});
+  redrawCanvas(); renderAnnoList(); updateButtons();
+  showToast(`✅ ${anno.clase} × ${qty} piezas añadido`,"ok");
 }
 
 function redrawCanvas(){
@@ -390,13 +438,24 @@ function redrawCanvas(){
       const dx=cx===b.x?1:-1,dy=cy===b.y?1:-1;
       ctx.beginPath();ctx.moveTo(cx+dx*cs,cy);ctx.lineTo(cx,cy);ctx.lineTo(cx,cy+dy*cs);ctx.stroke();
     });
-    // Label
+    // Label exterior
     ctx.fillStyle=a.color; ctx.font="bold 12px -apple-system,sans-serif";
     const tw=ctx.measureText(a.clase).width;
     const lx=b.x,ly=Math.max(20,b.y-4);
     ctx.fillRect(lx,ly-16,tw+10,20);
     ctx.fillStyle="#000";
     ctx.fillText(a.clase,lx+5,ly-2);
+    // Si es QTY, mostrar número grande dentro del recuadro
+    if(a.isQty){
+      const num=a.clase.replace("QTY-","");
+      ctx.fillStyle=a.color+"cc";
+      ctx.fillRect(b.x,b.y,b.w,b.h);
+      ctx.fillStyle="#fff";
+      ctx.font=`bold ${Math.min(b.h*0.7,22)}px -apple-system,sans-serif`;
+      ctx.textAlign="center"; ctx.textBaseline="middle";
+      ctx.fillText(num,b.x+b.w/2,b.y+b.h/2);
+      ctx.textAlign="left"; ctx.textBaseline="alphabetic";
+    }
   });
   // Recuadro en proceso
   if(currentBbox&&drawing){
@@ -417,9 +476,12 @@ function renderAnnoList(){
   list.innerHTML="";
   annotations.forEach((a,i)=>{
     const item=document.createElement("div"); item.className="anno-item";
+    const qtyBadge=a.qty?`<span style="background:rgba(34,197,94,.2);color:var(--ok);border:1px solid rgba(34,197,94,.3);border-radius:6px;padding:2px 7px;font-size:10px;font-weight:700">×${a.qty}</span>`:"";
+    const qtyTag=a.isQty?`<span style="color:var(--ok);font-size:10px">📦 cantidad</span>`:"";
     item.innerHTML=`
       <div class="anno-color" style="background:${a.color}"></div>
       <span class="anno-label">${a.clase}</span>
+      ${qtyBadge}${qtyTag}
       <span class="anno-check ${a.checked?"checked":"unchecked"}" onclick="toggleAnno(${a.id})">${a.checked?"✅":"☐"}</span>
       <span class="anno-del" onclick="deleteAnno(${a.id})">🗑️</span>`;
     list.appendChild(item);
