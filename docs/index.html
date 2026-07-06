@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#0a1628">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>UNISPAN — Captura Dataset</title>
+<title>UNISPAN — Captura Dataset v5</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;touch-action:manipulation;}
 :root{--bg:#0a1628;--surface:#102a43;--surface2:#1a3a5c;--border:rgba(99,125,152,0.25);--amber:#f59e0b;--steel:#627d98;--text:#e2e8f0;--text2:#94a3b8;--ok:#22c55e;--danger:#ef4444;--radius:14px;}
@@ -36,12 +36,34 @@ input[type="password"]{letter-spacing:2px;}
 .tool-icon{font-size:20px;}
 .tool-hint{font-size:10px;color:var(--steel);text-align:center;margin-bottom:6px;padding:6px 10px;background:rgba(245,158,11,.06);border-radius:8px;}
 
-/* BBox / Canvas */
-.bbox-wrap{position:relative;border-radius:12px;overflow:hidden;background:#000;touch-action:none;user-select:none;}
+/* BBox / Canvas + Zoom viewport */
+.zoom-viewport{position:relative;overflow:hidden;border-radius:12px;background:#000;touch-action:none;user-select:none;}
+.bbox-wrap{position:relative;transform-origin:0 0;transition:transform .05s linear;touch-action:none;user-select:none;}
 .bbox-img{width:100%;display:block;user-select:none;-webkit-user-drag:none;pointer-events:none;}
 #bbox-canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none;}
 .capture-zone{border:2px dashed var(--border);border-radius:var(--radius);min-height:160px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;cursor:pointer;transition:border-color .2s;}
 .capture-zone.has-img{display:none;}
+
+/* Zoom controls */
+.zoom-bar{display:flex;gap:6px;margin-top:8px;align-items:center;flex-wrap:wrap;}
+.zoom-btn{background:var(--bg);border:1.5px solid var(--border);color:var(--text);border-radius:8px;padding:7px 11px;font-size:14px;font-weight:700;cursor:pointer;min-width:38px;}
+.zoom-btn:active{background:var(--surface2);}
+.zoom-lbl{font-size:11px;color:var(--steel);font-family:monospace;}
+.zoom-hint{font-size:10px;color:var(--steel);flex:1;text-align:right;}
+
+/* Blur warning */
+.blur-warn{background:rgba(239,68,68,.12);border:1.5px solid rgba(239,68,68,.4);color:#fca5a5;padding:9px 11px;border-radius:10px;font-size:12px;margin-top:8px;display:flex;align-items:center;gap:8px;}
+.blur-warn.ok{background:rgba(34,197,94,.1);border-color:rgba(34,197,94,.3);color:#86efac;}
+.blur-warn .x{margin-left:auto;cursor:pointer;font-size:16px;}
+
+/* Class stats */
+.stat-row{display:flex;justify-content:space-between;align-items:center;padding:7px 10px;background:var(--bg);border-radius:8px;font-size:12px;margin-bottom:4px;}
+.stat-code{font-family:monospace;font-weight:700;color:var(--text);}
+.stat-count{font-family:monospace;font-weight:700;color:var(--amber);}
+.stat-count.low{color:#fca5a5;}
+.stat-count.ok{color:var(--ok);}
+.stat-bar{height:4px;background:var(--bg);border-radius:99px;overflow:hidden;margin-top:3px;}
+.stat-bar-fill{height:100%;background:var(--amber);border-radius:99px;}
 
 /* Polygon toolbar */
 .poly-toolbar{display:flex;gap:6px;margin-top:8px;}
@@ -148,7 +170,7 @@ input[type="password"]{letter-spacing:2px;}
 
 <header>
   <div class="logo">U</div>
-  <div><h1>UNISPAN Dataset v4</h1><p>BBox + Polígono + Cantidad</p></div>
+  <div><h1>UNISPAN Dataset v5</h1><p>Zoom · Blur check · Stats por clase</p></div>
 </header>
 
 <div class="tabs">
@@ -221,9 +243,22 @@ input[type="password"]{letter-spacing:2px;}
     </div>
     <input type="file" id="file-input" accept="image/*" capture="environment">
     <div id="bbox-section" style="display:none">
-      <div class="bbox-wrap" id="bbox-wrap">
-        <img id="bbox-img" class="bbox-img" alt="">
-        <canvas id="bbox-canvas"></canvas>
+      <div class="zoom-viewport" id="zoom-viewport">
+        <div class="bbox-wrap" id="bbox-wrap">
+          <img id="bbox-img" class="bbox-img" alt="">
+          <canvas id="bbox-canvas"></canvas>
+        </div>
+      </div>
+      <div class="zoom-bar" id="zoom-bar">
+        <button class="zoom-btn" onclick="zoomBy(1.4)" title="Acercar">➕</button>
+        <button class="zoom-btn" onclick="zoomBy(1/1.4)" title="Alejar">➖</button>
+        <button class="zoom-btn" onclick="zoomReset()" title="Reiniciar zoom">⟲</button>
+        <span class="zoom-lbl" id="zoom-lbl">1.0×</span>
+        <span class="zoom-hint">Pellizca 2 dedos para zoom · 1 dedo dibuja</span>
+      </div>
+      <div class="blur-warn" id="blur-warn" style="display:none">
+        <span id="blur-warn-txt"></span>
+        <span class="x" onclick="document.getElementById('blur-warn').style.display='none'">✕</span>
       </div>
       <div class="poly-toolbar" id="poly-toolbar" style="display:none">
         <button class="btn btn-amber btn-sm" onclick="closePolygon()">✅ Cerrar polígono</button>
@@ -237,7 +272,22 @@ input[type="password"]{letter-spacing:2px;}
   <div class="card" id="annos-card" style="display:none">
     <div class="card-title" id="annos-title">📦 Anotaciones (0)</div>
     <div class="anno-list" id="anno-list"></div>
-    <div style="margin-top:8px;font-size:11px;color:var(--steel)">✅ marcadas se subirán · ☐ desmarcadas se omitirán</div>
+    <div style="margin-top:8px;font-size:11px;color:var(--steel)">✅ marcadas se subirán · ☐ desmarcadas se omitirán · Toca la etiqueta para cambiar clase</div>
+  </div>
+
+  <!-- Estadísticas por clase -->
+  <div class="card">
+    <div class="card-title" style="display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick="toggleStats()">
+      <span>📊 Balance del dataset <span id="stats-total" style="color:var(--amber);font-weight:800">0</span></span>
+      <span id="stats-caret" style="font-size:14px;color:var(--steel)">▼</span>
+    </div>
+    <div id="stats-body" style="display:none">
+      <div style="font-size:11px;color:var(--steel);margin-bottom:8px">Meta sugerida: <b style="color:var(--amber)">150 img/clase</b> para buena detección</div>
+      <div id="stats-list"></div>
+      <div class="btn-row" style="margin-top:8px">
+        <button class="btn btn-ghost btn-sm" onclick="resetStats()">🗑️ Reiniciar contador</button>
+      </div>
+    </div>
   </div>
 
   <div class="prog-wrap" id="prog-wrap"><div class="prog-bar" id="prog-bar"></div></div>
@@ -320,6 +370,18 @@ let recientes=JSON.parse(localStorage.getItem("rf_recientes")||"[]");
 let catModalFam="ALL", catPageFam="ALL", uploadLog=[];
 let annotations=[];
 
+// Contador de imágenes por clase (persistente)
+let classCounts=JSON.parse(localStorage.getItem("rf_class_counts")||"{}");
+const CLASS_GOAL=150;
+
+// Modo del catálogo: "select" (asigna currentClase) | "reassign" (reasigna anno)
+let catModalMode="select", catReassignId=null;
+
+// Zoom / Pan
+let zoomScale=1, zoomTx=0, zoomTy=0;
+let pinchState=null; // {d0, s0, cx, cy, tx0, ty0}
+let panState=null;   // {x0, y0, tx0, ty0}
+
 // Herramienta activa: 'bbox' | 'polygon'
 let activeTool="bbox";
 
@@ -359,11 +421,24 @@ function setTool(t){
 
 // ── Clase ─────────────────────────────────────────────────────────────────────
 function setClase(code){
+  if(catModalMode==="reassign" && catReassignId!=null){
+    const a=annotations.find(x=>x.id===catReassignId);
+    if(a){ a.clase=code; renderAnnoList(); redraw(); showToast(`✏️ Clase → ${code}`,"ok"); }
+    catModalMode="select"; catReassignId=null;
+    closeCatModalDirect(); addReciente(code);
+    return;
+  }
   currentClase=code;
   document.getElementById("clase-custom").value=code;
   const d=document.getElementById("current-clase-display");
   d.textContent="✏️ Clase activa: "+code; d.style.display="block";
   addReciente(code); closeCatModalDirect();
+}
+function reassignClass(id){
+  catModalMode="reassign"; catReassignId=id;
+  openCatModal();
+  // pequeño hint en el título del modal
+  setTimeout(()=>{ const t=document.querySelector("#cat-modal-bg .modal-title span:first-child"); if(t) t.textContent="Reasignar clase a esta anotación"; },50);
 }
 function onCustomInput(v){
   currentClase=v.trim().toUpperCase();
@@ -389,14 +464,52 @@ document.getElementById("file-input").addEventListener("change",e=>{
   selectedFile=f; annotations=[];
   const url=URL.createObjectURL(f);
   const img=document.getElementById("bbox-img");
-  img.onload=()=>{ imgNatW=img.naturalWidth; imgNatH=img.naturalHeight; initCanvas(); };
+  img.onload=()=>{ imgNatW=img.naturalWidth; imgNatH=img.naturalHeight; zoomReset(); initCanvas(); analyzeBlur(img); };
   img.src=url;
   document.getElementById("capture-zone").classList.add("has-img");
   document.getElementById("bbox-section").style.display="block";
   document.getElementById("annos-card").style.display="none";
+  document.getElementById("blur-warn").style.display="none";
   cancelPolygon(); bboxCurrent=null;
   renderAnnoList(); updateButtons();
 });
+
+// ── Blur detection (varianza de Laplaciano sobre imagen escalada) ────────────
+function analyzeBlur(img){
+  try{
+    const S=220; const c=document.createElement("canvas");
+    c.width=S; c.height=S;
+    const g=c.getContext("2d"); g.drawImage(img,0,0,S,S);
+    const d=g.getImageData(0,0,S,S).data;
+    // convertir a luminancia
+    const lum=new Float32Array(S*S);
+    for(let i=0;i<S*S;i++) lum[i]=0.299*d[i*4]+0.587*d[i*4+1]+0.114*d[i*4+2];
+    // Laplaciano 3x3
+    let sum=0, sum2=0, n=0;
+    for(let y=1;y<S-1;y++){
+      for(let x=1;x<S-1;x++){
+        const i=y*S+x;
+        const v=-lum[i-S]-lum[i-1]+4*lum[i]-lum[i+1]-lum[i+S];
+        sum+=v; sum2+=v*v; n++;
+      }
+    }
+    const mean=sum/n, variance=(sum2/n)-mean*mean;
+    const w=document.getElementById("blur-warn");
+    const t=document.getElementById("blur-warn-txt");
+    w.classList.remove("ok");
+    if(variance<80){
+      w.style.display="flex";
+      t.innerHTML=`⚠️ <b>Foto borrosa</b> (nitidez ${variance.toFixed(0)}). Considera repetir la toma.`;
+    } else if(variance<180){
+      w.style.display="flex";
+      t.innerHTML=`⚠️ Nitidez media (${variance.toFixed(0)}). Aceptable, pero mejor sería más clara.`;
+    } else {
+      w.style.display="flex"; w.classList.add("ok");
+      t.innerHTML=`✅ Foto nítida (${variance.toFixed(0)}).`;
+      setTimeout(()=>{ if(w.classList.contains("ok")) w.style.display="none"; },2500);
+    }
+  }catch(_){}
+}
 
 // ── Canvas init ───────────────────────────────────────────────────────────────
 const canvas=document.getElementById("bbox-canvas");
@@ -416,13 +529,88 @@ function getPos(e){
 }
 window.addEventListener("resize",()=>{ if(selectedFile) initCanvas(); });
 
-// ── Eventos canvas ────────────────────────────────────────────────────────────
+// ── Zoom / Pan ────────────────────────────────────────────────────────────────
+function applyZoom(){
+  const w=document.getElementById("bbox-wrap");
+  w.style.transform=`translate(${zoomTx}px,${zoomTy}px) scale(${zoomScale})`;
+  const lbl=document.getElementById("zoom-lbl"); if(lbl) lbl.textContent=zoomScale.toFixed(1)+"×";
+}
+function zoomReset(){ zoomScale=1; zoomTx=0; zoomTy=0; applyZoom(); }
+function zoomBy(factor){
+  const vp=document.getElementById("zoom-viewport"); if(!vp) return;
+  const r=vp.getBoundingClientRect(); const cx=r.width/2, cy=r.height/2;
+  zoomAt(zoomScale*factor, cx, cy);
+}
+function zoomAt(newScale,cx,cy){
+  newScale=Math.max(1,Math.min(6,newScale));
+  // punto en coords de contenido bajo (cx,cy) antes del zoom
+  const kx=(cx-zoomTx)/zoomScale, ky=(cy-zoomTy)/zoomScale;
+  zoomScale=newScale;
+  zoomTx=cx-kx*zoomScale;
+  zoomTy=cy-ky*zoomScale;
+  clampPan();
+  applyZoom();
+}
+function clampPan(){
+  const vp=document.getElementById("zoom-viewport"); if(!vp) return;
+  const r=vp.getBoundingClientRect();
+  const cW=r.width*zoomScale, cH=r.height*zoomScale;
+  const minX=r.width-cW, minY=r.height-cH;
+  if(zoomScale<=1){ zoomTx=0; zoomTy=0; return; }
+  zoomTx=Math.min(0,Math.max(minX,zoomTx));
+  zoomTy=Math.min(0,Math.max(minY,zoomTy));
+}
+function touchDist(t1,t2){ const dx=t1.clientX-t2.clientX, dy=t1.clientY-t2.clientY; return Math.hypot(dx,dy); }
+function touchMid(t1,t2,vpRect){ return {x:(t1.clientX+t2.clientX)/2-vpRect.left, y:(t1.clientY+t2.clientY)/2-vpRect.top}; }
+
+// ── Eventos canvas (con pinch/pan) ───────────────────────────────────────────
 canvas.addEventListener("mousedown", e=>{ e.preventDefault(); activeTool==="bbox"?bboxStart_(e):polyTap(e); },{passive:false});
 canvas.addEventListener("mousemove", e=>{ e.preventDefault(); if(activeTool==="bbox") bboxMove_(e); else polyMove_(e); },{passive:false});
 canvas.addEventListener("mouseup",   e=>{ e.preventDefault(); if(activeTool==="bbox") bboxEnd_(e); },{passive:false});
-canvas.addEventListener("touchstart",e=>{ e.preventDefault(); activeTool==="bbox"?bboxStart_(e):polyTap(e); },{passive:false});
-canvas.addEventListener("touchmove", e=>{ e.preventDefault(); if(activeTool==="bbox") bboxMove_(e); else polyMove_(e); },{passive:false});
-canvas.addEventListener("touchend",  e=>{ e.preventDefault(); if(activeTool==="bbox") bboxEnd_(e); },{passive:false});
+
+canvas.addEventListener("touchstart",e=>{
+  e.preventDefault();
+  if(e.touches.length===2){
+    // Iniciar pinch — cancelar dibujos en progreso
+    bboxDrawing=false; bboxCurrent=null;
+    const vp=document.getElementById("zoom-viewport").getBoundingClientRect();
+    const mid=touchMid(e.touches[0],e.touches[1],vp);
+    pinchState={d0:touchDist(e.touches[0],e.touches[1]),s0:zoomScale,cx:mid.x,cy:mid.y,tx0:zoomTx,ty0:zoomTy,mx0:mid.x,my0:mid.y};
+    panState=null;
+    redraw();
+  } else if(e.touches.length===1 && zoomScale>1.05){
+    // Pan con 1 dedo cuando está zoom in — solo si tocaste con 2 dedos primero está en pinchState
+    // Para poder dibujar zoomeado: preferimos dibujar. Pan requiere 2 dedos.
+    activeTool==="bbox"?bboxStart_(e):polyTap(e);
+  } else {
+    activeTool==="bbox"?bboxStart_(e):polyTap(e);
+  }
+},{passive:false});
+
+canvas.addEventListener("touchmove", e=>{
+  e.preventDefault();
+  if(pinchState && e.touches.length===2){
+    const vp=document.getElementById("zoom-viewport").getBoundingClientRect();
+    const d=touchDist(e.touches[0],e.touches[1]);
+    const mid=touchMid(e.touches[0],e.touches[1],vp);
+    const newScale=Math.max(1,Math.min(6, pinchState.s0*(d/pinchState.d0)));
+    // zoom around initial pinch center + pan por diferencia de mid
+    const kx=(pinchState.cx-pinchState.tx0)/pinchState.s0, ky=(pinchState.cy-pinchState.ty0)/pinchState.s0;
+    zoomScale=newScale;
+    zoomTx=pinchState.cx-kx*zoomScale + (mid.x-pinchState.mx0);
+    zoomTy=pinchState.cy-ky*zoomScale + (mid.y-pinchState.my0);
+    clampPan(); applyZoom();
+    return;
+  }
+  if(activeTool==="bbox") bboxMove_(e); else polyMove_(e);
+},{passive:false});
+
+canvas.addEventListener("touchend",  e=>{
+  e.preventDefault();
+  if(pinchState && e.touches.length<2){ pinchState=null; return; }
+  if(activeTool==="bbox") bboxEnd_(e);
+},{passive:false});
+
 canvas.addEventListener("dblclick",  e=>{ e.preventDefault(); if(activeTool==="polygon") closePolygon(); });
 
 // ── BBox ──────────────────────────────────────────────────────────────────────
@@ -579,7 +767,7 @@ function renderAnnoList(){
     const qtyTag=a.isQty?`<span style="color:var(--ok);font-size:10px">📦</span>`:"";
     item.innerHTML=`
       <div class="anno-color" style="background:${a.color}"></div>
-      <span class="anno-label">${a.clase}</span>
+      <span class="anno-label" onclick="reassignClass(${a.id})" style="cursor:pointer;text-decoration:underline;text-decoration-style:dotted;text-underline-offset:3px" title="Cambiar clase">${a.clase}</span>
       <span class="anno-type">${typeIcon} ${a.type==="polygon"?"Polígono":"BBox"}</span>
       ${qtyBadge}${qtyTag}
       <span class="anno-check ${a.checked?"checked":"unchecked"}" onclick="toggleAnno(${a.id})">${a.checked?"✅":"☐"}</span>
@@ -800,6 +988,11 @@ async function uploadAll(){
     const entry={id:logId,url:previewUrl,annos:checked.map(a=>({clase:a.clase,color:a.color,type:a.type})),split,ok:true,file:selectedFile,imageId};
     uploadLog.unshift(entry); addLogItem(entry);
     checked.filter(a=>!a.isQty).forEach(a=>addReciente(a.clase));
+    // Actualizar contador por clase (cuenta 1 imagen por clase única, no por bbox)
+    const uniqueClasses=[...new Set(checked.filter(a=>!a.isQty).map(a=>a.clase))];
+    uniqueClasses.forEach(c=>{ classCounts[c]=(classCounts[c]||0)+1; });
+    localStorage.setItem("rf_class_counts",JSON.stringify(classCounts));
+    renderClassStats();
     showToast(`✅ ${checked.length} anotación(es) → Dataset`,"ok");
     resetAll();
 
@@ -888,6 +1081,41 @@ async function deleteEntry(id){
 }
 
 function showToast(msg,type){const t=document.getElementById("toast");t.textContent=msg;t.className=`toast ${type} show`;setTimeout(()=>t.classList.remove("show"),2800);}
+
+// ── Estadísticas por clase ────────────────────────────────────────────────────
+function toggleStats(){
+  const b=document.getElementById("stats-body");
+  const c=document.getElementById("stats-caret");
+  const open=b.style.display==="none";
+  b.style.display=open?"block":"none";
+  c.textContent=open?"▲":"▼";
+  if(open) renderClassStats();
+}
+function renderClassStats(){
+  const list=document.getElementById("stats-list");
+  const total=Object.values(classCounts).reduce((a,b)=>a+b,0);
+  document.getElementById("stats-total").textContent=`(${total} img · ${Object.keys(classCounts).length} clases)`;
+  if(!list) return;
+  const entries=Object.entries(classCounts).sort((a,b)=>b[1]-a[1]);
+  if(!entries.length){ list.innerHTML='<div style="color:var(--steel);font-size:12px;text-align:center;padding:14px">Sin datos aún. Sube imágenes para ver el balance.</div>'; return; }
+  list.innerHTML=entries.map(([code,n])=>{
+    const pct=Math.min(100,Math.round(n/CLASS_GOAL*100));
+    const cls=n>=CLASS_GOAL?"ok":n<30?"low":"";
+    const flag=n>=CLASS_GOAL?"✅":n<30?"⚠️":"";
+    return `<div class="stat-row" style="flex-direction:column;align-items:stretch;gap:4px">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <span class="stat-code">${flag} ${code}</span>
+        <span class="stat-count ${cls}">${n}/${CLASS_GOAL}</span>
+      </div>
+      <div class="stat-bar"><div class="stat-bar-fill" style="width:${pct}%;background:${cls==="ok"?"var(--ok)":cls==="low"?"var(--danger)":"var(--amber)"}"></div></div>
+    </div>`;
+  }).join("");
+}
+function resetStats(){
+  if(!confirm("¿Reiniciar el contador local de imágenes por clase? (No borra nada en Roboflow)")) return;
+  classCounts={}; localStorage.setItem("rf_class_counts","{}"); renderClassStats();
+}
+renderClassStats();
 </script>
 </body>
 </html>
