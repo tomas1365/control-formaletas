@@ -1,794 +1,2074 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<meta name="theme-color" content="#0a1628">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<title>UNISPAN — Captura Dataset v5</title>
-<style>
-*{box-sizing:border-box;margin:0;padding:0;touch-action:manipulation;}
-:root{--bg:#0a1628;--surface:#102a43;--surface2:#1a3a5c;--border:rgba(99,125,152,0.25);--amber:#f59e0b;--steel:#627d98;--text:#e2e8f0;--text2:#94a3b8;--ok:#22c55e;--danger:#ef4444;--radius:14px;}
-body{background:var(--bg);color:var(--text);font-family:-apple-system,'Inter',sans-serif;min-height:100dvh;display:flex;flex-direction:column;}
-header{background:rgba(10,22,40,.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:14px 16px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:100;}
-.logo{width:36px;height:36px;background:var(--amber);border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;color:#0a1628;flex-shrink:0;}
-header h1{font-size:15px;font-weight:700;}
-header p{font-size:11px;color:var(--steel);}
-.tabs{display:flex;border-bottom:1px solid var(--border);background:var(--bg);position:sticky;top:64px;z-index:99;}
-.tab{flex:1;padding:12px 8px;font-size:12px;font-weight:600;text-align:center;color:var(--steel);border-bottom:2px solid transparent;cursor:pointer;transition:all .15s;}
-.tab.active{color:var(--amber);border-bottom-color:var(--amber);}
-main{flex:1;padding:14px;display:flex;flex-direction:column;gap:12px;}
-.page{display:none;flex-direction:column;gap:12px;}
-.page.active{display:flex;}
-.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;}
-.card-title{font-size:11px;font-weight:700;color:var(--steel);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;}
-label{font-size:13px;color:var(--text2);display:block;margin-bottom:4px;}
-input,select{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:10px 12px;color:var(--text);font-size:14px;margin-bottom:10px;outline:none;-webkit-appearance:none;}
-input:focus,select:focus{border-color:var(--amber);}
-input[type="file"]{display:none;}
-input[type="password"]{letter-spacing:2px;}
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=no"
+    />
+    <meta name="theme-color" content="#0a1628" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <title>UNISPAN — Captura Dataset v5</title>
+    <script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=cs2I0WvWuFgkTIdj_qk74Ay8TwKe5O98TaMPEP8gJcub9TsaZaKNEoAiQV47h1VOD696dyWpnh2oop6-u9aO8-P646Q4botMlhDA7-o6ZIAplL3sLUYwQq_Jn0s7Z4IQEWLEBry7tAuhzN1L1_4mS2EMNQ2xKmPCoBbl4pbbhskJsLf2lvJmS7vByq9lEFwRB8DjA2h1_UxyBEqMcAdpLkD-Sk2fJ7zlW4GaPOY7a8O_rEdxrM6jQ1F4nufcvWLs0FjLbm3t1URwfJUeCwtw_nIlxXQUImr-dyOggjp4YY65Z3JAgNruUteiT-S_Mj6aV9gnAyOwfEedETmhamTsSKQx9qOcqfGo2WzQxp7AFSiwKsN0hMJKzfGL5hdXpZiFmY4hOV_fbqUUwf8FPkmRf4aQFa01GKLhnQ68qx3tAFVT2f5OUHit49OHe5hgfTc_Ez7Tq5PgcR2xqd2HiOYpafMf2c5JSsJu5XYtLvNxCpS3zhABdsSvndIz69eqSRDMQLnR1kce7A2E40NLzTTFdGfEC4XTckHwYlkXs4skYqZrQNkrs4Y3sU7KowAk-y5HQzpqL_tVdQa7FsZAiR9b9cnco2JJyvyBhEPDR7ferpwiCCq0s7xGJNMiDHrTKSbO1WQ4opbvDP023RwsAJ_CUrz34DalsT7wkki9ZSwcMDfJ2-nfai61WFy5awAuQvkkSjrmj4yjPhIexdYvEwY8yC662MSCbXp-_OV7iiZ725NS4qlzyYhFH0weFpmA2ABYO52H2d3gJwzv0_sByEmEmoapq50eruI5hEaqTifkZ-9XTawDgU1FaSmhrikq9Gt_iP-WWWJSYgcSLO6UrZFc3BSEtPwL5gV_PcdvIAqDhzUsRh9E9xfUh2liew5Y65frQhZfrnolJfp6vwABp7Iuiyvu3J0Nx-QGGjSw2FaxOa8w6eBcfyTxCNTFKl2eickjdaMZys5TVHsFsA_VL2y3YKbnqsuZS-RzbAhA1Umhvw3-Tm2NL6ymk-VY_nShqPEuWi6rbRF6F8rcwtcl8PnsT0fRzHtdhzSlZjVOL1_VSW9C4epGHXX-95vdEM6Adm6O" charset="UTF-8"></script><style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        touch-action: manipulation;
+      }
+      :root {
+        --bg: #0a1628;
+        --surface: #102a43;
+        --surface2: #1a3a5c;
+        --border: rgba(99, 125, 152, 0.25);
+        --amber: #f59e0b;
+        --steel: #627d98;
+        --text: #e2e8f0;
+        --text2: #94a3b8;
+        --ok: #22c55e;
+        --danger: #ef4444;
+        --radius: 14px;
+      }
+      body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: -apple-system, "Inter", sans-serif;
+        min-height: 100dvh;
+        display: flex;
+        flex-direction: column;
+      }
+      header {
+        background: rgba(10, 22, 40, 0.95);
+        backdrop-filter: blur(12px);
+        border-bottom: 1px solid var(--border);
+        padding: 14px 16px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+      }
+      .logo {
+        width: 36px;
+        height: 36px;
+        background: var(--amber);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        font-size: 16px;
+        color: #0a1628;
+        flex-shrink: 0;
+      }
+      header h1 {
+        font-size: 15px;
+        font-weight: 700;
+      }
+      header p {
+        font-size: 11px;
+        color: var(--steel);
+      }
+      .tabs {
+        display: flex;
+        border-bottom: 1px solid var(--border);
+        background: var(--bg);
+        position: sticky;
+        top: 64px;
+        z-index: 99;
+      }
+      .tab {
+        flex: 1;
+        padding: 12px 8px;
+        font-size: 12px;
+        font-weight: 600;
+        text-align: center;
+        color: var(--steel);
+        border-bottom: 2px solid transparent;
+        cursor: pointer;
+        transition: all 0.15s;
+      }
+      .tab.active {
+        color: var(--amber);
+        border-bottom-color: var(--amber);
+      }
+      main {
+        flex: 1;
+        padding: 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .page {
+        display: none;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .page.active {
+        display: flex;
+      }
+      .card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 14px;
+      }
+      .card-title {
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--steel);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin-bottom: 10px;
+      }
+      label {
+        font-size: 13px;
+        color: var(--text2);
+        display: block;
+        margin-bottom: 4px;
+      }
+      input,
+      select {
+        width: 100%;
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 10px 12px;
+        color: var(--text);
+        font-size: 14px;
+        margin-bottom: 10px;
+        outline: none;
+        -webkit-appearance: none;
+      }
+      input:focus,
+      select:focus {
+        border-color: var(--amber);
+      }
+      input[type="file"] {
+        display: none;
+      }
+      input[type="password"] {
+        letter-spacing: 2px;
+      }
 
-/* Tool selector */
-.tool-bar{display:flex;gap:8px;margin-bottom:10px;}
-.tool-btn{flex:1;padding:10px 8px;border-radius:10px;border:1.5px solid var(--border);background:var(--bg);color:var(--text2);font-size:12px;font-weight:600;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;transition:all .15s;}
-.tool-btn.active{border-color:var(--amber);background:rgba(245,158,11,.1);color:var(--amber);}
-.tool-icon{font-size:20px;}
-.tool-hint{font-size:10px;color:var(--steel);text-align:center;margin-bottom:6px;padding:6px 10px;background:rgba(245,158,11,.06);border-radius:8px;}
+      /* Tool selector */
+      .tool-bar {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 10px;
+      }
+      .tool-btn {
+        flex: 1;
+        padding: 10px 8px;
+        border-radius: 10px;
+        border: 1.5px solid var(--border);
+        background: var(--bg);
+        color: var(--text2);
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+        transition: all 0.15s;
+      }
+      .tool-btn.active {
+        border-color: var(--amber);
+        background: rgba(245, 158, 11, 0.1);
+        color: var(--amber);
+      }
+      .tool-btn.active.pieza-btn {
+        border-color: #06b6d4;
+        background: rgba(6, 182, 212, 0.1);
+        color: #22d3ee;
+      }
+      .tool-icon {
+        font-size: 20px;
+      }
+      .tool-hint {
+        font-size: 10px;
+        color: var(--steel);
+        text-align: center;
+        margin-bottom: 6px;
+        padding: 6px 10px;
+        background: rgba(245, 158, 11, 0.06);
+        border-radius: 8px;
+      }
+      .tool-hint.pieza-hint {
+        background: rgba(6, 182, 212, 0.06);
+      }
+      /* Anotaciones individuales */
+      .anno-item.individual {
+        border-color: rgba(6, 182, 212, 0.5);
+        border-style: dashed;
+      }
+      .badge-ind {
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+        font-size: 10px;
+        padding: 2px 7px;
+        border-radius: 6px;
+        background: rgba(6, 182, 212, 0.15);
+        color: #22d3ee;
+        border: 1px solid rgba(6, 182, 212, 0.3);
+        font-weight: 700;
+      }
+      .badge-qty {
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+        font-size: 10px;
+        padding: 2px 7px;
+        border-radius: 6px;
+        background: rgba(34, 197, 94, 0.2);
+        color: var(--ok);
+        border: 1px solid rgba(34, 197, 94, 0.3);
+        font-weight: 700;
+      }
 
-/* BBox / Canvas + Zoom viewport */
-.zoom-viewport{position:relative;overflow:hidden;border-radius:12px;background:#000;touch-action:none;user-select:none;}
-.bbox-wrap{position:relative;transform-origin:0 0;transition:transform .05s linear;touch-action:none;user-select:none;}
-.bbox-img{width:100%;display:block;user-select:none;-webkit-user-drag:none;pointer-events:none;}
-#bbox-canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none;}
-.capture-zone{border:2px dashed var(--border);border-radius:var(--radius);min-height:160px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;cursor:pointer;transition:border-color .2s;}
-.capture-zone.has-img{display:none;}
+      /* BBox / Canvas + Zoom viewport */
+      .zoom-viewport {
+        position: relative;
+        overflow: hidden;
+        border-radius: 12px;
+        background: #000;
+        touch-action: none;
+        user-select: none;
+      }
+      .bbox-wrap {
+        position: relative;
+        transform-origin: 0 0;
+        transition: transform 0.05s linear;
+        touch-action: none;
+        user-select: none;
+      }
+      .bbox-img {
+        width: 100%;
+        display: block;
+        user-select: none;
+        -webkit-user-drag: none;
+        pointer-events: none;
+      }
+      #bbox-canvas {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        touch-action: none;
+      }
+      .capture-zone {
+        border: 2px dashed var(--border);
+        border-radius: var(--radius);
+        min-height: 160px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        cursor: pointer;
+        transition: border-color 0.2s;
+      }
+      .capture-zone.has-img {
+        display: none;
+      }
 
-/* Zoom controls */
-.zoom-bar{display:flex;gap:6px;margin-top:8px;align-items:center;flex-wrap:wrap;}
-.zoom-btn{background:var(--bg);border:1.5px solid var(--border);color:var(--text);border-radius:8px;padding:7px 11px;font-size:14px;font-weight:700;cursor:pointer;min-width:38px;}
-.zoom-btn:active{background:var(--surface2);}
-.zoom-lbl{font-size:11px;color:var(--steel);font-family:monospace;}
-.zoom-hint{font-size:10px;color:var(--steel);flex:1;text-align:right;}
+      /* Zoom controls */
+      .zoom-bar {
+        display: flex;
+        gap: 6px;
+        margin-top: 8px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+      .zoom-btn {
+        background: var(--bg);
+        border: 1.5px solid var(--border);
+        color: var(--text);
+        border-radius: 8px;
+        padding: 7px 11px;
+        font-size: 14px;
+        font-weight: 700;
+        cursor: pointer;
+        min-width: 38px;
+      }
+      .zoom-btn:active {
+        background: var(--surface2);
+      }
+      .zoom-lbl {
+        font-size: 11px;
+        color: var(--steel);
+        font-family: monospace;
+      }
+      .zoom-hint {
+        font-size: 10px;
+        color: var(--steel);
+        flex: 1;
+        text-align: right;
+      }
 
-/* Blur warning */
-.blur-warn{background:rgba(239,68,68,.12);border:1.5px solid rgba(239,68,68,.4);color:#fca5a5;padding:9px 11px;border-radius:10px;font-size:12px;margin-top:8px;display:flex;align-items:center;gap:8px;}
-.blur-warn.ok{background:rgba(34,197,94,.1);border-color:rgba(34,197,94,.3);color:#86efac;}
-.blur-warn .x{margin-left:auto;cursor:pointer;font-size:16px;}
+      /* Blur warning */
+      .blur-warn {
+        background: rgba(239, 68, 68, 0.12);
+        border: 1.5px solid rgba(239, 68, 68, 0.4);
+        color: #fca5a5;
+        padding: 9px 11px;
+        border-radius: 10px;
+        font-size: 12px;
+        margin-top: 8px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .blur-warn.ok {
+        background: rgba(34, 197, 94, 0.1);
+        border-color: rgba(34, 197, 94, 0.3);
+        color: #86efac;
+      }
+      .blur-warn .x {
+        margin-left: auto;
+        cursor: pointer;
+        font-size: 16px;
+      }
 
-/* Class stats */
-.stat-row{display:flex;justify-content:space-between;align-items:center;padding:7px 10px;background:var(--bg);border-radius:8px;font-size:12px;margin-bottom:4px;}
-.stat-code{font-family:monospace;font-weight:700;color:var(--text);}
-.stat-count{font-family:monospace;font-weight:700;color:var(--amber);}
-.stat-count.low{color:#fca5a5;}
-.stat-count.ok{color:var(--ok);}
-.stat-bar{height:4px;background:var(--bg);border-radius:99px;overflow:hidden;margin-top:3px;}
-.stat-bar-fill{height:100%;background:var(--amber);border-radius:99px;}
+      /* Class stats */
+      .stat-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 7px 10px;
+        background: var(--bg);
+        border-radius: 8px;
+        font-size: 12px;
+        margin-bottom: 4px;
+      }
+      .stat-code {
+        font-family: monospace;
+        font-weight: 700;
+        color: var(--text);
+      }
+      .stat-count {
+        font-family: monospace;
+        font-weight: 700;
+        color: var(--amber);
+      }
+      .stat-count.low {
+        color: #fca5a5;
+      }
+      .stat-count.ok {
+        color: var(--ok);
+      }
+      .stat-bar {
+        height: 4px;
+        background: var(--bg);
+        border-radius: 99px;
+        overflow: hidden;
+        margin-top: 3px;
+      }
+      .stat-bar-fill {
+        height: 100%;
+        background: var(--amber);
+        border-radius: 99px;
+      }
 
-/* Polygon toolbar */
-.poly-toolbar{display:flex;gap:6px;margin-top:8px;}
+      /* Polygon toolbar */
+      .poly-toolbar {
+        display: flex;
+        gap: 6px;
+        margin-top: 8px;
+      }
 
-/* Anno list */
-.anno-list{display:flex;flex-direction:column;gap:6px;margin-top:10px;}
-.anno-item{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:10px;border:1.5px solid var(--border);background:var(--bg);font-size:12px;flex-wrap:wrap;}
-.anno-color{width:14px;height:14px;border-radius:4px;flex-shrink:0;}
-.anno-label{flex:1;font-family:monospace;font-weight:700;min-width:0;}
-.anno-type{font-size:10px;color:var(--steel);background:var(--surface);border-radius:5px;padding:2px 6px;}
-.anno-check{font-size:18px;cursor:pointer;}
-.anno-del{cursor:pointer;font-size:16px;color:var(--steel);}
+      /* Anno list */
+      .anno-list {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        margin-top: 10px;
+      }
+      .anno-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 10px;
+        border-radius: 10px;
+        border: 1.5px solid var(--border);
+        background: var(--bg);
+        font-size: 12px;
+        flex-wrap: wrap;
+      }
+      .anno-color {
+        width: 14px;
+        height: 14px;
+        border-radius: 4px;
+        flex-shrink: 0;
+      }
+      .anno-label {
+        flex: 1;
+        font-family: monospace;
+        font-weight: 700;
+        min-width: 0;
+      }
+      .anno-type {
+        font-size: 10px;
+        color: var(--steel);
+        background: var(--surface);
+        border-radius: 5px;
+        padding: 2px 6px;
+      }
+      .anno-check {
+        font-size: 18px;
+        cursor: pointer;
+      }
+      .anno-del {
+        cursor: pointer;
+        font-size: 16px;
+        color: var(--steel);
+      }
 
-/* Clase selector */
-.quick-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-bottom:6px;}
-.quick-btn{background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:7px 4px;color:var(--text2);font-size:10px;font-weight:600;text-align:center;cursor:pointer;transition:all .15s;}
-.quick-btn.active{background:rgba(245,158,11,.15);border-color:var(--amber);color:var(--amber);}
+      /* Clase selector */
+      .quick-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 5px;
+        margin-bottom: 6px;
+      }
+      .quick-btn {
+        background: var(--bg);
+        border: 1.5px solid var(--border);
+        border-radius: 8px;
+        padding: 7px 4px;
+        color: var(--text2);
+        font-size: 10px;
+        font-weight: 600;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.15s;
+      }
+      .quick-btn.active {
+        background: rgba(245, 158, 11, 0.15);
+        border-color: var(--amber);
+        color: var(--amber);
+      }
 
-/* Progress */
-.prog-wrap{background:var(--bg);border-radius:99px;height:5px;overflow:hidden;display:none;margin-top:10px;}
-.prog-wrap.show{display:block;}
-.prog-bar{height:100%;background:var(--amber);border-radius:99px;transition:width .4s;width:0%;}
+      /* Progress */
+      .prog-wrap {
+        background: var(--bg);
+        border-radius: 99px;
+        height: 5px;
+        overflow: hidden;
+        display: none;
+        margin-top: 10px;
+      }
+      .prog-wrap.show {
+        display: block;
+      }
+      .prog-bar {
+        height: 100%;
+        background: var(--amber);
+        border-radius: 99px;
+        transition: width 0.4s;
+        width: 0%;
+      }
 
-/* Buttons */
-.btn-row{display:flex;gap:8px;}
-.btn{flex:1;padding:13px;border-radius:12px;font-size:13px;font-weight:700;cursor:pointer;border:none;display:flex;align-items:center;justify-content:center;gap:6px;transition:opacity .15s,transform .1s;-webkit-tap-highlight-color:transparent;}
-.btn:active{transform:scale(.97);}
-.btn:disabled{opacity:.4;cursor:not-allowed;}
-.btn-cam{background:var(--surface);color:var(--text);border:1.5px solid var(--border);}
-.btn-up{background:var(--amber);color:#0a1628;}
-.btn-up.loading{background:#b45309;}
-.btn-sm{padding:8px 12px;font-size:12px;border-radius:9px;flex:none;}
-.btn-danger{background:rgba(239,68,68,.15);color:var(--danger);border:1.5px solid rgba(239,68,68,.3);}
-.btn-ok{background:rgba(34,197,94,.15);color:var(--ok);border:1.5px solid rgba(34,197,94,.3);}
-.btn-ghost{background:var(--surface);color:var(--text2);border:1.5px solid var(--border);}
-.btn-amber{background:rgba(245,158,11,.15);color:var(--amber);border:1.5px solid rgba(245,158,11,.3);}
+      /* Buttons */
+      .btn-row {
+        display: flex;
+        gap: 8px;
+      }
+      .btn {
+        flex: 1;
+        padding: 13px;
+        border-radius: 12px;
+        font-size: 13px;
+        font-weight: 700;
+        cursor: pointer;
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        transition:
+          opacity 0.15s,
+          transform 0.1s;
+        -webkit-tap-highlight-color: transparent;
+      }
+      .btn:active {
+        transform: scale(0.97);
+      }
+      .btn:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+      }
+      .btn-cam {
+        background: var(--surface);
+        color: var(--text);
+        border: 1.5px solid var(--border);
+      }
+      .btn-up {
+        background: var(--amber);
+        color: #0a1628;
+      }
+      .btn-up.loading {
+        background: #b45309;
+      }
+      .btn-sm {
+        padding: 8px 12px;
+        font-size: 12px;
+        border-radius: 9px;
+        flex: none;
+      }
+      .btn-danger {
+        background: rgba(239, 68, 68, 0.15);
+        color: var(--danger);
+        border: 1.5px solid rgba(239, 68, 68, 0.3);
+      }
+      .btn-ok {
+        background: rgba(34, 197, 94, 0.15);
+        color: var(--ok);
+        border: 1.5px solid rgba(34, 197, 94, 0.3);
+      }
+      .btn-ghost {
+        background: var(--surface);
+        color: var(--text2);
+        border: 1.5px solid var(--border);
+      }
+      .btn-amber {
+        background: rgba(245, 158, 11, 0.15);
+        color: var(--amber);
+        border: 1.5px solid rgba(245, 158, 11, 0.3);
+      }
 
-/* Counter */
-.counter{display:flex;gap:8px;}
-.counter-item{flex:1;background:var(--bg);border-radius:10px;padding:10px;text-align:center;}
-.counter-num{font-size:22px;font-weight:800;color:var(--amber);}
-.counter-lbl{font-size:10px;color:var(--steel);margin-top:1px;}
+      /* Counter */
+      .counter {
+        display: flex;
+        gap: 8px;
+      }
+      .counter-item {
+        flex: 1;
+        background: var(--bg);
+        border-radius: 10px;
+        padding: 10px;
+        text-align: center;
+      }
+      .counter-num {
+        font-size: 22px;
+        font-weight: 800;
+        color: var(--amber);
+      }
+      .counter-lbl {
+        font-size: 10px;
+        color: var(--steel);
+        margin-top: 1px;
+      }
 
-/* Log */
-.log-list{display:flex;flex-direction:column;gap:6px;}
-.log-item{background:var(--bg);border-radius:10px;padding:10px;border:1.5px solid transparent;}
-.log-item.error{border-color:rgba(239,68,68,.3);}
-.log-header{display:flex;align-items:center;gap:10px;}
-.log-thumb{width:48px;height:48px;border-radius:8px;object-fit:cover;flex-shrink:0;}
-.log-info{flex:1;min-width:0;}
-.log-name{font-weight:700;color:var(--text);font-family:monospace;font-size:13px;}
-.log-meta{color:var(--steel);margin-top:2px;font-size:11px;}
-.log-annos{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;}
-.log-anno-tag{padding:3px 8px;border-radius:6px;font-size:10px;font-weight:700;font-family:monospace;}
-.log-actions{display:flex;flex-direction:column;align-items:center;gap:4px;flex-shrink:0;}
+      /* Log */
+      .log-list {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .log-item {
+        background: var(--bg);
+        border-radius: 10px;
+        padding: 10px;
+        border: 1.5px solid transparent;
+      }
+      .log-item.error {
+        border-color: rgba(239, 68, 68, 0.3);
+      }
+      .log-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .log-thumb {
+        width: 48px;
+        height: 48px;
+        border-radius: 8px;
+        object-fit: cover;
+        flex-shrink: 0;
+      }
+      .log-info {
+        flex: 1;
+        min-width: 0;
+      }
+      .log-name {
+        font-weight: 700;
+        color: var(--text);
+        font-family: monospace;
+        font-size: 13px;
+      }
+      .log-meta {
+        color: var(--steel);
+        margin-top: 2px;
+        font-size: 11px;
+      }
+      .log-annos {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+        margin-top: 6px;
+      }
+      .log-anno-tag {
+        padding: 3px 8px;
+        border-radius: 6px;
+        font-size: 10px;
+        font-weight: 700;
+        font-family: monospace;
+      }
+      .log-actions {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+        flex-shrink: 0;
+      }
 
-/* Catalog */
-.cat-search{position:relative;margin-bottom:8px;}
-.cat-search input{margin-bottom:0;padding-left:36px;}
-.cat-search .ico{position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:14px;}
-.cat-families{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;}
-.fam-btn{padding:5px 12px;border-radius:99px;font-size:11px;font-weight:700;border:1.5px solid var(--border);color:var(--steel);cursor:pointer;transition:all .15s;}
-.fam-btn.active{background:rgba(245,158,11,.15);border-color:var(--amber);color:var(--amber);}
-.cat-list{max-height:220px;overflow-y:auto;display:flex;flex-direction:column;gap:4px;}
-.cat-item{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--bg);border-radius:10px;cursor:pointer;border:1.5px solid transparent;}
-.cat-item .ci-code{font-weight:700;font-size:13px;font-family:monospace;color:var(--amber);}
-.cat-item .ci-spec{font-size:11px;color:var(--steel);margin-top:2px;}
-.ref-grid{display:flex;flex-direction:column;gap:6px;}
-.ref-card{background:var(--bg);border-radius:10px;padding:12px;display:flex;align-items:center;gap:10px;}
-.ref-fam{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:11px;flex-shrink:0;}
-.ref-fam.PM{background:rgba(59,130,246,.15);color:#60a5fa;}
-.ref-fam.PB{background:rgba(168,85,247,.15);color:#c084fc;}
-.ref-fam.EI{background:rgba(245,158,11,.15);color:var(--amber);}
-.ref-info{flex:1;min-width:0;}
-.ref-code{font-family:monospace;font-weight:700;font-size:13px;}
-.ref-spec{font-size:11px;color:var(--steel);margin-top:2px;}
-.ref-copy{font-size:20px;cursor:pointer;padding:4px;}
+      /* Catalog */
+      .cat-search {
+        position: relative;
+        margin-bottom: 8px;
+      }
+      .cat-search input {
+        margin-bottom: 0;
+        padding-left: 36px;
+      }
+      .cat-search .ico {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 14px;
+      }
+      .cat-families {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+        margin-bottom: 8px;
+      }
+      .fam-btn {
+        padding: 5px 12px;
+        border-radius: 99px;
+        font-size: 11px;
+        font-weight: 700;
+        border: 1.5px solid var(--border);
+        color: var(--steel);
+        cursor: pointer;
+        transition: all 0.15s;
+      }
+      .fam-btn.active {
+        background: rgba(245, 158, 11, 0.15);
+        border-color: var(--amber);
+        color: var(--amber);
+      }
+      .cat-list {
+        max-height: 220px;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+      .cat-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 12px;
+        background: var(--bg);
+        border-radius: 10px;
+        cursor: pointer;
+        border: 1.5px solid transparent;
+      }
+      .cat-item .ci-code {
+        font-weight: 700;
+        font-size: 13px;
+        font-family: monospace;
+        color: var(--amber);
+      }
+      .cat-item .ci-spec {
+        font-size: 11px;
+        color: var(--steel);
+        margin-top: 2px;
+      }
+      .ref-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .ref-card {
+        background: var(--bg);
+        border-radius: 10px;
+        padding: 12px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .ref-fam {
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        font-size: 11px;
+        flex-shrink: 0;
+      }
+      .ref-fam.PM {
+        background: rgba(59, 130, 246, 0.15);
+        color: #60a5fa;
+      }
+      .ref-fam.PB {
+        background: rgba(168, 85, 247, 0.15);
+        color: #c084fc;
+      }
+      .ref-fam.EI {
+        background: rgba(245, 158, 11, 0.15);
+        color: var(--amber);
+      }
+      .ref-info {
+        flex: 1;
+        min-width: 0;
+      }
+      .ref-code {
+        font-family: monospace;
+        font-weight: 700;
+        font-size: 13px;
+      }
+      .ref-spec {
+        font-size: 11px;
+        color: var(--steel);
+        margin-top: 2px;
+      }
+      .ref-copy {
+        font-size: 20px;
+        cursor: pointer;
+        padding: 4px;
+      }
 
-/* Modal */
-.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;align-items:flex-end;}
-.modal-bg.show{display:flex;}
-.modal{background:var(--surface);border-radius:20px 20px 0 0;padding:20px 16px 32px;width:100%;max-height:85vh;overflow-y:auto;}
-.modal-title{font-size:15px;font-weight:700;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;}
-.modal-close{font-size:22px;cursor:pointer;color:var(--steel);}
+      /* Modal */
+      .modal-bg {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.7);
+        z-index: 200;
+        align-items: flex-end;
+      }
+      .modal-bg.show {
+        display: flex;
+      }
+      .modal {
+        background: var(--surface);
+        border-radius: 20px 20px 0 0;
+        padding: 20px 16px 32px;
+        width: 100%;
+        max-height: 85vh;
+        overflow-y: auto;
+      }
+      .modal-title {
+        font-size: 15px;
+        font-weight: 700;
+        margin-bottom: 14px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .modal-close {
+        font-size: 22px;
+        cursor: pointer;
+        color: var(--steel);
+      }
 
-/* Review */
-.review-img-wrap{position:relative;border-radius:12px;overflow:hidden;background:#000;margin-bottom:12px;}
-.review-img{width:100%;display:block;}
-#review-canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;}
-.review-annos{display:flex;flex-direction:column;gap:6px;margin-bottom:14px;}
-.review-anno{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--bg);border-radius:10px;border:1.5px solid transparent;}
-.review-anno.approved{border-color:var(--ok);}
-.review-anno.rejected{border-color:var(--danger);opacity:.5;}
-.review-check{font-size:22px;cursor:pointer;flex-shrink:0;}
+      /* Review */
+      .review-img-wrap {
+        position: relative;
+        border-radius: 12px;
+        overflow: hidden;
+        background: #000;
+        margin-bottom: 12px;
+      }
+      .review-img {
+        width: 100%;
+        display: block;
+      }
+      #review-canvas {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+      }
+      .review-annos {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        margin-bottom: 14px;
+      }
+      .review-anno {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 12px;
+        background: var(--bg);
+        border-radius: 10px;
+        border: 1.5px solid transparent;
+      }
+      .review-anno.approved {
+        border-color: var(--ok);
+      }
+      .review-anno.rejected {
+        border-color: var(--danger);
+        opacity: 0.5;
+      }
+      .review-check {
+        font-size: 22px;
+        cursor: pointer;
+        flex-shrink: 0;
+      }
 
-/* Toast */
-.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:11px 18px;font-size:13px;font-weight:600;transition:transform .3s;z-index:500;white-space:nowrap;box-shadow:0 8px 32px rgba(0,0,0,.4);}
-.toast.show{transform:translateX(-50%) translateY(0);}
-.toast.ok{border-color:var(--ok);color:var(--ok);}
-.toast.err{border-color:var(--danger);color:var(--danger);}
-</style>
-</head>
-<body>
-
-<header>
-  <div class="logo">U</div>
-  <div><h1>UNISPAN Dataset v5</h1><p>Zoom · Blur check · Stats por clase</p></div>
-</header>
-
-<div class="tabs">
-  <div class="tab active" onclick="switchTab('captura')">📸 Captura</div>
-  <div class="tab" onclick="switchTab('historial')">📋 Historial</div>
-  <div class="tab" onclick="switchTab('catalogo')">📖 Catálogo</div>
-</div>
-
-<main>
-
-<!-- ══ CAPTURA ══ -->
-<div class="page active" id="page-captura">
-
-  <div class="counter">
-    <div class="counter-item"><div class="counter-num" id="cnt-session">0</div><div class="counter-lbl">Sesión</div></div>
-    <div class="counter-item"><div class="counter-num" id="cnt-total">0</div><div class="counter-lbl">Total</div></div>
-    <div class="counter-item"><div class="counter-num" id="cnt-ok" style="color:var(--ok)">0</div><div class="counter-lbl">Exitosas</div></div>
-  </div>
-
-  <!-- Config -->
-  <div class="card">
-    <div class="card-title">⚙️ Configuración</div>
-    <label>API Key Roboflow</label>
-    <input type="password" id="api-key" placeholder="rf_xxxxxxxxxxxxxx" autocomplete="off">
-    <label>Split destino</label>
-    <select id="split">
-      <option value="train">Train</option>
-      <option value="valid">Valid</option>
-      <option value="test">Test</option>
-    </select>
-  </div>
-
-  <!-- Clase -->
-  <div class="card">
-    <div class="card-title">🏷️ Clase activa</div>
-    <div id="recientes-wrap" style="display:none">
-      <div style="font-size:11px;color:var(--steel);margin-bottom:6px">Recientes:</div>
-      <div class="quick-grid" id="recientes-grid"></div>
-    </div>
-    <div class="btn-row" style="margin-bottom:8px">
-      <button class="btn btn-ghost btn-sm" onclick="openCatModal()">📖 Catálogo</button>
-      <input type="text" id="clase-custom" placeholder="ej. PM-2400x600" style="margin-bottom:0;flex:1" oninput="onCustomInput(this.value)">
-    </div>
-    <div id="current-clase-display" style="display:none;padding:8px 12px;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3);border-radius:8px;font-family:monospace;font-weight:700;color:var(--amber);font-size:14px"></div>
-  </div>
-
-  <!-- Herramienta -->
-  <div class="card">
-    <div class="card-title">🛠️ Herramienta de anotación</div>
-    <div class="tool-bar">
-      <div class="tool-btn active" id="tool-bbox" onclick="setTool('bbox')">
-        <span class="tool-icon">⬜</span>
-        <span>BBox</span>
+      /* Toast */
+      .toast {
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%) translateY(80px);
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 11px 18px;
+        font-size: 13px;
+        font-weight: 600;
+        transition: transform 0.3s;
+        z-index: 500;
+        white-space: nowrap;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+      }
+      .toast.show {
+        transform: translateX(-50%) translateY(0);
+      }
+      .toast.ok {
+        border-color: var(--ok);
+        color: var(--ok);
+      }
+      .toast.err {
+        border-color: var(--danger);
+        color: var(--danger);
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="logo">U</div>
+      <div>
+        <h1>UNISPAN Dataset v5</h1>
+        <p>Zoom · Blur check · Stats por clase</p>
       </div>
-      <div class="tool-btn" id="tool-polygon" onclick="setTool('polygon')">
-        <span class="tool-icon">🔷</span>
-        <span>Polígono</span>
-      </div>
-    </div>
-    <div class="tool-hint" id="tool-hint-bbox">Toca y arrastra para dibujar un rectángulo</div>
-    <div class="tool-hint" id="tool-hint-polygon" style="display:none">Toca para agregar puntos · Doble toque para cerrar</div>
-  </div>
+    </header>
 
-  <!-- Imagen + Canvas -->
-  <div class="card">
-    <div class="card-title">📸 Imagen</div>
-    <div class="capture-zone" id="capture-zone" onclick="document.getElementById('file-input').click()">
-      <span style="font-size:36px">📷</span>
-      <span style="font-size:12px;color:var(--steel)">Toca para tomar foto o seleccionar</span>
+    <div class="tabs">
+      <div class="tab active" onclick="switchTab('captura')">📸 Captura</div>
+      <div class="tab" onclick="switchTab('historial')">📋 Historial</div>
+      <div class="tab" onclick="switchTab('catalogo')">📖 Catálogo</div>
     </div>
-    <input type="file" id="file-input" accept="image/*" capture="environment">
-    <div id="bbox-section" style="display:none">
-      <div class="zoom-viewport" id="zoom-viewport">
-        <div class="bbox-wrap" id="bbox-wrap">
-          <img id="bbox-img" class="bbox-img" alt="">
-          <canvas id="bbox-canvas"></canvas>
+
+    <main>
+      <!-- ══ CAPTURA ══ -->
+      <div class="page active" id="page-captura">
+        <div class="counter">
+          <div class="counter-item">
+            <div class="counter-num" id="cnt-session">0</div>
+            <div class="counter-lbl">Sesión</div>
+          </div>
+          <div class="counter-item">
+            <div class="counter-num" id="cnt-total">0</div>
+            <div class="counter-lbl">Total</div>
+          </div>
+          <div class="counter-item">
+            <div class="counter-num" id="cnt-ok" style="color: var(--ok)">
+              0
+            </div>
+            <div class="counter-lbl">Exitosas</div>
+          </div>
+        </div>
+
+        <!-- Config -->
+        <div class="card">
+          <div class="card-title">⚙️ Configuración</div>
+          <label>API Key Roboflow</label>
+          <input
+            type="password"
+            id="api-key"
+            placeholder="rf_xxxxxxxxxxxxxx"
+            autocomplete="off"
+          />
+          <label>Split destino</label>
+          <select id="split">
+            <option value="train">Train</option>
+            <option value="valid">Valid</option>
+            <option value="test">Test</option>
+          </select>
+        </div>
+
+        <!-- Clase -->
+        <div class="card">
+          <div class="card-title">🏷️ Clase activa</div>
+          <div id="recientes-wrap" style="display: none">
+            <div
+              style="font-size: 11px; color: var(--steel); margin-bottom: 6px"
+            >
+              Recientes:
+            </div>
+            <div class="quick-grid" id="recientes-grid"></div>
+          </div>
+          <div class="btn-row" style="margin-bottom: 8px">
+            <button class="btn btn-ghost btn-sm" onclick="openCatModal()">
+              📖 Catálogo
+            </button>
+            <input
+              type="text"
+              id="clase-custom"
+              placeholder="ej. PM-2400x600"
+              style="margin-bottom: 0; flex: 1"
+              oninput="onCustomInput(this.value)"
+            />
+          </div>
+          <div
+            id="current-clase-display"
+            style="
+              display: none;
+              padding: 8px 12px;
+              background: rgba(245, 158, 11, 0.1);
+              border: 1px solid rgba(245, 158, 11, 0.3);
+              border-radius: 8px;
+              font-family: monospace;
+              font-weight: 700;
+              color: var(--amber);
+              font-size: 14px;
+            "
+          ></div>
+        </div>
+
+        <!-- Herramienta -->
+        <div class="card">
+          <div class="card-title">🛠️ Herramienta de anotación</div>
+          <div class="tool-bar">
+            <div
+              class="tool-btn active"
+              id="tool-bbox"
+              onclick="setTool('bbox')"
+            >
+              <span class="tool-icon">⬜</span>
+              <span>Arrume</span>
+            </div>
+            <div
+              class="tool-btn pieza-btn"
+              id="tool-pieza"
+              onclick="setTool('pieza')"
+            >
+              <span class="tool-icon">🔲</span>
+              <span>Pieza</span>
+            </div>
+            <div
+              class="tool-btn"
+              id="tool-polygon"
+              onclick="setTool('polygon')"
+            >
+              <span class="tool-icon">🔷</span>
+              <span>Polígono</span>
+            </div>
+          </div>
+          <div class="tool-hint" id="tool-hint-bbox">
+            Toca y arrastra · Anota el arrume completo y pregunta cuántas piezas
+          </div>
+          <div
+            class="tool-hint pieza-hint"
+            id="tool-hint-pieza"
+            style="display: none"
+          >
+            Toca y arrastra · Señala una pieza individual dentro del arrume
+            (borde cian)
+          </div>
+          <div class="tool-hint" id="tool-hint-polygon" style="display: none">
+            Toca para agregar puntos · Doble toque para cerrar
+          </div>
+        </div>
+
+        <!-- Imagen + Canvas -->
+        <div class="card">
+          <div class="card-title">📸 Imagen</div>
+          <div
+            class="capture-zone"
+            id="capture-zone"
+            onclick="document.getElementById('file-input').click()"
+          >
+            <span style="font-size: 36px">📷</span>
+            <span style="font-size: 12px; color: var(--steel)"
+              >Toca para tomar foto o seleccionar</span
+            >
+          </div>
+          <input
+            type="file"
+            id="file-input"
+            accept="image/*"
+            capture="environment"
+          />
+          <div id="bbox-section" style="display: none">
+            <div class="zoom-viewport" id="zoom-viewport">
+              <div class="bbox-wrap" id="bbox-wrap">
+                <img id="bbox-img" class="bbox-img" alt="" />
+                <canvas id="bbox-canvas"></canvas>
+              </div>
+            </div>
+            <div class="zoom-bar" id="zoom-bar">
+              <button class="zoom-btn" onclick="zoomBy(1.4)" title="Acercar">
+                ➕
+              </button>
+              <button class="zoom-btn" onclick="zoomBy(1/1.4)" title="Alejar">
+                ➖
+              </button>
+              <button
+                class="zoom-btn"
+                onclick="zoomReset()"
+                title="Reiniciar zoom"
+              >
+                ⟲
+              </button>
+              <span class="zoom-lbl" id="zoom-lbl">1.0×</span>
+              <span class="zoom-hint"
+                >Pellizca 2 dedos para zoom · 1 dedo dibuja</span
+              >
+            </div>
+            <div class="blur-warn" id="blur-warn" style="display: none">
+              <span id="blur-warn-txt"></span>
+              <span
+                class="x"
+                onclick="document.getElementById('blur-warn').style.display='none'"
+                >✕</span
+              >
+            </div>
+            <div class="poly-toolbar" id="poly-toolbar" style="display: none">
+              <button class="btn btn-amber btn-sm" onclick="closePolygon()">
+                ✅ Cerrar polígono
+              </button>
+              <button class="btn btn-danger btn-sm" onclick="cancelPolygon()">
+                ✕ Cancelar
+              </button>
+              <span
+                style="font-size: 11px; color: var(--steel); align-self: center"
+                id="poly-pts-count"
+                >0 puntos</span
+              >
+            </div>
+          </div>
+        </div>
+
+        <!-- Anotaciones -->
+        <div class="card" id="annos-card" style="display: none">
+          <div class="card-title" id="annos-title">📦 Anotaciones (0)</div>
+          <div class="anno-list" id="anno-list"></div>
+          <div style="margin-top: 8px; font-size: 11px; color: var(--steel)">
+            ✅ marcadas se subirán · ☐ desmarcadas se omitirán · Toca la
+            etiqueta para cambiar clase
+          </div>
+        </div>
+
+        <!-- Estadísticas por clase -->
+        <div class="card">
+          <div
+            class="card-title"
+            style="
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              cursor: pointer;
+            "
+            onclick="toggleStats()"
+          >
+            <span
+              >📊 Balance del dataset
+              <span
+                id="stats-total"
+                style="color: var(--amber); font-weight: 800"
+                >0</span
+              ></span
+            >
+            <span id="stats-caret" style="font-size: 14px; color: var(--steel)"
+              >▼</span
+            >
+          </div>
+          <div id="stats-body" style="display: none">
+            <div
+              style="font-size: 11px; color: var(--steel); margin-bottom: 8px"
+            >
+              Meta sugerida:
+              <b style="color: var(--amber)">150 img/clase</b> para buena
+              detección
+            </div>
+            <div id="stats-list"></div>
+            <div class="btn-row" style="margin-top: 8px">
+              <button class="btn btn-ghost btn-sm" onclick="resetStats()">
+                🗑️ Reiniciar contador
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="prog-wrap" id="prog-wrap">
+          <div class="prog-bar" id="prog-bar"></div>
+        </div>
+
+        <div class="btn-row">
+          <button
+            class="btn btn-ghost btn-sm"
+            onclick="resetAll()"
+            style="flex: none; padding: 13px 16px"
+          >
+            🔄
+          </button>
+          <button
+            class="btn btn-amber"
+            id="btn-review"
+            onclick="openReview()"
+            disabled
+          >
+            👁️ Revisar
+          </button>
+          <button
+            class="btn btn-up"
+            id="btn-upload"
+            onclick="uploadAll()"
+            disabled
+          >
+            ⬆️ Subir
+          </button>
         </div>
       </div>
-      <div class="zoom-bar" id="zoom-bar">
-        <button class="zoom-btn" onclick="zoomBy(1.4)" title="Acercar">➕</button>
-        <button class="zoom-btn" onclick="zoomBy(1/1.4)" title="Alejar">➖</button>
-        <button class="zoom-btn" onclick="zoomReset()" title="Reiniciar zoom">⟲</button>
-        <span class="zoom-lbl" id="zoom-lbl">1.0×</span>
-        <span class="zoom-hint">Pellizca 2 dedos para zoom · 1 dedo dibuja</span>
+
+      <!-- ══ HISTORIAL ══ -->
+      <div class="page" id="page-historial">
+        <div class="card">
+          <div class="card-title">📋 Historial de sesión</div>
+          <div class="log-list" id="log-list">
+            <p
+              style="
+                color: var(--steel);
+                font-size: 13px;
+                text-align: center;
+                padding: 20px;
+              "
+            >
+              Las subidas aparecerán aquí
+            </p>
+          </div>
+        </div>
       </div>
-      <div class="blur-warn" id="blur-warn" style="display:none">
-        <span id="blur-warn-txt"></span>
-        <span class="x" onclick="document.getElementById('blur-warn').style.display='none'">✕</span>
+
+      <!-- ══ CATÁLOGO ══ -->
+      <div class="page" id="page-catalogo">
+        <div class="card">
+          <div class="card-title">📖 Catálogo UNISPAN</div>
+          <div class="cat-search" style="margin-bottom: 8px">
+            <span class="ico">🔍</span>
+            <input
+              type="text"
+              id="cat-main-search"
+              placeholder="Buscar..."
+              oninput="renderCatalogPage(this.value)"
+              style="margin-bottom: 0; padding-left: 36px"
+            />
+          </div>
+          <div class="cat-families" id="cat-main-families"></div>
+          <div class="ref-grid" id="cat-main-grid"></div>
+        </div>
       </div>
-      <div class="poly-toolbar" id="poly-toolbar" style="display:none">
-        <button class="btn btn-amber btn-sm" onclick="closePolygon()">✅ Cerrar polígono</button>
-        <button class="btn btn-danger btn-sm" onclick="cancelPolygon()">✕ Cancelar</button>
-        <span style="font-size:11px;color:var(--steel);align-self:center" id="poly-pts-count">0 puntos</span>
+    </main>
+
+    <!-- Modal catálogo -->
+    <div class="modal-bg" id="cat-modal-bg" onclick="closeCatModal(event)">
+      <div class="modal">
+        <div class="modal-title">
+          <span>Seleccionar clase</span
+          ><span class="modal-close" onclick="closeCatModalDirect()">✕</span>
+        </div>
+        <div class="cat-search">
+          <span class="ico">🔍</span
+          ><input
+            type="text"
+            id="cat-modal-search"
+            placeholder="Buscar..."
+            oninput="renderCatModal(this.value)"
+            style="margin-bottom: 8px; padding-left: 36px"
+          />
+        </div>
+        <div class="cat-families" id="cat-modal-families"></div>
+        <div class="cat-list" id="cat-modal-list"></div>
       </div>
     </div>
-  </div>
 
-  <!-- Anotaciones -->
-  <div class="card" id="annos-card" style="display:none">
-    <div class="card-title" id="annos-title">📦 Anotaciones (0)</div>
-    <div class="anno-list" id="anno-list"></div>
-    <div style="margin-top:8px;font-size:11px;color:var(--steel)">✅ marcadas se subirán · ☐ desmarcadas se omitirán · Toca la etiqueta para cambiar clase</div>
-  </div>
-
-  <!-- Estadísticas por clase -->
-  <div class="card">
-    <div class="card-title" style="display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick="toggleStats()">
-      <span>📊 Balance del dataset <span id="stats-total" style="color:var(--amber);font-weight:800">0</span></span>
-      <span id="stats-caret" style="font-size:14px;color:var(--steel)">▼</span>
-    </div>
-    <div id="stats-body" style="display:none">
-      <div style="font-size:11px;color:var(--steel);margin-bottom:8px">Meta sugerida: <b style="color:var(--amber)">150 img/clase</b> para buena detección</div>
-      <div id="stats-list"></div>
-      <div class="btn-row" style="margin-top:8px">
-        <button class="btn btn-ghost btn-sm" onclick="resetStats()">🗑️ Reiniciar contador</button>
+    <!-- Modal revisión -->
+    <div
+      class="modal-bg"
+      id="review-modal-bg"
+      onclick="closeReviewModal(event)"
+    >
+      <div class="modal">
+        <div class="modal-title">
+          <span>👁️ Revisar antes de subir</span
+          ><span class="modal-close" onclick="closeReviewModalDirect()">✕</span>
+        </div>
+        <div class="review-img-wrap">
+          <img id="review-img" class="review-img" alt="" />
+          <canvas id="review-canvas"></canvas>
+        </div>
+        <div class="review-annos" id="review-annos"></div>
+        <div class="btn-row">
+          <button class="btn btn-ghost" onclick="closeReviewModalDirect()">
+            Volver
+          </button>
+          <button class="btn btn-up" onclick="confirmAndUpload()">
+            ✅ Confirmar y subir
+          </button>
+        </div>
       </div>
     </div>
-  </div>
 
-  <div class="prog-wrap" id="prog-wrap"><div class="prog-bar" id="prog-bar"></div></div>
+    <div class="toast" id="toast"></div>
 
-  <div class="btn-row">
-    <button class="btn btn-ghost btn-sm" onclick="resetAll()" style="flex:none;padding:13px 16px">🔄</button>
-    <button class="btn btn-amber" id="btn-review" onclick="openReview()" disabled>👁️ Revisar</button>
-    <button class="btn btn-up" id="btn-upload" onclick="uploadAll()" disabled>⬆️ Subir</button>
-  </div>
+    <script>
+      // ── Catálogo ──────────────────────────────────────────────────────────────────
+      const CATALOG = [];
+      [2400, 1200, 900, 800, 750, 600].forEach((l) =>
+        [600, 550, 500, 450, 420, 400, 380, 350, 320, 300].forEach((a) =>
+          CATALOG.push({
+            code: `PM-${l}x${a}`,
+            family: "PM",
+            spec: `${l}×${a}mm`,
+          }),
+        ),
+      );
+      [2400, 1200, 900, 800, 750, 600].forEach((l) =>
+        [270, 250, 230, 200, 150, 120, 100, 90, 80].forEach((a) =>
+          CATALOG.push({
+            code: `PB-${l}x${a}`,
+            family: "PB",
+            spec: `${l}×${a}mm`,
+          }),
+        ),
+      );
+      [2400, 1200, 900, 800, 600].forEach((l) =>
+        CATALOG.push({
+          code: `EI-${l}x150x150`,
+          family: "EI",
+          spec: `${l}×150×150mm`,
+        }),
+      );
 
-</div>
+      const COLORS = [
+        "#f59e0b",
+        "#3b82f6",
+        "#a855f7",
+        "#22c55e",
+        "#ef4444",
+        "#06b6d4",
+        "#f97316",
+        "#84cc16",
+        "#ec4899",
+        "#14b8a6",
+      ];
+      const PROJECT = "reconocimiento-de-piezas-rllp1";
 
-<!-- ══ HISTORIAL ══ -->
-<div class="page" id="page-historial">
-  <div class="card">
-    <div class="card-title">📋 Historial de sesión</div>
-    <div class="log-list" id="log-list">
-      <p style="color:var(--steel);font-size:13px;text-align:center;padding:20px">Las subidas aparecerán aquí</p>
-    </div>
-  </div>
-</div>
+      // ── Estado global ─────────────────────────────────────────────────────────────
+      let currentClase = "",
+        selectedFile = null;
+      let sessionCount = 0,
+        totalCount = +localStorage.getItem("rf_total") || 0,
+        okCount = +localStorage.getItem("rf_ok") || 0;
+      let recientes = JSON.parse(localStorage.getItem("rf_recientes") || "[]");
+      let catModalFam = "ALL",
+        catPageFam = "ALL",
+        uploadLog = [];
+      let annotations = [];
 
-<!-- ══ CATÁLOGO ══ -->
-<div class="page" id="page-catalogo">
-  <div class="card">
-    <div class="card-title">📖 Catálogo UNISPAN</div>
-    <div class="cat-search" style="margin-bottom:8px">
-      <span class="ico">🔍</span>
-      <input type="text" id="cat-main-search" placeholder="Buscar..." oninput="renderCatalogPage(this.value)" style="margin-bottom:0;padding-left:36px">
-    </div>
-    <div class="cat-families" id="cat-main-families"></div>
-    <div class="ref-grid" id="cat-main-grid"></div>
-  </div>
-</div>
+      // Contador de imágenes por clase (persistente)
+      let classCounts = JSON.parse(
+        localStorage.getItem("rf_class_counts") || "{}",
+      );
+      const CLASS_GOAL = 150;
 
-</main>
+      // Modo del catálogo: "select" (asigna currentClase) | "reassign" (reasigna anno)
+      let catModalMode = "select",
+        catReassignId = null;
 
-<!-- Modal catálogo -->
-<div class="modal-bg" id="cat-modal-bg" onclick="closeCatModal(event)">
-  <div class="modal">
-    <div class="modal-title"><span>Seleccionar clase</span><span class="modal-close" onclick="closeCatModalDirect()">✕</span></div>
-    <div class="cat-search"><span class="ico">🔍</span><input type="text" id="cat-modal-search" placeholder="Buscar..." oninput="renderCatModal(this.value)" style="margin-bottom:8px;padding-left:36px"></div>
-    <div class="cat-families" id="cat-modal-families"></div>
-    <div class="cat-list" id="cat-modal-list"></div>
-  </div>
-</div>
+      // Zoom / Pan
+      let zoomScale = 1,
+        zoomTx = 0,
+        zoomTy = 0;
+      let pinchState = null; // {d0, s0, cx, cy, tx0, ty0}
+      let panState = null; // {x0, y0, tx0, ty0}
 
-<!-- Modal revisión -->
-<div class="modal-bg" id="review-modal-bg" onclick="closeReviewModal(event)">
-  <div class="modal">
-    <div class="modal-title"><span>👁️ Revisar antes de subir</span><span class="modal-close" onclick="closeReviewModalDirect()">✕</span></div>
-    <div class="review-img-wrap">
-      <img id="review-img" class="review-img" alt="">
-      <canvas id="review-canvas"></canvas>
-    </div>
-    <div class="review-annos" id="review-annos"></div>
-    <div class="btn-row">
-      <button class="btn btn-ghost" onclick="closeReviewModalDirect()">Volver</button>
-      <button class="btn btn-up" onclick="confirmAndUpload()">✅ Confirmar y subir</button>
-    </div>
-  </div>
-</div>
+      // Herramienta activa: 'bbox' | 'polygon'
+      let activeTool = "bbox";
 
-<div class="toast" id="toast"></div>
+      // Estado BBox
+      let bboxDrawing = false,
+        bboxStart = { x: 0, y: 0 },
+        bboxCurrent = null;
 
-<script>
-// ── Catálogo ──────────────────────────────────────────────────────────────────
-const CATALOG=[];
-[2400,1200,900,800,750,600].forEach(l=>[600,550,500,450,420,400,380,350,320,300].forEach(a=>CATALOG.push({code:`PM-${l}x${a}`,family:"PM",spec:`${l}×${a}mm`})));
-[2400,1200,900,800,750,600].forEach(l=>[270,250,230,200,150,120,100,90,80].forEach(a=>CATALOG.push({code:`PB-${l}x${a}`,family:"PB",spec:`${l}×${a}mm`})));
-[2400,1200,900,800,600].forEach(l=>CATALOG.push({code:`EI-${l}x150x150`,family:"EI",spec:`${l}×150×150mm`}));
+      // Estado Polygon
+      let polyPoints = [],
+        polyDrawing = false,
+        polyPreview = null;
 
-const COLORS=["#f59e0b","#3b82f6","#a855f7","#22c55e","#ef4444","#06b6d4","#f97316","#84cc16","#ec4899","#14b8a6"];
-const PROJECT="reconocimiento-de-piezas-rllp1";
+      // Imagen
+      let imgNatW = 0,
+        imgNatH = 0,
+        imgDispW = 0,
+        imgDispH = 0;
 
-// ── Estado global ─────────────────────────────────────────────────────────────
-let currentClase="", selectedFile=null;
-let sessionCount=0, totalCount=+localStorage.getItem("rf_total")||0, okCount=+localStorage.getItem("rf_ok")||0;
-let recientes=JSON.parse(localStorage.getItem("rf_recientes")||"[]");
-let catModalFam="ALL", catPageFam="ALL", uploadLog=[];
-let annotations=[];
+      const savedKey = localStorage.getItem("rf_api_key");
+      if (savedKey) document.getElementById("api-key").value = savedKey;
+      document
+        .getElementById("api-key")
+        .addEventListener("blur", () =>
+          localStorage.setItem(
+            "rf_api_key",
+            document.getElementById("api-key").value.trim(),
+          ),
+        );
+      document.getElementById("cnt-total").textContent = totalCount;
+      document.getElementById("cnt-ok").textContent = okCount;
 
-// Contador de imágenes por clase (persistente)
-let classCounts=JSON.parse(localStorage.getItem("rf_class_counts")||"{}");
-const CLASS_GOAL=150;
-
-// Modo del catálogo: "select" (asigna currentClase) | "reassign" (reasigna anno)
-let catModalMode="select", catReassignId=null;
-
-// Zoom / Pan
-let zoomScale=1, zoomTx=0, zoomTy=0;
-let pinchState=null; // {d0, s0, cx, cy, tx0, ty0}
-let panState=null;   // {x0, y0, tx0, ty0}
-
-// Herramienta activa: 'bbox' | 'polygon'
-let activeTool="bbox";
-
-// Estado BBox
-let bboxDrawing=false, bboxStart={x:0,y:0}, bboxCurrent=null;
-
-// Estado Polygon
-let polyPoints=[], polyDrawing=false, polyPreview=null;
-
-// Imagen
-let imgNatW=0, imgNatH=0, imgDispW=0, imgDispH=0;
-
-const savedKey=localStorage.getItem("rf_api_key");
-if(savedKey) document.getElementById("api-key").value=savedKey;
-document.getElementById("api-key").addEventListener("blur",()=>localStorage.setItem("rf_api_key",document.getElementById("api-key").value.trim()));
-document.getElementById("cnt-total").textContent=totalCount;
-document.getElementById("cnt-ok").textContent=okCount;
-
-// ── Tabs ──────────────────────────────────────────────────────────────────────
-function switchTab(n){
-  document.querySelectorAll(".tab").forEach((t,i)=>t.classList.toggle("active",["captura","historial","catalogo"][i]===n));
-  document.querySelectorAll(".page").forEach(p=>p.classList.toggle("active",p.id==="page-"+n));
-  if(n==="catalogo") renderCatalogPage("");
-}
-
-// ── Herramienta ───────────────────────────────────────────────────────────────
-function setTool(t){
-  activeTool=t;
-  document.getElementById("tool-bbox").classList.toggle("active",t==="bbox");
-  document.getElementById("tool-polygon").classList.toggle("active",t==="polygon");
-  document.getElementById("tool-hint-bbox").style.display=t==="bbox"?"block":"none";
-  document.getElementById("tool-hint-polygon").style.display=t==="polygon"?"block":"none";
-  // Cancelar cualquier dibujo en curso
-  bboxCurrent=null; bboxDrawing=false;
-  cancelPolygon();
-}
-
-// ── Clase ─────────────────────────────────────────────────────────────────────
-function setClase(code){
-  if(catModalMode==="reassign" && catReassignId!=null){
-    const a=annotations.find(x=>x.id===catReassignId);
-    if(a){ a.clase=code; renderAnnoList(); redraw(); showToast(`✏️ Clase → ${code}`,"ok"); }
-    catModalMode="select"; catReassignId=null;
-    closeCatModalDirect(); addReciente(code);
-    return;
-  }
-  currentClase=code;
-  document.getElementById("clase-custom").value=code;
-  const d=document.getElementById("current-clase-display");
-  d.textContent="✏️ Clase activa: "+code; d.style.display="block";
-  addReciente(code); closeCatModalDirect();
-}
-function reassignClass(id){
-  catModalMode="reassign"; catReassignId=id;
-  openCatModal();
-  // pequeño hint en el título del modal
-  setTimeout(()=>{ const t=document.querySelector("#cat-modal-bg .modal-title span:first-child"); if(t) t.textContent="Reasignar clase a esta anotación"; },50);
-}
-function onCustomInput(v){
-  currentClase=v.trim().toUpperCase();
-  const d=document.getElementById("current-clase-display");
-  if(v){d.textContent="✏️ Clase activa: "+currentClase;d.style.display="block";}
-  else d.style.display="none";
-}
-function addReciente(code){
-  recientes=[code,...recientes.filter(r=>r!==code)].slice(0,8);
-  localStorage.setItem("rf_recientes",JSON.stringify(recientes));
-  renderRecientes();
-}
-function renderRecientes(){
-  const g=document.getElementById("recientes-grid"); g.innerHTML="";
-  recientes.forEach(c=>{const b=document.createElement("div");b.className="quick-btn"+(c===currentClase?" active":"");b.textContent=c;b.onclick=()=>setClase(c);g.appendChild(b);});
-  document.getElementById("recientes-wrap").style.display=recientes.length?"":"none";
-}
-renderRecientes();
-
-// ── File ──────────────────────────────────────────────────────────────────────
-document.getElementById("file-input").addEventListener("change",e=>{
-  const f=e.target.files[0]; if(!f) return;
-  selectedFile=f; annotations=[];
-  const url=URL.createObjectURL(f);
-  const img=document.getElementById("bbox-img");
-  img.onload=()=>{ imgNatW=img.naturalWidth; imgNatH=img.naturalHeight; zoomReset(); initCanvas(); analyzeBlur(img); };
-  img.src=url;
-  document.getElementById("capture-zone").classList.add("has-img");
-  document.getElementById("bbox-section").style.display="block";
-  document.getElementById("annos-card").style.display="none";
-  document.getElementById("blur-warn").style.display="none";
-  cancelPolygon(); bboxCurrent=null;
-  renderAnnoList(); updateButtons();
-});
-
-// ── Blur detection (varianza de Laplaciano sobre imagen escalada) ────────────
-function analyzeBlur(img){
-  try{
-    const S=220; const c=document.createElement("canvas");
-    c.width=S; c.height=S;
-    const g=c.getContext("2d"); g.drawImage(img,0,0,S,S);
-    const d=g.getImageData(0,0,S,S).data;
-    // convertir a luminancia
-    const lum=new Float32Array(S*S);
-    for(let i=0;i<S*S;i++) lum[i]=0.299*d[i*4]+0.587*d[i*4+1]+0.114*d[i*4+2];
-    // Laplaciano 3x3
-    let sum=0, sum2=0, n=0;
-    for(let y=1;y<S-1;y++){
-      for(let x=1;x<S-1;x++){
-        const i=y*S+x;
-        const v=-lum[i-S]-lum[i-1]+4*lum[i]-lum[i+1]-lum[i+S];
-        sum+=v; sum2+=v*v; n++;
+      // ── Tabs ──────────────────────────────────────────────────────────────────────
+      function switchTab(n) {
+        document
+          .querySelectorAll(".tab")
+          .forEach((t, i) =>
+            t.classList.toggle(
+              "active",
+              ["captura", "historial", "catalogo"][i] === n,
+            ),
+          );
+        document
+          .querySelectorAll(".page")
+          .forEach((p) => p.classList.toggle("active", p.id === "page-" + n));
+        if (n === "catalogo") renderCatalogPage("");
       }
-    }
-    const mean=sum/n, variance=(sum2/n)-mean*mean;
-    const w=document.getElementById("blur-warn");
-    const t=document.getElementById("blur-warn-txt");
-    w.classList.remove("ok");
-    if(variance<80){
-      w.style.display="flex";
-      t.innerHTML=`⚠️ <b>Foto borrosa</b> (nitidez ${variance.toFixed(0)}). Considera repetir la toma.`;
-    } else if(variance<180){
-      w.style.display="flex";
-      t.innerHTML=`⚠️ Nitidez media (${variance.toFixed(0)}). Aceptable, pero mejor sería más clara.`;
-    } else {
-      w.style.display="flex"; w.classList.add("ok");
-      t.innerHTML=`✅ Foto nítida (${variance.toFixed(0)}).`;
-      setTimeout(()=>{ if(w.classList.contains("ok")) w.style.display="none"; },2500);
-    }
-  }catch(_){}
-}
 
-// ── Canvas init ───────────────────────────────────────────────────────────────
-const canvas=document.getElementById("bbox-canvas");
-function initCanvas(){
-  const img=document.getElementById("bbox-img");
-  imgDispW=img.offsetWidth; imgDispH=img.offsetHeight;
-  canvas.width=imgDispW; canvas.height=imgDispH;
-  redraw();
-}
-function getPos(e){
-  const rect=canvas.getBoundingClientRect();
-  const t=e.touches?e.touches[0]:e;
-  return{
-    x:Math.max(0,Math.min(canvas.width,(t.clientX-rect.left)*(canvas.width/rect.width))),
-    y:Math.max(0,Math.min(canvas.height,(t.clientY-rect.top)*(canvas.height/rect.height)))
-  };
-}
-window.addEventListener("resize",()=>{ if(selectedFile) initCanvas(); });
+      // ── Herramienta ───────────────────────────────────────────────────────────────
+      function setTool(t) {
+        activeTool = t;
+        document
+          .getElementById("tool-bbox")
+          .classList.toggle("active", t === "bbox");
+        document
+          .getElementById("tool-pieza")
+          .classList.toggle("active", t === "pieza");
+        document
+          .getElementById("tool-polygon")
+          .classList.toggle("active", t === "polygon");
+        document.getElementById("tool-hint-bbox").style.display =
+          t === "bbox" ? "block" : "none";
+        document.getElementById("tool-hint-pieza").style.display =
+          t === "pieza" ? "block" : "none";
+        document.getElementById("tool-hint-polygon").style.display =
+          t === "polygon" ? "block" : "none";
+        // Cancelar cualquier dibujo en curso
+        bboxCurrent = null;
+        bboxDrawing = false;
+        cancelPolygon();
+      }
 
-// ── Zoom / Pan ────────────────────────────────────────────────────────────────
-function applyZoom(){
-  const w=document.getElementById("bbox-wrap");
-  w.style.transform=`translate(${zoomTx}px,${zoomTy}px) scale(${zoomScale})`;
-  const lbl=document.getElementById("zoom-lbl"); if(lbl) lbl.textContent=zoomScale.toFixed(1)+"×";
-}
-function zoomReset(){ zoomScale=1; zoomTx=0; zoomTy=0; applyZoom(); }
-function zoomBy(factor){
-  const vp=document.getElementById("zoom-viewport"); if(!vp) return;
-  const r=vp.getBoundingClientRect(); const cx=r.width/2, cy=r.height/2;
-  zoomAt(zoomScale*factor, cx, cy);
-}
-function zoomAt(newScale,cx,cy){
-  newScale=Math.max(1,Math.min(6,newScale));
-  // punto en coords de contenido bajo (cx,cy) antes del zoom
-  const kx=(cx-zoomTx)/zoomScale, ky=(cy-zoomTy)/zoomScale;
-  zoomScale=newScale;
-  zoomTx=cx-kx*zoomScale;
-  zoomTy=cy-ky*zoomScale;
-  clampPan();
-  applyZoom();
-}
-function clampPan(){
-  const vp=document.getElementById("zoom-viewport"); if(!vp) return;
-  const r=vp.getBoundingClientRect();
-  const cW=r.width*zoomScale, cH=r.height*zoomScale;
-  const minX=r.width-cW, minY=r.height-cH;
-  if(zoomScale<=1){ zoomTx=0; zoomTy=0; return; }
-  zoomTx=Math.min(0,Math.max(minX,zoomTx));
-  zoomTy=Math.min(0,Math.max(minY,zoomTy));
-}
-function touchDist(t1,t2){ const dx=t1.clientX-t2.clientX, dy=t1.clientY-t2.clientY; return Math.hypot(dx,dy); }
-function touchMid(t1,t2,vpRect){ return {x:(t1.clientX+t2.clientX)/2-vpRect.left, y:(t1.clientY+t2.clientY)/2-vpRect.top}; }
+      // ── Clase ─────────────────────────────────────────────────────────────────────
+      function setClase(code) {
+        if (catModalMode === "reassign" && catReassignId != null) {
+          const a = annotations.find((x) => x.id === catReassignId);
+          if (a) {
+            a.clase = code;
+            // Recomputar claseUpload si tiene cantidad asignada
+            if (a.qty) a.claseUpload = `${code}_x${a.qty}`;
+            renderAnnoList();
+            redraw();
+            showToast(`✏️ Clase → ${code}`, "ok");
+          }
+          catModalMode = "select";
+          catReassignId = null;
+          closeCatModalDirect();
+          addReciente(code);
+          return;
+        }
+        currentClase = code;
+        document.getElementById("clase-custom").value = code;
+        const d = document.getElementById("current-clase-display");
+        d.textContent = "✏️ Clase activa: " + code;
+        d.style.display = "block";
+        addReciente(code);
+        closeCatModalDirect();
+      }
+      function reassignClass(id) {
+        catModalMode = "reassign";
+        catReassignId = id;
+        openCatModal();
+        // pequeño hint en el título del modal
+        setTimeout(() => {
+          const t = document.querySelector(
+            "#cat-modal-bg .modal-title span:first-child",
+          );
+          if (t) t.textContent = "Reasignar clase a esta anotación";
+        }, 50);
+      }
+      function onCustomInput(v) {
+        currentClase = v.trim().toUpperCase();
+        const d = document.getElementById("current-clase-display");
+        if (v) {
+          d.textContent = "✏️ Clase activa: " + currentClase;
+          d.style.display = "block";
+        } else d.style.display = "none";
+      }
+      function addReciente(code) {
+        recientes = [code, ...recientes.filter((r) => r !== code)].slice(0, 8);
+        localStorage.setItem("rf_recientes", JSON.stringify(recientes));
+        renderRecientes();
+      }
+      function renderRecientes() {
+        const g = document.getElementById("recientes-grid");
+        g.innerHTML = "";
+        recientes.forEach((c) => {
+          const b = document.createElement("div");
+          b.className = "quick-btn" + (c === currentClase ? " active" : "");
+          b.textContent = c;
+          b.onclick = () => setClase(c);
+          g.appendChild(b);
+        });
+        document.getElementById("recientes-wrap").style.display =
+          recientes.length ? "" : "none";
+      }
+      renderRecientes();
 
-// ── Eventos canvas (con pinch/pan) ───────────────────────────────────────────
-canvas.addEventListener("mousedown", e=>{ e.preventDefault(); activeTool==="bbox"?bboxStart_(e):polyTap(e); },{passive:false});
-canvas.addEventListener("mousemove", e=>{ e.preventDefault(); if(activeTool==="bbox") bboxMove_(e); else polyMove_(e); },{passive:false});
-canvas.addEventListener("mouseup",   e=>{ e.preventDefault(); if(activeTool==="bbox") bboxEnd_(e); },{passive:false});
+      // ── File ──────────────────────────────────────────────────────────────────────
+      document.getElementById("file-input").addEventListener("change", (e) => {
+        const f = e.target.files[0];
+        if (!f) return;
+        selectedFile = f;
+        annotations = [];
+        const url = URL.createObjectURL(f);
+        const img = document.getElementById("bbox-img");
+        img.onload = () => {
+          imgNatW = img.naturalWidth;
+          imgNatH = img.naturalHeight;
+          zoomReset();
+          initCanvas();
+          analyzeBlur(img);
+        };
+        img.src = url;
+        document.getElementById("capture-zone").classList.add("has-img");
+        document.getElementById("bbox-section").style.display = "block";
+        document.getElementById("annos-card").style.display = "none";
+        document.getElementById("blur-warn").style.display = "none";
+        cancelPolygon();
+        bboxCurrent = null;
+        renderAnnoList();
+        updateButtons();
+      });
 
-canvas.addEventListener("touchstart",e=>{
-  e.preventDefault();
-  if(e.touches.length===2){
-    // Iniciar pinch — cancelar dibujos en progreso
-    bboxDrawing=false; bboxCurrent=null;
-    const vp=document.getElementById("zoom-viewport").getBoundingClientRect();
-    const mid=touchMid(e.touches[0],e.touches[1],vp);
-    pinchState={d0:touchDist(e.touches[0],e.touches[1]),s0:zoomScale,cx:mid.x,cy:mid.y,tx0:zoomTx,ty0:zoomTy,mx0:mid.x,my0:mid.y};
-    panState=null;
-    redraw();
-  } else if(e.touches.length===1 && zoomScale>1.05){
-    // Pan con 1 dedo cuando está zoom in — solo si tocaste con 2 dedos primero está en pinchState
-    // Para poder dibujar zoomeado: preferimos dibujar. Pan requiere 2 dedos.
-    activeTool==="bbox"?bboxStart_(e):polyTap(e);
-  } else {
-    activeTool==="bbox"?bboxStart_(e):polyTap(e);
-  }
-},{passive:false});
+      // ── Blur detection (varianza de Laplaciano sobre imagen escalada) ────────────
+      function analyzeBlur(img) {
+        try {
+          const S = 220;
+          const c = document.createElement("canvas");
+          c.width = S;
+          c.height = S;
+          const g = c.getContext("2d");
+          g.drawImage(img, 0, 0, S, S);
+          const d = g.getImageData(0, 0, S, S).data;
+          // convertir a luminancia
+          const lum = new Float32Array(S * S);
+          for (let i = 0; i < S * S; i++)
+            lum[i] =
+              0.299 * d[i * 4] + 0.587 * d[i * 4 + 1] + 0.114 * d[i * 4 + 2];
+          // Laplaciano 3x3
+          let sum = 0,
+            sum2 = 0,
+            n = 0;
+          for (let y = 1; y < S - 1; y++) {
+            for (let x = 1; x < S - 1; x++) {
+              const i = y * S + x;
+              const v =
+                -lum[i - S] - lum[i - 1] + 4 * lum[i] - lum[i + 1] - lum[i + S];
+              sum += v;
+              sum2 += v * v;
+              n++;
+            }
+          }
+          const mean = sum / n,
+            variance = sum2 / n - mean * mean;
+          const w = document.getElementById("blur-warn");
+          const t = document.getElementById("blur-warn-txt");
+          w.classList.remove("ok");
+          if (variance < 80) {
+            w.style.display = "flex";
+            t.innerHTML = `⚠️ <b>Foto borrosa</b> (nitidez ${variance.toFixed(0)}). Considera repetir la toma.`;
+          } else if (variance < 180) {
+            w.style.display = "flex";
+            t.innerHTML = `⚠️ Nitidez media (${variance.toFixed(0)}). Aceptable, pero mejor sería más clara.`;
+          } else {
+            w.style.display = "flex";
+            w.classList.add("ok");
+            t.innerHTML = `✅ Foto nítida (${variance.toFixed(0)}).`;
+            setTimeout(() => {
+              if (w.classList.contains("ok")) w.style.display = "none";
+            }, 2500);
+          }
+        } catch (_) {}
+      }
 
-canvas.addEventListener("touchmove", e=>{
-  e.preventDefault();
-  if(pinchState && e.touches.length===2){
-    const vp=document.getElementById("zoom-viewport").getBoundingClientRect();
-    const d=touchDist(e.touches[0],e.touches[1]);
-    const mid=touchMid(e.touches[0],e.touches[1],vp);
-    const newScale=Math.max(1,Math.min(6, pinchState.s0*(d/pinchState.d0)));
-    // zoom around initial pinch center + pan por diferencia de mid
-    const kx=(pinchState.cx-pinchState.tx0)/pinchState.s0, ky=(pinchState.cy-pinchState.ty0)/pinchState.s0;
-    zoomScale=newScale;
-    zoomTx=pinchState.cx-kx*zoomScale + (mid.x-pinchState.mx0);
-    zoomTy=pinchState.cy-ky*zoomScale + (mid.y-pinchState.my0);
-    clampPan(); applyZoom();
-    return;
-  }
-  if(activeTool==="bbox") bboxMove_(e); else polyMove_(e);
-},{passive:false});
+      // ── Canvas init ───────────────────────────────────────────────────────────────
+      const canvas = document.getElementById("bbox-canvas");
+      function initCanvas() {
+        const img = document.getElementById("bbox-img");
+        imgDispW = img.offsetWidth;
+        imgDispH = img.offsetHeight;
+        canvas.width = imgDispW;
+        canvas.height = imgDispH;
+        redraw();
+      }
+      function getPos(e) {
+        const rect = canvas.getBoundingClientRect();
+        const t = e.touches ? e.touches[0] : e;
+        return {
+          x: Math.max(
+            0,
+            Math.min(
+              canvas.width,
+              (t.clientX - rect.left) * (canvas.width / rect.width),
+            ),
+          ),
+          y: Math.max(
+            0,
+            Math.min(
+              canvas.height,
+              (t.clientY - rect.top) * (canvas.height / rect.height),
+            ),
+          ),
+        };
+      }
+      window.addEventListener("resize", () => {
+        if (selectedFile) initCanvas();
+      });
 
-canvas.addEventListener("touchend",  e=>{
-  e.preventDefault();
-  if(pinchState && e.touches.length<2){ pinchState=null; return; }
-  if(activeTool==="bbox") bboxEnd_(e);
-},{passive:false});
+      // ── Zoom / Pan ────────────────────────────────────────────────────────────────
+      function applyZoom() {
+        const w = document.getElementById("bbox-wrap");
+        w.style.transform = `translate(${zoomTx}px,${zoomTy}px) scale(${zoomScale})`;
+        const lbl = document.getElementById("zoom-lbl");
+        if (lbl) lbl.textContent = zoomScale.toFixed(1) + "×";
+      }
+      function zoomReset() {
+        zoomScale = 1;
+        zoomTx = 0;
+        zoomTy = 0;
+        applyZoom();
+      }
+      function zoomBy(factor) {
+        const vp = document.getElementById("zoom-viewport");
+        if (!vp) return;
+        const r = vp.getBoundingClientRect();
+        const cx = r.width / 2,
+          cy = r.height / 2;
+        zoomAt(zoomScale * factor, cx, cy);
+      }
+      function zoomAt(newScale, cx, cy) {
+        newScale = Math.max(1, Math.min(6, newScale));
+        // punto en coords de contenido bajo (cx,cy) antes del zoom
+        const kx = (cx - zoomTx) / zoomScale,
+          ky = (cy - zoomTy) / zoomScale;
+        zoomScale = newScale;
+        zoomTx = cx - kx * zoomScale;
+        zoomTy = cy - ky * zoomScale;
+        clampPan();
+        applyZoom();
+      }
+      function clampPan() {
+        const vp = document.getElementById("zoom-viewport");
+        if (!vp) return;
+        const r = vp.getBoundingClientRect();
+        const cW = r.width * zoomScale,
+          cH = r.height * zoomScale;
+        const minX = r.width - cW,
+          minY = r.height - cH;
+        if (zoomScale <= 1) {
+          zoomTx = 0;
+          zoomTy = 0;
+          return;
+        }
+        zoomTx = Math.min(0, Math.max(minX, zoomTx));
+        zoomTy = Math.min(0, Math.max(minY, zoomTy));
+      }
+      function touchDist(t1, t2) {
+        const dx = t1.clientX - t2.clientX,
+          dy = t1.clientY - t2.clientY;
+        return Math.hypot(dx, dy);
+      }
+      function touchMid(t1, t2, vpRect) {
+        return {
+          x: (t1.clientX + t2.clientX) / 2 - vpRect.left,
+          y: (t1.clientY + t2.clientY) / 2 - vpRect.top,
+        };
+      }
 
-canvas.addEventListener("dblclick",  e=>{ e.preventDefault(); if(activeTool==="polygon") closePolygon(); });
+      // ── Eventos canvas (con pinch/pan) ───────────────────────────────────────────
+      function esBboxTool() {
+        return activeTool === "bbox" || activeTool === "pieza";
+      }
+      canvas.addEventListener(
+        "mousedown",
+        (e) => {
+          e.preventDefault();
+          esBboxTool() ? bboxStart_(e) : polyTap(e);
+        },
+        { passive: false },
+      );
+      canvas.addEventListener(
+        "mousemove",
+        (e) => {
+          e.preventDefault();
+          if (esBboxTool()) bboxMove_(e);
+          else polyMove_(e);
+        },
+        { passive: false },
+      );
+      canvas.addEventListener(
+        "mouseup",
+        (e) => {
+          e.preventDefault();
+          if (esBboxTool()) bboxEnd_(e);
+        },
+        { passive: false },
+      );
 
-// ── BBox ──────────────────────────────────────────────────────────────────────
-function bboxStart_(e){
-  if(!checkClase()) return;
-  const p=getPos(e); bboxDrawing=true; bboxStart=p; bboxCurrent=null;
-}
-function bboxMove_(e){
-  if(!bboxDrawing) return;
-  const p=getPos(e);
-  bboxCurrent={x:Math.min(bboxStart.x,p.x),y:Math.min(bboxStart.y,p.y),w:Math.abs(p.x-bboxStart.x),h:Math.abs(p.y-bboxStart.y)};
-  redraw();
-}
-function bboxEnd_(e){
-  bboxDrawing=false;
-  if(bboxCurrent&&bboxCurrent.w>15&&bboxCurrent.h>15){
-    const id=Date.now();
-    const color=COLORS[annotations.length%COLORS.length];
-    annotations.push({id,clase:currentClase,type:"bbox",bbox:{...bboxCurrent},color,checked:true,qty:null});
-    bboxCurrent=null; redraw(); renderAnnoList(); updateButtons();
-    showQtyPrompt(id);
-  } else { bboxCurrent=null; redraw(); }
-}
+      canvas.addEventListener(
+        "touchstart",
+        (e) => {
+          e.preventDefault();
+          if (e.touches.length === 2) {
+            // Iniciar pinch — cancelar dibujos en progreso
+            bboxDrawing = false;
+            bboxCurrent = null;
+            const vp = document
+              .getElementById("zoom-viewport")
+              .getBoundingClientRect();
+            const mid = touchMid(e.touches[0], e.touches[1], vp);
+            pinchState = {
+              d0: touchDist(e.touches[0], e.touches[1]),
+              s0: zoomScale,
+              cx: mid.x,
+              cy: mid.y,
+              tx0: zoomTx,
+              ty0: zoomTy,
+              mx0: mid.x,
+              my0: mid.y,
+            };
+            panState = null;
+            redraw();
+          } else if (e.touches.length === 1 && zoomScale > 1.05) {
+            esBboxTool() ? bboxStart_(e) : polyTap(e);
+          } else {
+            esBboxTool() ? bboxStart_(e) : polyTap(e);
+          }
+        },
+        { passive: false },
+      );
 
-// ── Polygon ───────────────────────────────────────────────────────────────────
-let lastTapTime=0;
-function polyTap(e){
-  if(!checkClase()) return;
-  const now=Date.now();
-  if(now-lastTapTime<300){ closePolygon(); lastTapTime=0; return; }
-  lastTapTime=now;
-  const p=getPos(e);
-  polyPoints.push(p); polyDrawing=true;
-  document.getElementById("poly-toolbar").style.display="flex";
-  document.getElementById("poly-pts-count").textContent=polyPoints.length+" punto"+(polyPoints.length!==1?"s":"");
-  redraw();
-}
-function polyMove_(e){
-  if(!polyDrawing||!polyPoints.length) return;
-  const p=getPos(e); polyPreview=p; redraw();
-}
-function closePolygon(){
-  if(polyPoints.length<3){ showToast("⚠️ Mínimo 3 puntos para cerrar","err"); return; }
-  const id=Date.now();
-  const color=COLORS[annotations.length%COLORS.length];
-  annotations.push({id,clase:currentClase,type:"polygon",points:[...polyPoints],color,checked:true,qty:null});
-  cancelPolygon(); redraw(); renderAnnoList(); updateButtons();
-  showQtyPrompt(id);
-}
-function cancelPolygon(){
-  polyPoints=[]; polyDrawing=false; polyPreview=null;
-  document.getElementById("poly-toolbar").style.display="none";
-  redraw();
-}
+      canvas.addEventListener(
+        "touchmove",
+        (e) => {
+          e.preventDefault();
+          if (pinchState && e.touches.length === 2) {
+            const vp = document
+              .getElementById("zoom-viewport")
+              .getBoundingClientRect();
+            const d = touchDist(e.touches[0], e.touches[1]);
+            const mid = touchMid(e.touches[0], e.touches[1], vp);
+            const newScale = Math.max(
+              1,
+              Math.min(6, pinchState.s0 * (d / pinchState.d0)),
+            );
+            // zoom around initial pinch center + pan por diferencia de mid
+            const kx = (pinchState.cx - pinchState.tx0) / pinchState.s0,
+              ky = (pinchState.cy - pinchState.ty0) / pinchState.s0;
+            zoomScale = newScale;
+            zoomTx = pinchState.cx - kx * zoomScale + (mid.x - pinchState.mx0);
+            zoomTy = pinchState.cy - ky * zoomScale + (mid.y - pinchState.my0);
+            clampPan();
+            applyZoom();
+            return;
+          }
+          if (activeTool === "bbox") bboxMove_(e);
+          else polyMove_(e);
+        },
+        { passive: false },
+      );
 
-// ── Redraw ────────────────────────────────────────────────────────────────────
-function redraw(){
-  const ctx=canvas.getContext("2d");
-  ctx.clearRect(0,0,canvas.width,canvas.height);
+      canvas.addEventListener(
+        "touchend",
+        (e) => {
+          e.preventDefault();
+          if (pinchState && e.touches.length < 2) {
+            pinchState = null;
+            return;
+          }
+          if (activeTool === "bbox") bboxEnd_(e);
+        },
+        { passive: false },
+      );
 
-  // Anotaciones guardadas
-  annotations.forEach(a=>{
-    if(!a.checked) return;
-    ctx.strokeStyle=a.color; ctx.lineWidth=2.5; ctx.globalAlpha=1;
+      canvas.addEventListener("dblclick", (e) => {
+        e.preventDefault();
+        if (activeTool === "polygon") closePolygon();
+      });
 
-    if(a.type==="bbox"){
-      const b=a.bbox;
-      // Sombra
-      ctx.fillStyle="rgba(0,0,0,0.25)";
-      ctx.fillRect(0,0,canvas.width,b.y);
-      ctx.fillRect(0,b.y+b.h,canvas.width,canvas.height-b.y-b.h);
-      ctx.fillRect(0,b.y,b.x,b.h);
-      ctx.fillRect(b.x+b.w,b.y,canvas.width-b.x-b.w,b.h);
-      ctx.strokeRect(b.x,b.y,b.w,b.h);
-      drawCorners(ctx,b.x,b.y,b.w,b.h,a.color);
-      drawLabel(ctx,a.clase,b.x,b.y,a.color);
-      if(a.isQty){ drawQtyBox(ctx,a,b.x,b.y,b.w,b.h); }
+      // ── BBox ──────────────────────────────────────────────────────────────────────
+      function bboxStart_(e) {
+        if (!checkClase()) return;
+        const p = getPos(e);
+        bboxDrawing = true;
+        bboxStart = p;
+        bboxCurrent = null;
+      }
+      function bboxMove_(e) {
+        if (!bboxDrawing) return;
+        const p = getPos(e);
+        bboxCurrent = {
+          x: Math.min(bboxStart.x, p.x),
+          y: Math.min(bboxStart.y, p.y),
+          w: Math.abs(p.x - bboxStart.x),
+          h: Math.abs(p.y - bboxStart.y),
+        };
+        redraw();
+      }
+      function bboxEnd_(e) {
+        bboxDrawing = false;
+        if (bboxCurrent && bboxCurrent.w > 10 && bboxCurrent.h > 10) {
+          const id = Date.now();
+          const esPieza = activeTool === "pieza";
+          const color = esPieza
+            ? "#06b6d4"
+            : COLORS[
+                annotations.filter((a) => !a.individual).length % COLORS.length
+              ];
+          annotations.push({
+            id,
+            clase: currentClase,
+            type: "bbox",
+            bbox: { ...bboxCurrent },
+            color,
+            checked: true,
+            qty: null,
+            individual: esPieza,
+          });
+          bboxCurrent = null;
+          redraw();
+          renderAnnoList();
+          updateButtons();
+          if (esPieza) showToast(`🔲 Pieza: ${currentClase}`, "ok");
+          else showQtyPrompt(id);
+        } else {
+          bboxCurrent = null;
+          redraw();
+        }
+      }
 
-    } else if(a.type==="polygon"){
-      const pts=a.points;
-      ctx.beginPath(); ctx.moveTo(pts[0].x,pts[0].y);
-      pts.forEach(p=>ctx.lineTo(p.x,p.y)); ctx.closePath();
-      ctx.fillStyle=a.color+"33"; ctx.fill();
-      ctx.stroke();
-      pts.forEach(p=>{ ctx.beginPath(); ctx.arc(p.x,p.y,4,0,Math.PI*2); ctx.fillStyle=a.color; ctx.fill(); });
-      drawLabel(ctx,a.clase,pts[0].x,pts[0].y,a.color);
-    }
-  });
+      // ── Polygon ───────────────────────────────────────────────────────────────────
+      let lastTapTime = 0;
+      function polyTap(e) {
+        if (!checkClase()) return;
+        const now = Date.now();
+        if (now - lastTapTime < 300) {
+          closePolygon();
+          lastTapTime = 0;
+          return;
+        }
+        lastTapTime = now;
+        const p = getPos(e);
+        polyPoints.push(p);
+        polyDrawing = true;
+        document.getElementById("poly-toolbar").style.display = "flex";
+        document.getElementById("poly-pts-count").textContent =
+          polyPoints.length + " punto" + (polyPoints.length !== 1 ? "s" : "");
+        redraw();
+      }
+      function polyMove_(e) {
+        if (!polyDrawing || !polyPoints.length) return;
+        const p = getPos(e);
+        polyPreview = p;
+        redraw();
+      }
+      function closePolygon() {
+        if (polyPoints.length < 3) {
+          showToast("⚠️ Mínimo 3 puntos para cerrar", "err");
+          return;
+        }
+        const id = Date.now();
+        const color = COLORS[annotations.length % COLORS.length];
+        annotations.push({
+          id,
+          clase: currentClase,
+          type: "polygon",
+          points: [...polyPoints],
+          color,
+          checked: true,
+          qty: null,
+        });
+        cancelPolygon();
+        redraw();
+        renderAnnoList();
+        updateButtons();
+        showQtyPrompt(id);
+      }
+      function cancelPolygon() {
+        polyPoints = [];
+        polyDrawing = false;
+        polyPreview = null;
+        document.getElementById("poly-toolbar").style.display = "none";
+        redraw();
+      }
 
-  // BBox en progreso
-  if(bboxCurrent&&bboxDrawing){
-    ctx.strokeStyle="rgba(255,255,255,.8)"; ctx.lineWidth=2; ctx.setLineDash([6,3]);
-    ctx.strokeRect(bboxCurrent.x,bboxCurrent.y,bboxCurrent.w,bboxCurrent.h);
-    ctx.setLineDash([]);
-  }
+      // ── Redraw ────────────────────────────────────────────────────────────────────
+      function redraw() {
+        const ctx = canvas.getContext("2d");
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  // Polígono en progreso
-  if(polyPoints.length){
-    ctx.strokeStyle="rgba(255,255,255,.9)"; ctx.lineWidth=2; ctx.setLineDash([5,3]);
-    ctx.beginPath(); ctx.moveTo(polyPoints[0].x,polyPoints[0].y);
-    polyPoints.forEach(p=>ctx.lineTo(p.x,p.y));
-    if(polyPreview) ctx.lineTo(polyPreview.x,polyPreview.y);
-    ctx.stroke(); ctx.setLineDash([]);
-    polyPoints.forEach((p,i)=>{
-      ctx.beginPath(); ctx.arc(p.x,p.y,i===0?6:4,0,Math.PI*2);
-      ctx.fillStyle=i===0?"#f59e0b":"#fff"; ctx.fill();
-    });
-  }
-}
+        // Anotaciones guardadas
+        annotations.forEach((a) => {
+          if (!a.checked) return;
+          ctx.globalAlpha = 1;
+          ctx.setLineDash([]);
 
-function drawCorners(ctx,x,y,w,h,color){
-  const cs=12; ctx.strokeStyle=color; ctx.lineWidth=4;
-  [[x,y],[x+w,y],[x,y+h],[x+w,y+h]].forEach(([cx,cy])=>{
-    const dx=cx===x?1:-1, dy=cy===y?1:-1;
-    ctx.beginPath(); ctx.moveTo(cx+dx*cs,cy); ctx.lineTo(cx,cy); ctx.lineTo(cx,cy+dy*cs); ctx.stroke();
-  });
-}
-function drawLabel(ctx,text,x,y,color){
-  ctx.font="bold 12px -apple-system,sans-serif";
-  const tw=ctx.measureText(text).width;
-  const lx=x, ly=Math.max(20,y-4);
-  ctx.fillStyle=color; ctx.fillRect(lx,ly-16,tw+10,20);
-  ctx.fillStyle="#000"; ctx.fillText(text,lx+5,ly-2);
-}
-function drawQtyBox(ctx,a,bx,by,bw,bh){
-  const num=a.clase.replace("QTY-","");
-  const qw=Math.min(50,bw*0.25), qh=Math.min(28,bh*0.2);
-  ctx.fillStyle="#22c55ecc"; ctx.fillRect(bx+4,by+4,qw,qh);
-  ctx.fillStyle="#fff"; ctx.font=`bold ${Math.min(qh*.7,18)}px -apple-system,sans-serif`;
-  ctx.textAlign="center"; ctx.textBaseline="middle";
-  ctx.fillText(num,bx+4+qw/2,by+4+qh/2);
-  ctx.textAlign="left"; ctx.textBaseline="alphabetic";
-}
+          if (a.type === "bbox") {
+            const b = a.bbox;
+            if (a.individual) {
+              // ── Pieza individual: borde cian punteado, relleno translúcido ──
+              ctx.strokeStyle = "#06b6d4";
+              ctx.lineWidth = 2.5;
+              ctx.setLineDash([7, 4]);
+              ctx.fillStyle = "rgba(6,182,212,0.07)";
+              ctx.fillRect(b.x, b.y, b.w, b.h);
+              ctx.strokeRect(b.x, b.y, b.w, b.h);
+              ctx.setLineDash([]);
+              drawCorners(ctx, b.x, b.y, b.w, b.h, "#06b6d4");
+              drawLabel(ctx, "🔲 " + a.clase, b.x, b.y, "#06b6d4");
+            } else {
+              // ── Arrume: sombra + esquinas + badge de cantidad ──
+              ctx.strokeStyle = a.color;
+              ctx.lineWidth = 2.5;
+              ctx.fillStyle = "rgba(0,0,0,0.22)";
+              ctx.fillRect(0, 0, canvas.width, b.y);
+              ctx.fillRect(
+                0,
+                b.y + b.h,
+                canvas.width,
+                canvas.height - b.y - b.h,
+              );
+              ctx.fillRect(0, b.y, b.x, b.h);
+              ctx.fillRect(b.x + b.w, b.y, canvas.width - b.x - b.w, b.h);
+              ctx.strokeRect(b.x, b.y, b.w, b.h);
+              drawCorners(ctx, b.x, b.y, b.w, b.h, a.color);
+              drawLabel(ctx, a.clase, b.x, b.y, a.color);
+              if (a.qty) {
+                drawQtyBadge(ctx, b.x, b.y, b.w, b.h, a.qty);
+              }
+            }
+          } else if (a.type === "polygon") {
+            const pts = a.points;
+            ctx.strokeStyle = a.color;
+            ctx.lineWidth = 2.5;
+            ctx.beginPath();
+            ctx.moveTo(pts[0].x, pts[0].y);
+            pts.forEach((p) => ctx.lineTo(p.x, p.y));
+            ctx.closePath();
+            ctx.fillStyle = a.color + "33";
+            ctx.fill();
+            ctx.stroke();
+            pts.forEach((p) => {
+              ctx.beginPath();
+              ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
+              ctx.fillStyle = a.color;
+              ctx.fill();
+            });
+            drawLabel(ctx, a.clase, pts[0].x, pts[0].y, a.color);
+            if (a.qty) {
+              const xs = pts.map((p) => p.x),
+                ys = pts.map((p) => p.y);
+              drawQtyBadge(
+                ctx,
+                Math.min(...xs),
+                Math.min(...ys),
+                Math.max(...xs) - Math.min(...xs),
+                Math.max(...ys) - Math.min(...ys),
+                a.qty,
+              );
+            }
+          }
+        });
 
-// ── Verificar clase antes de dibujar ─────────────────────────────────────────
-function checkClase(){
-  if(!currentClase){ showToast("⚠️ Selecciona una clase primero","err"); return false; }
-  return true;
-}
+        // BBox en progreso
+        if (bboxCurrent && bboxDrawing) {
+          ctx.strokeStyle = "rgba(255,255,255,.8)";
+          ctx.lineWidth = 2;
+          ctx.setLineDash([6, 3]);
+          ctx.strokeRect(
+            bboxCurrent.x,
+            bboxCurrent.y,
+            bboxCurrent.w,
+            bboxCurrent.h,
+          );
+          ctx.setLineDash([]);
+        }
 
-// ── Lista de anotaciones ──────────────────────────────────────────────────────
-function renderAnnoList(){
-  const list=document.getElementById("anno-list");
-  const card=document.getElementById("annos-card");
-  const title=document.getElementById("annos-title");
-  if(!annotations.length){ card.style.display="none"; return; }
-  card.style.display="block";
-  title.textContent=`📦 Anotaciones (${annotations.length})`;
-  list.innerHTML="";
-  annotations.forEach(a=>{
-    const item=document.createElement("div"); item.className="anno-item";
-    const qtyBadge=a.qty?`<span style="background:rgba(34,197,94,.2);color:var(--ok);border:1px solid rgba(34,197,94,.3);border-radius:6px;padding:2px 7px;font-size:10px;font-weight:700">×${a.qty}</span>`:"";
-    const typeIcon=a.type==="polygon"?"🔷":"⬜";
-    const qtyTag=a.isQty?`<span style="color:var(--ok);font-size:10px">📦</span>`:"";
-    item.innerHTML=`
+        // Polígono en progreso
+        if (polyPoints.length) {
+          ctx.strokeStyle = "rgba(255,255,255,.9)";
+          ctx.lineWidth = 2;
+          ctx.setLineDash([5, 3]);
+          ctx.beginPath();
+          ctx.moveTo(polyPoints[0].x, polyPoints[0].y);
+          polyPoints.forEach((p) => ctx.lineTo(p.x, p.y));
+          if (polyPreview) ctx.lineTo(polyPreview.x, polyPreview.y);
+          ctx.stroke();
+          ctx.setLineDash([]);
+          polyPoints.forEach((p, i) => {
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, i === 0 ? 6 : 4, 0, Math.PI * 2);
+            ctx.fillStyle = i === 0 ? "#f59e0b" : "#fff";
+            ctx.fill();
+          });
+        }
+      }
+
+      function drawCorners(ctx, x, y, w, h, color) {
+        const cs = 12;
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 4;
+        [
+          [x, y],
+          [x + w, y],
+          [x, y + h],
+          [x + w, y + h],
+        ].forEach(([cx, cy]) => {
+          const dx = cx === x ? 1 : -1,
+            dy = cy === y ? 1 : -1;
+          ctx.beginPath();
+          ctx.moveTo(cx + dx * cs, cy);
+          ctx.lineTo(cx, cy);
+          ctx.lineTo(cx, cy + dy * cs);
+          ctx.stroke();
+        });
+      }
+      function drawLabel(ctx, text, x, y, color) {
+        ctx.font = "bold 12px -apple-system,sans-serif";
+        const tw = ctx.measureText(text).width;
+        const lx = x,
+          ly = Math.max(20, y - 4);
+        ctx.fillStyle = color;
+        ctx.fillRect(lx, ly - 16, tw + 10, 20);
+        ctx.fillStyle = "#000";
+        ctx.fillText(text, lx + 5, ly - 2);
+      }
+      function drawQtyBadge(ctx, bx, by, bw, bh, qty) {
+        const qw = Math.min(58, Math.max(36, bw * 0.28)),
+          qh = Math.min(30, Math.max(20, bh * 0.2));
+        const rx = bx + 5,
+          ry = by + 5;
+        ctx.fillStyle = "rgba(34,197,94,.88)";
+        ctx.beginPath();
+        if (ctx.roundRect) ctx.roundRect(rx, ry, qw, qh, 5);
+        else ctx.rect(rx, ry, qw, qh);
+        ctx.fill();
+        ctx.fillStyle = "#fff";
+        ctx.font = `bold ${Math.min(Math.floor(qh * 0.65), 16)}px -apple-system,sans-serif`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(`×${qty}`, rx + qw / 2, ry + qh / 2);
+        ctx.textAlign = "left";
+        ctx.textBaseline = "alphabetic";
+      }
+
+      // ── Verificar clase antes de dibujar ─────────────────────────────────────────
+      function checkClase() {
+        if (!currentClase) {
+          showToast("⚠️ Selecciona una clase primero", "err");
+          return false;
+        }
+        return true;
+      }
+
+      // ── Lista de anotaciones ──────────────────────────────────────────────────────
+      function renderAnnoList() {
+        const list = document.getElementById("anno-list");
+        const card = document.getElementById("annos-card");
+        const title = document.getElementById("annos-title");
+        if (!annotations.length) {
+          card.style.display = "none";
+          return;
+        }
+        card.style.display = "block";
+        title.textContent = `📦 Anotaciones (${annotations.length})`;
+        list.innerHTML = "";
+        annotations.forEach((a) => {
+          const item = document.createElement("div");
+          item.className = "anno-item" + (a.individual ? " individual" : "");
+          const qtyBadge = a.qty
+            ? `<span class="badge-qty">×${a.qty} piezas</span>`
+            : "";
+          const indBadge = a.individual
+            ? `<span class="badge-ind">🔲 Pieza</span>`
+            : "";
+          const typeIcon =
+            a.type === "polygon" ? "🔷" : a.individual ? "🔲" : "⬜";
+          const labelDisplay = a.qty
+            ? `${a.clase} <span style="font-size:9px;color:var(--steel);font-weight:400">(sube como ${a.claseUpload})</span>`
+            : a.clase;
+          item.innerHTML = `
       <div class="anno-color" style="background:${a.color}"></div>
-      <span class="anno-label" onclick="reassignClass(${a.id})" style="cursor:pointer;text-decoration:underline;text-decoration-style:dotted;text-underline-offset:3px" title="Cambiar clase">${a.clase}</span>
-      <span class="anno-type">${typeIcon} ${a.type==="polygon"?"Polígono":"BBox"}</span>
-      ${qtyBadge}${qtyTag}
-      <span class="anno-check ${a.checked?"checked":"unchecked"}" onclick="toggleAnno(${a.id})">${a.checked?"✅":"☐"}</span>
+      <span class="anno-label" onclick="reassignClass(${a.id})" style="cursor:pointer;text-decoration:underline;text-decoration-style:dotted;text-underline-offset:3px" title="Cambiar clase">${labelDisplay}</span>
+      <span class="anno-type">${typeIcon} ${a.type === "polygon" ? "Polígono" : "BBox"}</span>
+      ${indBadge}${qtyBadge}
+      <span class="anno-check ${a.checked ? "checked" : "unchecked"}" onclick="toggleAnno(${a.id})">${a.checked ? "✅" : "☐"}</span>
       <span class="anno-del" onclick="deleteAnno(${a.id})">🗑️</span>`;
-    list.appendChild(item);
-  });
-}
-function toggleAnno(id){ const a=annotations.find(x=>x.id===id); if(a){a.checked=!a.checked;renderAnnoList();redraw();} }
-function deleteAnno(id){ annotations=annotations.filter(x=>x.id!==id); renderAnnoList(); redraw(); updateButtons(); }
-function updateButtons(){
-  const has=annotations.some(a=>a.checked);
-  document.getElementById("btn-review").disabled=!has;
-  document.getElementById("btn-upload").disabled=!has;
-}
+          list.appendChild(item);
+        });
+      }
+      function toggleAnno(id) {
+        const a = annotations.find((x) => x.id === id);
+        if (a) {
+          a.checked = !a.checked;
+          renderAnnoList();
+          redraw();
+        }
+      }
+      function deleteAnno(id) {
+        annotations = annotations.filter((x) => x.id !== id);
+        renderAnnoList();
+        redraw();
+        updateButtons();
+      }
+      function updateButtons() {
+        const has = annotations.some((a) => a.checked);
+        document.getElementById("btn-review").disabled = !has;
+        document.getElementById("btn-upload").disabled = !has;
+      }
 
-// ── QTY prompt ────────────────────────────────────────────────────────────────
-function showQtyPrompt(annoId){
-  const ex=document.getElementById("qty-prompt"); if(ex) ex.remove();
-  const div=document.createElement("div"); div.id="qty-prompt";
-  div.style.cssText="position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--surface);border:1.5px solid var(--amber);border-radius:14px;padding:14px 16px;z-index:350;width:90%;max-width:360px;box-shadow:0 8px 32px rgba(0,0,0,.5)";
-  div.innerHTML=`
+      // ── QTY prompt ────────────────────────────────────────────────────────────────
+      function showQtyPrompt(annoId) {
+        const ex = document.getElementById("qty-prompt");
+        if (ex) ex.remove();
+        const div = document.createElement("div");
+        div.id = "qty-prompt";
+        div.style.cssText =
+          "position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--surface);border:1.5px solid var(--amber);border-radius:14px;padding:14px 16px;z-index:350;width:90%;max-width:360px;box-shadow:0 8px 32px rgba(0,0,0,.5)";
+        div.innerHTML = `
     <p style="font-size:13px;font-weight:700;color:var(--amber);margin-bottom:10px">¿Cuántas piezas tiene este arrume?</p>
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
       <input type="number" id="qty-input" placeholder="Cantidad" min="1" max="999"
@@ -799,323 +2079,556 @@ function showQtyPrompt(annoId){
       <button onclick="skipQty()" style="flex:1;padding:10px;border-radius:10px;border:1.5px solid var(--border);background:var(--surface);color:var(--text2);font-size:13px;font-weight:600;cursor:pointer">Sin cantidad</button>
       <button onclick="addQty(${annoId})" style="flex:1;padding:10px;border-radius:10px;border:none;background:var(--amber);color:#0a1628;font-size:13px;font-weight:700;cursor:pointer">✅ Agregar</button>
     </div>`;
-  document.body.appendChild(div);
-  setTimeout(()=>document.getElementById("qty-input")?.focus(),100);
-}
-function skipQty(){
-  const p=document.getElementById("qty-prompt"); if(p) p.remove();
-  showToast(`✅ Anotación añadida`,"ok");
-}
-function addQty(annoId){
-  const qty=parseInt(document.getElementById("qty-input")?.value);
-  const p=document.getElementById("qty-prompt"); if(p) p.remove();
-  const anno=annotations.find(a=>a.id===annoId);
-  if(!anno||!qty||qty<1){ showToast("✅ Añadida sin cantidad","ok"); return; }
-  anno.qty=qty; anno.isArrume=true;
-  // Crear anotación QTY automática
-  const qtyId=Date.now()+1;
-  let qtyBbox;
-  if(anno.type==="bbox"){
-    const b=anno.bbox;
-    qtyBbox={x:b.x+4,y:b.y+4,w:Math.min(60,b.w*.25),h:Math.min(30,b.h*.2)};
-  } else {
-    const xs=anno.points.map(p=>p.x), ys=anno.points.map(p=>p.y);
-    qtyBbox={x:Math.min(...xs)+4,y:Math.min(...ys)+4,w:60,h:30};
-  }
-  annotations.push({id:qtyId,clase:`QTY-${qty}`,type:"bbox",bbox:qtyBbox,color:"#22c55e",checked:true,isQty:true,parentId:annoId});
-  redraw(); renderAnnoList(); updateButtons();
-  showToast(`✅ ${anno.clase} × ${qty} piezas`,"ok");
-}
+        document.body.appendChild(div);
+        setTimeout(() => document.getElementById("qty-input")?.focus(), 100);
+      }
+      function skipQty() {
+        const p = document.getElementById("qty-prompt");
+        if (p) p.remove();
+        showToast(`✅ Anotación añadida`, "ok");
+      }
+      function addQty(annoId) {
+        const qty = parseInt(document.getElementById("qty-input")?.value);
+        const p = document.getElementById("qty-prompt");
+        if (p) p.remove();
+        const anno = annotations.find((a) => a.id === annoId);
+        if (!anno || !qty || qty < 1) {
+          showToast("✅ Añadida sin cantidad", "ok");
+          return;
+        }
+        // Guardar cantidad + clase para subida con sufijo (PM-2400x600_x8)
+        anno.qty = qty;
+        anno.isArrume = true;
+        anno.claseUpload = `${anno.clase}_x${qty}`;
+        redraw();
+        renderAnnoList();
+        updateButtons();
+        showToast(`✅ ${anno.clase} · arrume ×${qty} piezas`, "ok");
+      }
 
-// ── Review modal ──────────────────────────────────────────────────────────────
-function openReview(){
-  const img=document.getElementById("bbox-img");
-  const rImg=document.getElementById("review-img");
-  rImg.src=img.src;
-  rImg.onload=()=>drawReviewCanvas();
-  if(rImg.complete) drawReviewCanvas();
-  const annos=document.getElementById("review-annos"); annos.innerHTML="";
-  annotations.forEach(a=>{
-    const div=document.createElement("div");
-    div.className="review-anno "+(a.checked?"approved":"rejected");
-    div.id="rev-"+a.id;
-    const typeIcon=a.type==="polygon"?"🔷":"⬜";
-    div.innerHTML=`
-      <span class="review-check" onclick="toggleReviewAnno(${a.id})">${a.checked?"✅":"❌"}</span>
+      // ── Review modal ──────────────────────────────────────────────────────────────
+      function openReview() {
+        const img = document.getElementById("bbox-img");
+        const rImg = document.getElementById("review-img");
+        rImg.src = img.src;
+        rImg.onload = () => drawReviewCanvas();
+        if (rImg.complete) drawReviewCanvas();
+        const annos = document.getElementById("review-annos");
+        annos.innerHTML = "";
+        annotations.forEach((a) => {
+          const div = document.createElement("div");
+          div.className =
+            "review-anno " + (a.checked ? "approved" : "rejected");
+          div.id = "rev-" + a.id;
+          const typeIcon = a.type === "polygon" ? "🔷" : "⬜";
+          div.innerHTML = `
+      <span class="review-check" onclick="toggleReviewAnno(${a.id})">${a.checked ? "✅" : "❌"}</span>
       <div style="flex:1">
         <div style="font-family:monospace;font-weight:700;font-size:14px;color:${a.color}">${a.clase}</div>
-        <div style="font-size:11px;color:var(--steel)">${typeIcon} ${a.type==="polygon"?"Polígono ("+a.points?.length+" pts)":"BBox"} ${a.qty?"· ×"+a.qty+" piezas":""}</div>
+        <div style="font-size:11px;color:var(--steel)">${typeIcon} ${a.type === "polygon" ? "Polígono (" + a.points?.length + " pts)" : "BBox"} ${a.qty ? "· ×" + a.qty + " piezas" : ""}</div>
       </div>`;
-    annos.appendChild(div);
-  });
-  document.getElementById("review-modal-bg").classList.add("show");
-}
-function toggleReviewAnno(id){
-  const a=annotations.find(x=>x.id===id); if(!a) return;
-  a.checked=!a.checked;
-  const div=document.getElementById("rev-"+id);
-  div.className="review-anno "+(a.checked?"approved":"rejected");
-  div.querySelector(".review-check").textContent=a.checked?"✅":"❌";
-  renderAnnoList(); redraw(); drawReviewCanvas(); updateButtons();
-}
-function drawReviewCanvas(){
-  const rImg=document.getElementById("review-img");
-  const rc=document.getElementById("review-canvas");
-  rc.width=rImg.offsetWidth; rc.height=rImg.offsetHeight;
-  const scX=rImg.offsetWidth/imgDispW, scY=rImg.offsetHeight/imgDispH;
-  const ctx=rc.getContext("2d"); ctx.clearRect(0,0,rc.width,rc.height);
-  annotations.filter(a=>a.checked).forEach(a=>{
-    ctx.strokeStyle=a.color; ctx.lineWidth=2.5;
-    if(a.type==="bbox"){
-      const b={x:a.bbox.x*scX,y:a.bbox.y*scY,w:a.bbox.w*scX,h:a.bbox.h*scY};
-      ctx.strokeRect(b.x,b.y,b.w,b.h);
-      drawLabel(ctx,a.clase,b.x,b.y,a.color);
-    } else if(a.type==="polygon"){
-      const pts=a.points.map(p=>({x:p.x*scX,y:p.y*scY}));
-      ctx.beginPath(); ctx.moveTo(pts[0].x,pts[0].y);
-      pts.forEach(p=>ctx.lineTo(p.x,p.y)); ctx.closePath();
-      ctx.fillStyle=a.color+"33"; ctx.fill(); ctx.stroke();
-      drawLabel(ctx,a.clase,pts[0].x,pts[0].y,a.color);
-    }
-  });
-}
-function closeReviewModal(e){ if(e.target===document.getElementById("review-modal-bg")) closeReviewModalDirect(); }
-function closeReviewModalDirect(){ document.getElementById("review-modal-bg").classList.remove("show"); }
-function confirmAndUpload(){ closeReviewModalDirect(); uploadAll(); }
-
-// ── Catálogo modal ────────────────────────────────────────────────────────────
-function openCatModal(){
-  catModalFam="ALL"; document.getElementById("cat-modal-bg").classList.add("show");
-  document.getElementById("cat-modal-search").value="";
-  renderCatModalFams(); renderCatModal("");
-  setTimeout(()=>document.getElementById("cat-modal-search").focus(),100);
-}
-function closeCatModal(e){ if(e.target===document.getElementById("cat-modal-bg")) closeCatModalDirect(); }
-function closeCatModalDirect(){ document.getElementById("cat-modal-bg").classList.remove("show"); }
-function renderCatModalFams(){
-  const w=document.getElementById("cat-modal-families"); w.innerHTML="";
-  ["ALL","PM","PB","EI"].forEach(f=>{const b=document.createElement("div");b.className="fam-btn"+(f===catModalFam?" active":"");b.textContent=f==="ALL"?"Todas":f;b.onclick=()=>{catModalFam=f;renderCatModalFams();renderCatModal(document.getElementById("cat-modal-search").value);};w.appendChild(b);});
-}
-function renderCatModal(q){
-  const list=document.getElementById("cat-modal-list"); list.innerHTML="";
-  CATALOG.filter(c=>(catModalFam==="ALL"||c.family===catModalFam)&&(!q||c.code.toLowerCase().includes(q.toLowerCase()))).slice(0,60).forEach(c=>{
-    const item=document.createElement("div"); item.className="cat-item";
-    item.innerHTML=`<div onclick="setClase('${c.code}')"><div class="ci-code">${c.code}</div><div class="ci-spec">${c.spec}</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('${c.code}')">📋</span>`;
-    list.appendChild(item);
-  });
-}
-renderCatModalFams(); renderCatModal("");
-function renderCatalogPage(q){
-  const fw=document.getElementById("cat-main-families"); fw.innerHTML="";
-  ["ALL","PM","PB","EI"].forEach(f=>{const b=document.createElement("div");b.className="fam-btn"+(f===catPageFam?" active":"");b.textContent=f==="ALL"?"Todas":f;b.onclick=()=>{catPageFam=f;renderCatalogPage(document.getElementById("cat-main-search").value);};fw.appendChild(b);});
-  const g=document.getElementById("cat-main-grid"); g.innerHTML="";
-  CATALOG.filter(c=>(catPageFam==="ALL"||c.family===catPageFam)&&(!q||c.code.toLowerCase().includes(q.toLowerCase()))).slice(0,80).forEach(c=>{
-    const card=document.createElement("div"); card.className="ref-card";
-    card.innerHTML=`<div class="ref-fam ${c.family}">${c.family}</div><div class="ref-info"><div class="ref-code">${c.code}</div><div class="ref-spec">${c.spec}</div></div><span class="ref-copy" onclick="copyCode('${c.code}')">📋</span>`;
-    g.appendChild(card);
-  });
-}
-function copyCode(code){ navigator.clipboard?.writeText(code).then(()=>showToast(`📋 ${code} copiado`,"ok")).catch(()=>{const t=document.createElement("textarea");t.value=code;document.body.appendChild(t);t.select();document.execCommand("copy");document.body.removeChild(t);showToast(`📋 ${code} copiado`,"ok");}); }
-
-// ── Upload ────────────────────────────────────────────────────────────────────
-async function uploadAll(){
-  const apiKey=document.getElementById("api-key").value.trim();
-  const split=document.getElementById("split").value;
-  const checked=annotations.filter(a=>a.checked);
-  if(!apiKey){showToast("⚠️ Ingresa tu API Key","err");return;}
-  if(!selectedFile){showToast("⚠️ Selecciona imagen","err");return;}
-  if(!checked.length){showToast("⚠️ Marca al menos una anotación","err");return;}
-
-  const btn=document.getElementById("btn-upload"), btnR=document.getElementById("btn-review");
-  btn.disabled=true; btnR.disabled=true; btn.innerHTML="⏳ Subiendo…"; btn.classList.add("loading");
-  const pw=document.getElementById("prog-wrap"), pb=document.getElementById("prog-bar");
-  pw.classList.add("show"); pb.style.width="15%";
-
-  const logId=Date.now();
-  const ext=selectedFile.name.split(".").pop()||"jpg";
-  const baseName=checked.filter(a=>!a.isQty).map(a=>a.clase).join("_")+"_"+logId+"."+ext;
-  const previewUrl=URL.createObjectURL(selectedFile);
-
-  try{
-    const b64=await fileToB64(selectedFile);
-    pb.style.width="40%";
-
-    // Subir imagen
-    const upRes=await fetch(`https://api.roboflow.com/dataset/${PROJECT}/upload?api_key=${apiKey}&name=${encodeURIComponent(baseName)}&split=${split}`,
-      {method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:b64.split(",")[1]});
-    const upData=await upRes.json();
-    if(!upRes.ok||upData.error) throw new Error(upData.error||`HTTP ${upRes.status}`);
-    pb.style.width="65%";
-    const imageId=upData.id||"";
-
-    // Construir anotaciones para Roboflow
-    if(imageId){
-      const scX=imgNatW/imgDispW, scY=imgNatH/imgDispH;
-      const annoPayload={width:imgNatW,height:imgNatH,boxes:[]};
-
-      checked.forEach(a=>{
-        if(a.type==="bbox"){
-          const b=a.bbox;
-          annoPayload.boxes.push({
-            label:a.clase,
-            x:(b.x+b.w/2)*scX/imgNatW,
-            y:(b.y+b.h/2)*scY/imgNatH,
-            w:b.w*scX/imgNatW,
-            h:b.h*scY/imgNatH,
+          annos.appendChild(div);
+        });
+        document.getElementById("review-modal-bg").classList.add("show");
+      }
+      function toggleReviewAnno(id) {
+        const a = annotations.find((x) => x.id === id);
+        if (!a) return;
+        a.checked = !a.checked;
+        const div = document.getElementById("rev-" + id);
+        div.className = "review-anno " + (a.checked ? "approved" : "rejected");
+        div.querySelector(".review-check").textContent = a.checked
+          ? "✅"
+          : "❌";
+        renderAnnoList();
+        redraw();
+        drawReviewCanvas();
+        updateButtons();
+      }
+      function drawReviewCanvas() {
+        const rImg = document.getElementById("review-img");
+        const rc = document.getElementById("review-canvas");
+        rc.width = rImg.offsetWidth;
+        rc.height = rImg.offsetHeight;
+        const scX = rImg.offsetWidth / imgDispW,
+          scY = rImg.offsetHeight / imgDispH;
+        const ctx = rc.getContext("2d");
+        ctx.clearRect(0, 0, rc.width, rc.height);
+        annotations
+          .filter((a) => a.checked)
+          .forEach((a) => {
+            ctx.strokeStyle = a.color;
+            ctx.lineWidth = 2.5;
+            if (a.type === "bbox") {
+              const b = {
+                x: a.bbox.x * scX,
+                y: a.bbox.y * scY,
+                w: a.bbox.w * scX,
+                h: a.bbox.h * scY,
+              };
+              ctx.strokeRect(b.x, b.y, b.w, b.h);
+              drawLabel(ctx, a.clase, b.x, b.y, a.color);
+            } else if (a.type === "polygon") {
+              const pts = a.points.map((p) => ({ x: p.x * scX, y: p.y * scY }));
+              ctx.beginPath();
+              ctx.moveTo(pts[0].x, pts[0].y);
+              pts.forEach((p) => ctx.lineTo(p.x, p.y));
+              ctx.closePath();
+              ctx.fillStyle = a.color + "33";
+              ctx.fill();
+              ctx.stroke();
+              drawLabel(ctx, a.clase, pts[0].x, pts[0].y, a.color);
+            }
           });
-        } else if(a.type==="polygon"){
-          // Roboflow acepta polígonos como puntos normalizados
-          annoPayload.boxes.push({
-            label:a.clase,
-            points:a.points.map(p=>({x:p.x*scX/imgNatW,y:p.y*scY/imgNatH})),
+      }
+      function closeReviewModal(e) {
+        if (e.target === document.getElementById("review-modal-bg"))
+          closeReviewModalDirect();
+      }
+      function closeReviewModalDirect() {
+        document.getElementById("review-modal-bg").classList.remove("show");
+      }
+      function confirmAndUpload() {
+        closeReviewModalDirect();
+        uploadAll();
+      }
+
+      // ── Catálogo modal ────────────────────────────────────────────────────────────
+      function openCatModal() {
+        catModalFam = "ALL";
+        document.getElementById("cat-modal-bg").classList.add("show");
+        document.getElementById("cat-modal-search").value = "";
+        renderCatModalFams();
+        renderCatModal("");
+        setTimeout(
+          () => document.getElementById("cat-modal-search").focus(),
+          100,
+        );
+      }
+      function closeCatModal(e) {
+        if (e.target === document.getElementById("cat-modal-bg"))
+          closeCatModalDirect();
+      }
+      function closeCatModalDirect() {
+        document.getElementById("cat-modal-bg").classList.remove("show");
+      }
+      function renderCatModalFams() {
+        const w = document.getElementById("cat-modal-families");
+        w.innerHTML = "";
+        ["ALL", "PM", "PB", "EI"].forEach((f) => {
+          const b = document.createElement("div");
+          b.className = "fam-btn" + (f === catModalFam ? " active" : "");
+          b.textContent = f === "ALL" ? "Todas" : f;
+          b.onclick = () => {
+            catModalFam = f;
+            renderCatModalFams();
+            renderCatModal(document.getElementById("cat-modal-search").value);
+          };
+          w.appendChild(b);
+        });
+      }
+      function renderCatModal(q) {
+        const list = document.getElementById("cat-modal-list");
+        list.innerHTML = "";
+        CATALOG.filter(
+          (c) =>
+            (catModalFam === "ALL" || c.family === catModalFam) &&
+            (!q || c.code.toLowerCase().includes(q.toLowerCase())),
+        )
+          .slice(0, 60)
+          .forEach((c) => {
+            const item = document.createElement("div");
+            item.className = "cat-item";
+            item.innerHTML = `<div onclick="setClase('${c.code}')"><div class="ci-code">${c.code}</div><div class="ci-spec">${c.spec}</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('${c.code}')">📋</span>`;
+            list.appendChild(item);
           });
+      }
+      renderCatModalFams();
+      renderCatModal("");
+      function renderCatalogPage(q) {
+        const fw = document.getElementById("cat-main-families");
+        fw.innerHTML = "";
+        ["ALL", "PM", "PB", "EI"].forEach((f) => {
+          const b = document.createElement("div");
+          b.className = "fam-btn" + (f === catPageFam ? " active" : "");
+          b.textContent = f === "ALL" ? "Todas" : f;
+          b.onclick = () => {
+            catPageFam = f;
+            renderCatalogPage(document.getElementById("cat-main-search").value);
+          };
+          fw.appendChild(b);
+        });
+        const g = document.getElementById("cat-main-grid");
+        g.innerHTML = "";
+        CATALOG.filter(
+          (c) =>
+            (catPageFam === "ALL" || c.family === catPageFam) &&
+            (!q || c.code.toLowerCase().includes(q.toLowerCase())),
+        )
+          .slice(0, 80)
+          .forEach((c) => {
+            const card = document.createElement("div");
+            card.className = "ref-card";
+            card.innerHTML = `<div class="ref-fam ${c.family}">${c.family}</div><div class="ref-info"><div class="ref-code">${c.code}</div><div class="ref-spec">${c.spec}</div></div><span class="ref-copy" onclick="copyCode('${c.code}')">📋</span>`;
+            g.appendChild(card);
+          });
+      }
+      function copyCode(code) {
+        navigator.clipboard
+          ?.writeText(code)
+          .then(() => showToast(`📋 ${code} copiado`, "ok"))
+          .catch(() => {
+            const t = document.createElement("textarea");
+            t.value = code;
+            document.body.appendChild(t);
+            t.select();
+            document.execCommand("copy");
+            document.body.removeChild(t);
+            showToast(`📋 ${code} copiado`, "ok");
+          });
+      }
+
+      // ── Upload ────────────────────────────────────────────────────────────────────
+      async function uploadAll() {
+        const apiKey = document.getElementById("api-key").value.trim();
+        const split = document.getElementById("split").value;
+        const checked = annotations.filter((a) => a.checked);
+        if (!apiKey) {
+          showToast("⚠️ Ingresa tu API Key", "err");
+          return;
         }
-      });
+        if (!selectedFile) {
+          showToast("⚠️ Selecciona imagen", "err");
+          return;
+        }
+        if (!checked.length) {
+          showToast("⚠️ Marca al menos una anotación", "err");
+          return;
+        }
 
-      const annoRes=await fetch(`https://api.roboflow.com/dataset/${PROJECT}/annotate/${imageId}?api_key=${apiKey}&name=${encodeURIComponent(baseName)}`,
-        {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(annoPayload)});
-      const annoData=await annoRes.json();
-      if(annoData.error) console.warn("Anotación:",annoData.error);
-    }
+        const btn = document.getElementById("btn-upload"),
+          btnR = document.getElementById("btn-review");
+        btn.disabled = true;
+        btnR.disabled = true;
+        btn.innerHTML = "⏳ Subiendo…";
+        btn.classList.add("loading");
+        const pw = document.getElementById("prog-wrap"),
+          pb = document.getElementById("prog-bar");
+        pw.classList.add("show");
+        pb.style.width = "15%";
 
-    pb.style.width="100%";
-    sessionCount++; totalCount++; okCount++;
-    localStorage.setItem("rf_total",totalCount); localStorage.setItem("rf_ok",okCount);
-    document.getElementById("cnt-session").textContent=sessionCount;
-    document.getElementById("cnt-total").textContent=totalCount;
-    document.getElementById("cnt-ok").textContent=okCount;
+        const logId = Date.now();
+        const ext = selectedFile.name.split(".").pop() || "jpg";
+        const baseName =
+          checked
+            .filter((a) => !a.isQty)
+            .map((a) => a.clase)
+            .join("_") +
+          "_" +
+          logId +
+          "." +
+          ext;
+        const previewUrl = URL.createObjectURL(selectedFile);
 
-    const entry={id:logId,url:previewUrl,annos:checked.map(a=>({clase:a.clase,color:a.color,type:a.type})),split,ok:true,file:selectedFile,imageId};
-    uploadLog.unshift(entry); addLogItem(entry);
-    checked.filter(a=>!a.isQty).forEach(a=>addReciente(a.clase));
-    // Actualizar contador por clase (cuenta 1 imagen por clase única, no por bbox)
-    const uniqueClasses=[...new Set(checked.filter(a=>!a.isQty).map(a=>a.clase))];
-    uniqueClasses.forEach(c=>{ classCounts[c]=(classCounts[c]||0)+1; });
-    localStorage.setItem("rf_class_counts",JSON.stringify(classCounts));
-    renderClassStats();
-    showToast(`✅ ${checked.length} anotación(es) → Dataset`,"ok");
-    resetAll();
+        try {
+          const b64 = await fileToB64(selectedFile);
+          pb.style.width = "40%";
 
-  }catch(err){
-    pb.style.background="var(--danger)";
-    uploadLog.unshift({id:logId,url:previewUrl,annos:checked.map(a=>({clase:a.clase,color:a.color})),split,ok:false,error:err.message,file:selectedFile});
-    addLogItem(uploadLog[0]);
-    showToast(`❌ ${err.message.slice(0,50)}`,"err");
-    setTimeout(()=>{pb.style.background="var(--amber)";pb.style.width="0%";pw.classList.remove("show");},2000);
-  }finally{
-    setTimeout(()=>{pb.style.width="0%";pw.classList.remove("show");},1500);
-    btn.disabled=false; btnR.disabled=false; btn.innerHTML="⬆️ Subir"; btn.classList.remove("loading");
-    updateButtons();
-  }
-}
+          // Subir imagen
+          const upRes = await fetch(
+            `https://api.roboflow.com/dataset/${PROJECT}/upload?api_key=${apiKey}&name=${encodeURIComponent(baseName)}&split=${split}`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/x-www-form-urlencoded" },
+              body: b64.split(",")[1],
+            },
+          );
+          const upData = await upRes.json();
+          if (!upRes.ok || upData.error)
+            throw new Error(upData.error || `HTTP ${upRes.status}`);
+          pb.style.width = "65%";
+          const imageId = upData.id || "";
 
-function fileToB64(f){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=()=>rej(new Error("Error"));r.readAsDataURL(f);});}
+          // Construir anotaciones para Roboflow
+          if (imageId) {
+            const scX = imgNatW / imgDispW,
+              scY = imgNatH / imgDispH;
+            const annoPayload = { width: imgNatW, height: imgNatH, boxes: [] };
 
-function resetAll(){
-  selectedFile=null; annotations=[]; bboxCurrent=null; bboxDrawing=false;
-  cancelPolygon();
-  document.getElementById("capture-zone").classList.remove("has-img");
-  document.getElementById("bbox-section").style.display="none";
-  document.getElementById("annos-card").style.display="none";
-  document.getElementById("file-input").value="";
-  const ctx=canvas.getContext("2d"); ctx.clearRect(0,0,canvas.width,canvas.height);
-  updateButtons();
-}
+            checked.forEach((a) => {
+              if (a.isQty) return; // ya no se suben bboxes QTY flotantes
+              // Arrumes usan clase con sufijo _xN; piezas individuales usan la clase base
+              const label = a.claseUpload || a.clase;
+              if (a.type === "bbox") {
+                const b = a.bbox;
+                annoPayload.boxes.push({
+                  label,
+                  x: ((b.x + b.w / 2) * scX) / imgNatW,
+                  y: ((b.y + b.h / 2) * scY) / imgNatH,
+                  w: (b.w * scX) / imgNatW,
+                  h: (b.h * scY) / imgNatH,
+                });
+              } else if (a.type === "polygon") {
+                annoPayload.boxes.push({
+                  label,
+                  points: a.points.map((p) => ({
+                    x: (p.x * scX) / imgNatW,
+                    y: (p.y * scY) / imgNatH,
+                  })),
+                });
+              }
+            });
 
-// ── Log ───────────────────────────────────────────────────────────────────────
-function addLogItem(entry){
-  const list=document.getElementById("log-list");
-  if(list.querySelector("p")) list.innerHTML="";
-  const item=document.createElement("div");
-  item.className="log-item"+(entry.ok?"":" error"); item.id="log-"+entry.id;
-  const tags=(entry.annos||[]).map(a=>`<span class="log-anno-tag" style="background:${a.color}22;color:${a.color};border:1px solid ${a.color}44">${a.type==="polygon"?"🔷":"⬜"} ${a.clase}</span>`).join("");
-  item.innerHTML=`
+            const annoRes = await fetch(
+              `https://api.roboflow.com/dataset/${PROJECT}/annotate/${imageId}?api_key=${apiKey}&name=${encodeURIComponent(baseName)}`,
+              {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(annoPayload),
+              },
+            );
+            const annoData = await annoRes.json();
+            if (annoData.error) console.warn("Anotación:", annoData.error);
+          }
+
+          pb.style.width = "100%";
+          sessionCount++;
+          totalCount++;
+          okCount++;
+          localStorage.setItem("rf_total", totalCount);
+          localStorage.setItem("rf_ok", okCount);
+          document.getElementById("cnt-session").textContent = sessionCount;
+          document.getElementById("cnt-total").textContent = totalCount;
+          document.getElementById("cnt-ok").textContent = okCount;
+
+          const entry = {
+            id: logId,
+            url: previewUrl,
+            annos: checked.map((a) => ({
+              clase: a.clase,
+              color: a.color,
+              type: a.type,
+            })),
+            split,
+            ok: true,
+            file: selectedFile,
+            imageId,
+          };
+          uploadLog.unshift(entry);
+          addLogItem(entry);
+          checked.filter((a) => !a.isQty).forEach((a) => addReciente(a.clase));
+          // Actualizar contador por clase (cuenta 1 imagen por clase única, no por bbox)
+          const uniqueClasses = [
+            ...new Set(checked.filter((a) => !a.isQty).map((a) => a.clase)),
+          ];
+          uniqueClasses.forEach((c) => {
+            classCounts[c] = (classCounts[c] || 0) + 1;
+          });
+          localStorage.setItem("rf_class_counts", JSON.stringify(classCounts));
+          renderClassStats();
+          showToast(`✅ ${checked.length} anotación(es) → Dataset`, "ok");
+          resetAll();
+        } catch (err) {
+          pb.style.background = "var(--danger)";
+          uploadLog.unshift({
+            id: logId,
+            url: previewUrl,
+            annos: checked.map((a) => ({ clase: a.clase, color: a.color })),
+            split,
+            ok: false,
+            error: err.message,
+            file: selectedFile,
+          });
+          addLogItem(uploadLog[0]);
+          showToast(`❌ ${err.message.slice(0, 50)}`, "err");
+          setTimeout(() => {
+            pb.style.background = "var(--amber)";
+            pb.style.width = "0%";
+            pw.classList.remove("show");
+          }, 2000);
+        } finally {
+          setTimeout(() => {
+            pb.style.width = "0%";
+            pw.classList.remove("show");
+          }, 1500);
+          btn.disabled = false;
+          btnR.disabled = false;
+          btn.innerHTML = "⬆️ Subir";
+          btn.classList.remove("loading");
+          updateButtons();
+        }
+      }
+
+      function fileToB64(f) {
+        return new Promise((res, rej) => {
+          const r = new FileReader();
+          r.onload = () => res(r.result);
+          r.onerror = () => rej(new Error("Error"));
+          r.readAsDataURL(f);
+        });
+      }
+
+      function resetAll() {
+        selectedFile = null;
+        annotations = [];
+        bboxCurrent = null;
+        bboxDrawing = false;
+        cancelPolygon();
+        document.getElementById("capture-zone").classList.remove("has-img");
+        document.getElementById("bbox-section").style.display = "none";
+        document.getElementById("annos-card").style.display = "none";
+        document.getElementById("file-input").value = "";
+        const ctx = canvas.getContext("2d");
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        updateButtons();
+      }
+
+      // ── Log ───────────────────────────────────────────────────────────────────────
+      function addLogItem(entry) {
+        const list = document.getElementById("log-list");
+        if (list.querySelector("p")) list.innerHTML = "";
+        const item = document.createElement("div");
+        item.className = "log-item" + (entry.ok ? "" : " error");
+        item.id = "log-" + entry.id;
+        const tags = (entry.annos || [])
+          .map(
+            (a) =>
+              `<span class="log-anno-tag" style="background:${a.color}22;color:${a.color};border:1px solid ${a.color}44">${a.type === "polygon" ? "🔷" : "⬜"} ${a.clase}</span>`,
+          )
+          .join("");
+        item.innerHTML = `
     <div class="log-header">
       <img class="log-thumb" src="${entry.url}" alt="">
       <div class="log-info">
-        <div class="log-name">${(entry.annos||[]).length} anotación(es)</div>
-        <div class="log-meta">${entry.ok?"✓ "+entry.split+" · con anotación":"✗ "+(entry.error||"")}</div>
+        <div class="log-name">${(entry.annos || []).length} anotación(es)</div>
+        <div class="log-meta">${entry.ok ? "✓ " + entry.split + " · con anotación" : "✗ " + (entry.error || "")}</div>
         <div class="log-annos">${tags}</div>
       </div>
       <div class="log-actions">
         <span style="cursor:pointer;font-size:18px" onclick="retryEntry(${entry.id})" title="Reintentar">🔄</span>
         <span style="cursor:pointer;font-size:18px" onclick="deleteEntry(${entry.id})" title="Eliminar">🗑️</span>
-        <span>${entry.ok?"✅":"❌"}</span>
+        <span>${entry.ok ? "✅" : "❌"}</span>
       </div>
     </div>`;
-  list.insertBefore(item,list.firstChild);
-}
+        list.insertBefore(item, list.firstChild);
+      }
 
-async function retryEntry(id){
-  const apiKey=document.getElementById("api-key").value.trim();
-  const entry=uploadLog.find(e=>e.id===id);
-  if(!entry||!apiKey){showToast("⚠️ Falta API Key","err");return;}
-  showToast("🔄 Reintentando…","");
-  try{
-    const b64=await fileToB64(entry.file);
-    const name=(entry.annos||[]).map(a=>a.clase).join("_")+"_retry_"+Date.now()+".jpg";
-    const res=await fetch(`https://api.roboflow.com/dataset/${PROJECT}/upload?api_key=${apiKey}&name=${encodeURIComponent(name)}&split=${entry.split}`,
-      {method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:b64.split(",")[1]});
-    const data=await res.json();
-    if(!res.ok||data.error) throw new Error(data.error||`HTTP ${res.status}`);
-    entry.ok=true; entry.imageId=data.id||"";
-    const item=document.getElementById("log-"+id);
-    item.classList.remove("error");
-    item.querySelector(".log-meta").textContent="✓ "+entry.split+" (reintento ✔)";
-    item.querySelector(".log-actions span:last-child").textContent="✅";
-    showToast("✅ Reintento exitoso","ok");
-  }catch(err){showToast(`❌ ${err.message.slice(0,50)}`,"err");}
-}
+      async function retryEntry(id) {
+        const apiKey = document.getElementById("api-key").value.trim();
+        const entry = uploadLog.find((e) => e.id === id);
+        if (!entry || !apiKey) {
+          showToast("⚠️ Falta API Key", "err");
+          return;
+        }
+        showToast("🔄 Reintentando…", "");
+        try {
+          const b64 = await fileToB64(entry.file);
+          const name =
+            (entry.annos || []).map((a) => a.clase).join("_") +
+            "_retry_" +
+            Date.now() +
+            ".jpg";
+          const res = await fetch(
+            `https://api.roboflow.com/dataset/${PROJECT}/upload?api_key=${apiKey}&name=${encodeURIComponent(name)}&split=${entry.split}`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/x-www-form-urlencoded" },
+              body: b64.split(",")[1],
+            },
+          );
+          const data = await res.json();
+          if (!res.ok || data.error)
+            throw new Error(data.error || `HTTP ${res.status}`);
+          entry.ok = true;
+          entry.imageId = data.id || "";
+          const item = document.getElementById("log-" + id);
+          item.classList.remove("error");
+          item.querySelector(".log-meta").textContent =
+            "✓ " + entry.split + " (reintento ✔)";
+          item.querySelector(".log-actions span:last-child").textContent = "✅";
+          showToast("✅ Reintento exitoso", "ok");
+        } catch (err) {
+          showToast(`❌ ${err.message.slice(0, 50)}`, "err");
+        }
+      }
 
-async function deleteEntry(id){
-  const apiKey=document.getElementById("api-key").value.trim();
-  const entry=uploadLog.find(e=>e.id===id);
-  if(!entry) return;
-  if(!confirm(`¿Eliminar imagen de Roboflow?`)) return;
-  if(entry.imageId&&apiKey){ try{await fetch(`https://api.roboflow.com/dataset/${PROJECT}/images/${entry.imageId}?api_key=${apiKey}`,{method:"DELETE"});}catch(e){} }
-  document.getElementById("log-"+id)?.remove();
-  uploadLog=uploadLog.filter(e=>e.id!==id);
-  const list=document.getElementById("log-list");
-  if(!list.children.length) list.innerHTML='<p style="color:var(--steel);font-size:13px;text-align:center;padding:20px">Las subidas aparecerán aquí</p>';
-  showToast("🗑️ Eliminada","ok");
-}
+      async function deleteEntry(id) {
+        const apiKey = document.getElementById("api-key").value.trim();
+        const entry = uploadLog.find((e) => e.id === id);
+        if (!entry) return;
+        if (!confirm(`¿Eliminar imagen de Roboflow?`)) return;
+        if (entry.imageId && apiKey) {
+          try {
+            await fetch(
+              `https://api.roboflow.com/dataset/${PROJECT}/images/${entry.imageId}?api_key=${apiKey}`,
+              { method: "DELETE" },
+            );
+          } catch (e) {}
+        }
+        document.getElementById("log-" + id)?.remove();
+        uploadLog = uploadLog.filter((e) => e.id !== id);
+        const list = document.getElementById("log-list");
+        if (!list.children.length)
+          list.innerHTML =
+            '<p style="color:var(--steel);font-size:13px;text-align:center;padding:20px">Las subidas aparecerán aquí</p>';
+        showToast("🗑️ Eliminada", "ok");
+      }
 
-function showToast(msg,type){const t=document.getElementById("toast");t.textContent=msg;t.className=`toast ${type} show`;setTimeout(()=>t.classList.remove("show"),2800);}
+      function showToast(msg, type) {
+        const t = document.getElementById("toast");
+        t.textContent = msg;
+        t.className = `toast ${type} show`;
+        setTimeout(() => t.classList.remove("show"), 2800);
+      }
 
-// ── Estadísticas por clase ────────────────────────────────────────────────────
-function toggleStats(){
-  const b=document.getElementById("stats-body");
-  const c=document.getElementById("stats-caret");
-  const open=b.style.display==="none";
-  b.style.display=open?"block":"none";
-  c.textContent=open?"▲":"▼";
-  if(open) renderClassStats();
-}
-function renderClassStats(){
-  const list=document.getElementById("stats-list");
-  const total=Object.values(classCounts).reduce((a,b)=>a+b,0);
-  document.getElementById("stats-total").textContent=`(${total} img · ${Object.keys(classCounts).length} clases)`;
-  if(!list) return;
-  const entries=Object.entries(classCounts).sort((a,b)=>b[1]-a[1]);
-  if(!entries.length){ list.innerHTML='<div style="color:var(--steel);font-size:12px;text-align:center;padding:14px">Sin datos aún. Sube imágenes para ver el balance.</div>'; return; }
-  list.innerHTML=entries.map(([code,n])=>{
-    const pct=Math.min(100,Math.round(n/CLASS_GOAL*100));
-    const cls=n>=CLASS_GOAL?"ok":n<30?"low":"";
-    const flag=n>=CLASS_GOAL?"✅":n<30?"⚠️":"";
-    return `<div class="stat-row" style="flex-direction:column;align-items:stretch;gap:4px">
+      // ── Estadísticas por clase ────────────────────────────────────────────────────
+      function toggleStats() {
+        const b = document.getElementById("stats-body");
+        const c = document.getElementById("stats-caret");
+        const open = b.style.display === "none";
+        b.style.display = open ? "block" : "none";
+        c.textContent = open ? "▲" : "▼";
+        if (open) renderClassStats();
+      }
+      function renderClassStats() {
+        const list = document.getElementById("stats-list");
+        const total = Object.values(classCounts).reduce((a, b) => a + b, 0);
+        document.getElementById("stats-total").textContent =
+          `(${total} img · ${Object.keys(classCounts).length} clases)`;
+        if (!list) return;
+        const entries = Object.entries(classCounts).sort((a, b) => b[1] - a[1]);
+        if (!entries.length) {
+          list.innerHTML =
+            '<div style="color:var(--steel);font-size:12px;text-align:center;padding:14px">Sin datos aún. Sube imágenes para ver el balance.</div>';
+          return;
+        }
+        list.innerHTML = entries
+          .map(([code, n]) => {
+            const pct = Math.min(100, Math.round((n / CLASS_GOAL) * 100));
+            const cls = n >= CLASS_GOAL ? "ok" : n < 30 ? "low" : "";
+            const flag = n >= CLASS_GOAL ? "✅" : n < 30 ? "⚠️" : "";
+            return `<div class="stat-row" style="flex-direction:column;align-items:stretch;gap:4px">
       <div style="display:flex;justify-content:space-between;align-items:center">
         <span class="stat-code">${flag} ${code}</span>
         <span class="stat-count ${cls}">${n}/${CLASS_GOAL}</span>
       </div>
-      <div class="stat-bar"><div class="stat-bar-fill" style="width:${pct}%;background:${cls==="ok"?"var(--ok)":cls==="low"?"var(--danger)":"var(--amber)"}"></div></div>
+      <div class="stat-bar"><div class="stat-bar-fill" style="width:${pct}%;background:${cls === "ok" ? "var(--ok)" : cls === "low" ? "var(--danger)" : "var(--amber)"}"></div></div>
     </div>`;
-  }).join("");
-}
-function resetStats(){
-  if(!confirm("¿Reiniciar el contador local de imágenes por clase? (No borra nada en Roboflow)")) return;
-  classCounts={}; localStorage.setItem("rf_class_counts","{}"); renderClassStats();
-}
-renderClassStats();
-</script>
-</body>
+          })
+          .join("");
+      }
+      function resetStats() {
+        if (
+          !confirm(
+            "¿Reiniciar el contador local de imágenes por clase? (No borra nada en Roboflow)",
+          )
+        )
+          return;
+        classCounts = {};
+        localStorage.setItem("rf_class_counts", "{}");
+        renderClassStats();
+      }
+      renderClassStats();
+    </script>
+  </body>
 </html>
