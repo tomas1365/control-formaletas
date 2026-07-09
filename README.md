@@ -1,3533 +1,1837 @@
 <!DOCTYPE html>
-<html lang="es"><head><script src="/__replco/static/devtools/injected.js" onerror="parent.postMessage({event:'error',payload:'script.onerror: Failed to load '+event.target.src},'https://replit.com')"></script>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0a1628">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>UNISPAN — Captura Dataset v9</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;touch-action:manipulation;}
+:root{--bg:#0a1628;--surface:#102a43;--surface2:#1a3a5c;--border:rgba(99,125,152,0.25);--amber:#f59e0b;--steel:#627d98;--text:#e2e8f0;--text2:#94a3b8;--ok:#22c55e;--danger:#ef4444;--radius:14px;}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,'Inter',sans-serif;min-height:100dvh;display:flex;flex-direction:column;}
+header{background:rgba(10,22,40,.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:14px 16px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:100;}
+.logo{width:36px;height:36px;background:var(--amber);border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;color:#0a1628;flex-shrink:0;}
+header h1{font-size:15px;font-weight:700;}
+header p{font-size:11px;color:var(--steel);}
+.tabs{display:flex;border-bottom:1px solid var(--border);background:var(--bg);position:sticky;top:64px;z-index:99;}
+.tab{flex:1;padding:12px 8px;font-size:12px;font-weight:600;text-align:center;color:var(--steel);border-bottom:2px solid transparent;cursor:pointer;transition:all .15s;}
+.tab.active{color:var(--amber);border-bottom-color:var(--amber);}
+main{flex:1;padding:14px;display:flex;flex-direction:column;gap:12px;}
+.page{display:none;flex-direction:column;gap:12px;}
+.page.active{display:flex;}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;}
+.card-title{font-size:11px;font-weight:700;color:var(--steel);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;}
+label{font-size:13px;color:var(--text2);display:block;margin-bottom:4px;}
+input,select{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:10px 12px;color:var(--text);font-size:14px;margin-bottom:10px;outline:none;-webkit-appearance:none;}
+input:focus,select:focus{border-color:var(--amber);}
+input[type="file"]{display:none;}
+input[type="password"]{letter-spacing:2px;}
+
+/* Tool selector */
+.tool-bar{display:flex;gap:8px;margin-bottom:10px;}
+.tool-btn{flex:1;padding:10px 8px;border-radius:10px;border:1.5px solid var(--border);background:var(--bg);color:var(--text2);font-size:12px;font-weight:600;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;transition:all .15s;}
+.tool-btn.active{border-color:var(--amber);background:rgba(245,158,11,.1);color:var(--amber);}
+.tool-icon{font-size:20px;}
+.tool-hint{font-size:10px;color:var(--steel);text-align:center;margin-bottom:6px;padding:6px 10px;background:rgba(245,158,11,.06);border-radius:8px;}
+
+/* BBox / Canvas + Zoom viewport */
+.zoom-viewport{position:relative;overflow:hidden;border-radius:12px;background:#000;touch-action:none;user-select:none;}
+.bbox-wrap{position:relative;transform-origin:0 0;transition:transform .05s linear;touch-action:none;user-select:none;}
+.bbox-img{width:100%;display:block;user-select:none;-webkit-user-drag:none;pointer-events:none;}
+#bbox-canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none;}
+.capture-zone{border:2px dashed var(--border);border-radius:var(--radius);min-height:160px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;cursor:pointer;transition:border-color .2s;}
+.capture-zone.has-img{display:none;}
+
+/* Zoom controls */
+.zoom-bar{display:flex;gap:6px;margin-top:8px;align-items:center;flex-wrap:wrap;}
+.zoom-btn{background:var(--bg);border:1.5px solid var(--border);color:var(--text);border-radius:8px;padding:7px 11px;font-size:14px;font-weight:700;cursor:pointer;min-width:38px;}
+.zoom-btn:active{background:var(--surface2);}
+.zoom-lbl{font-size:11px;color:var(--steel);font-family:monospace;}
+.zoom-hint{font-size:10px;color:var(--steel);flex:1;text-align:right;}
+
+/* Blur warning */
+.blur-warn{background:rgba(239,68,68,.12);border:1.5px solid rgba(239,68,68,.4);color:#fca5a5;padding:9px 11px;border-radius:10px;font-size:12px;margin-top:8px;display:flex;align-items:center;gap:8px;}
+.blur-warn.ok{background:rgba(34,197,94,.1);border-color:rgba(34,197,94,.3);color:#86efac;}
+.blur-warn .x{margin-left:auto;cursor:pointer;font-size:16px;}
+
+/* Class stats */
+.stat-row{display:flex;justify-content:space-between;align-items:center;padding:7px 10px;background:var(--bg);border-radius:8px;font-size:12px;margin-bottom:4px;}
+.stat-code{font-family:monospace;font-weight:700;color:var(--text);}
+.stat-count{font-family:monospace;font-weight:700;color:var(--amber);}
+.stat-count.low{color:#fca5a5;}
+.stat-count.ok{color:var(--ok);}
+.stat-bar{height:4px;background:var(--bg);border-radius:99px;overflow:hidden;margin-top:3px;}
+.stat-bar-fill{height:100%;background:var(--amber);border-radius:99px;}
+
+/* Polygon toolbar */
+.poly-toolbar{display:flex;gap:6px;margin-top:8px;}
+
+/* Anno list */
+.anno-list{display:flex;flex-direction:column;gap:6px;margin-top:10px;}
+.anno-item{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:10px;border:1.5px solid var(--border);background:var(--bg);font-size:12px;flex-wrap:wrap;}
+.anno-color{width:14px;height:14px;border-radius:4px;flex-shrink:0;}
+.anno-label{flex:1;font-family:monospace;font-weight:700;min-width:0;}
+.anno-type{font-size:10px;color:var(--steel);background:var(--surface);border-radius:5px;padding:2px 6px;}
+.anno-check{font-size:18px;cursor:pointer;}
+.anno-del{cursor:pointer;font-size:16px;color:var(--steel);}
+
+/* Clase selector */
+.quick-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-bottom:6px;}
+.quick-btn{background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:7px 4px;color:var(--text2);font-size:10px;font-weight:600;text-align:center;cursor:pointer;transition:all .15s;}
+.quick-btn.active{background:rgba(245,158,11,.15);border-color:var(--amber);color:var(--amber);}
+
+/* Progress */
+.prog-wrap{background:var(--bg);border-radius:99px;height:5px;overflow:hidden;display:none;margin-top:10px;}
+.prog-wrap.show{display:block;}
+.prog-bar{height:100%;background:var(--amber);border-radius:99px;transition:width .4s;width:0%;}
+
+/* Buttons */
+.btn-row{display:flex;gap:8px;}
+.btn{flex:1;padding:13px;border-radius:12px;font-size:13px;font-weight:700;cursor:pointer;border:none;display:flex;align-items:center;justify-content:center;gap:6px;transition:opacity .15s,transform .1s;-webkit-tap-highlight-color:transparent;}
+.btn:active{transform:scale(.97);}
+.btn:disabled{opacity:.4;cursor:not-allowed;}
+.btn-cam{background:var(--surface);color:var(--text);border:1.5px solid var(--border);}
+.btn-up{background:var(--amber);color:#0a1628;}
+.btn-up.loading{background:#b45309;}
+.btn-sm{padding:8px 12px;font-size:12px;border-radius:9px;flex:none;}
+.btn-danger{background:rgba(239,68,68,.15);color:var(--danger);border:1.5px solid rgba(239,68,68,.3);}
+.btn-ok{background:rgba(34,197,94,.15);color:var(--ok);border:1.5px solid rgba(34,197,94,.3);}
+.btn-ghost{background:var(--surface);color:var(--text2);border:1.5px solid var(--border);}
+.btn-amber{background:rgba(245,158,11,.15);color:var(--amber);border:1.5px solid rgba(245,158,11,.3);}
+
+/* Counter */
+.counter{display:flex;gap:8px;}
+.counter-item{flex:1;background:var(--bg);border-radius:10px;padding:10px;text-align:center;}
+.counter-num{font-size:22px;font-weight:800;color:var(--amber);}
+.counter-lbl{font-size:10px;color:var(--steel);margin-top:1px;}
+
+/* Log */
+.log-list{display:flex;flex-direction:column;gap:6px;}
+.log-item{background:var(--bg);border-radius:10px;padding:10px;border:1.5px solid transparent;}
+.log-item.error{border-color:rgba(239,68,68,.3);}
+.log-header{display:flex;align-items:center;gap:10px;}
+.log-thumb{width:48px;height:48px;border-radius:8px;object-fit:cover;flex-shrink:0;}
+.log-info{flex:1;min-width:0;}
+.log-name{font-weight:700;color:var(--text);font-family:monospace;font-size:13px;}
+.log-meta{color:var(--steel);margin-top:2px;font-size:11px;}
+.log-annos{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;}
+.log-anno-tag{padding:3px 8px;border-radius:6px;font-size:10px;font-weight:700;font-family:monospace;}
+.log-actions{display:flex;flex-direction:column;align-items:center;gap:4px;flex-shrink:0;}
+
+/* Catalog */
+.cat-search{position:relative;margin-bottom:8px;}
+.cat-search input{margin-bottom:0;padding-left:36px;}
+.cat-search .ico{position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:14px;}
+.cat-families{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;}
+.fam-btn{padding:5px 12px;border-radius:99px;font-size:11px;font-weight:700;border:1.5px solid var(--border);color:var(--steel);cursor:pointer;transition:all .15s;}
+.fam-btn.active{background:rgba(245,158,11,.15);border-color:var(--amber);color:var(--amber);}
+.cat-list{max-height:220px;overflow-y:auto;display:flex;flex-direction:column;gap:4px;}
+.cat-item{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--bg);border-radius:10px;cursor:pointer;border:1.5px solid transparent;}
+.cat-item .ci-code{font-weight:700;font-size:13px;font-family:monospace;color:var(--amber);}
+.cat-item .ci-spec{font-size:11px;color:var(--steel);margin-top:2px;}
+.ref-grid{display:flex;flex-direction:column;gap:6px;}
+.ref-card{background:var(--bg);border-radius:10px;padding:12px;display:flex;align-items:center;gap:10px;}
+.ref-fam{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:11px;flex-shrink:0;}
+.ref-fam.PM{background:rgba(59,130,246,.15);color:#60a5fa;}
+.ref-fam.PB{background:rgba(168,85,247,.15);color:#c084fc;}
+.ref-fam.EI{background:rgba(245,158,11,.15);color:var(--amber);}
+.ref-info{flex:1;min-width:0;}
+.ref-code{font-family:monospace;font-weight:700;font-size:13px;}
+.ref-spec{font-size:11px;color:var(--steel);margin-top:2px;}
+.ref-copy{font-size:20px;cursor:pointer;padding:4px;}
+
+/* Modal */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;align-items:flex-end;}
+.modal-bg.show{display:flex;}
+.modal{background:var(--surface);border-radius:20px 20px 0 0;padding:20px 16px 32px;width:100%;max-height:85vh;overflow-y:auto;}
+.modal-title{font-size:15px;font-weight:700;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;}
+.modal-close{font-size:22px;cursor:pointer;color:var(--steel);}
+
+/* Review */
+.review-img-wrap{position:relative;border-radius:12px;overflow:hidden;background:#000;margin-bottom:12px;}
+.review-img{width:100%;display:block;}
+#review-canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;}
+.review-annos{display:flex;flex-direction:column;gap:6px;margin-bottom:14px;}
+.review-anno{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--bg);border-radius:10px;border:1.5px solid transparent;}
+.review-anno.approved{border-color:var(--ok);}
+.review-anno.rejected{border-color:var(--danger);opacity:.5;}
+.review-check{font-size:22px;cursor:pointer;flex-shrink:0;}
+
+/* Toast */
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:11px 18px;font-size:13px;font-weight:600;transition:transform .3s;z-index:500;white-space:nowrap;box-shadow:0 8px 32px rgba(0,0,0,.4);}
+.toast.show{transform:translateX(-50%) translateY(0);}
+.toast.ok{border-color:var(--ok);color:var(--ok);}
+.toast.err{border-color:var(--danger);color:var(--danger);}
+
+/* Floating draggable panel (qty / esquinero controls) */
+.float-panel{position:fixed;top:80px;right:10px;z-index:350;background:var(--surface);border:1.5px solid var(--amber);border-radius:12px;padding:0;width:260px;max-width:92vw;box-shadow:0 8px 32px rgba(0,0,0,.5);user-select:none;}
+.float-panel .fp-head{display:flex;align-items:center;gap:6px;padding:8px 10px;background:rgba(245,158,11,.15);border-radius:12px 12px 0 0;cursor:grab;font-size:12px;font-weight:700;color:var(--amber);}
+.float-panel .fp-head:active{cursor:grabbing;}
+.float-panel .fp-body{padding:10px 12px 12px;}
+.float-panel.min .fp-body{display:none;}
+.float-panel .fp-btn{background:transparent;border:none;color:var(--amber);cursor:pointer;font-size:14px;padding:2px 6px;border-radius:6px;}
+.float-panel .fp-btn:hover{background:rgba(245,158,11,.2);}
+.slider-row{display:flex;align-items:center;gap:8px;margin:6px 0;}
+.slider-row label{flex:0 0 78px;font-size:11px;color:var(--steel);margin:0;}
+.slider-row input[type=range]{flex:1;margin:0;padding:0;background:transparent;}
+.slider-row .val{font-size:11px;font-family:monospace;color:var(--amber);min-width:36px;text-align:right;}
+.corner-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin:6px 0;}
+.corner-btn{padding:6px;border-radius:6px;border:1.5px solid var(--border);background:var(--bg);color:var(--text2);font-size:11px;font-weight:600;cursor:pointer;}
+.corner-btn.active{border-color:var(--amber);background:rgba(245,158,11,.15);color:var(--amber);}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">U</div>
+  <div><h1>UNISPAN Dataset v9</h1><p>Esquinero + Galería + Memoria IA</p></div>
+</header>
+
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('captura')">📸 Captura</div>
+  <div class="tab" onclick="switchTab('historial')">📋 Historial</div>
+  <div class="tab" onclick="switchTab('catalogo')">📖 Catálogo</div>
+  <div class="tab" onclick="switchTab('experto')">🎓 Experto</div>
+</div>
+
+<main>
+
+<!-- ══ CAPTURA ══ -->
+<div class="page active" id="page-captura">
+
+  <div class="counter">
+    <div class="counter-item"><div class="counter-num" id="cnt-session">0</div><div class="counter-lbl">Sesión</div></div>
+    <div class="counter-item"><div class="counter-num" id="cnt-total">0</div><div class="counter-lbl">Total</div></div>
+    <div class="counter-item"><div class="counter-num" id="cnt-ok" style="color:var(--ok)">0</div><div class="counter-lbl">Exitosas</div></div>
+  </div>
+
+  <!-- Config -->
+  <div class="card">
+    <div class="card-title">⚙️ Configuración</div>
+    <label>API Key Roboflow</label>
+    <input type="password" id="api-key" placeholder="rf_xxxxxxxxxxxxxx" autocomplete="off">
+    <label>Split destino</label>
+    <select id="split">
+      <option value="train">Train</option>
+      <option value="valid">Valid</option>
+      <option value="test">Test</option>
+    </select>
+  </div>
+
+  <!-- Clase -->
+  <div class="card">
+    <div class="card-title">🏷️ Clase activa</div>
+    <div id="recientes-wrap" style="display:none">
+      <div style="font-size:11px;color:var(--steel);margin-bottom:6px">Recientes:</div>
+      <div class="quick-grid" id="recientes-grid"></div>
+    </div>
+    <div class="btn-row" style="margin-bottom:8px">
+      <button class="btn btn-ghost btn-sm" onclick="openCatModal()">📖 Catálogo</button>
+      <input type="text" id="clase-custom" placeholder="ej. PM-2400x600" style="margin-bottom:0;flex:1" oninput="onCustomInput(this.value)">
+    </div>
+    <div id="current-clase-display" style="display:none;padding:8px 12px;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3);border-radius:8px;font-family:monospace;font-weight:700;color:var(--amber);font-size:14px"></div>
+  </div>
+
+  <!-- Herramienta -->
+  <div class="card">
+    <div class="card-title">🛠️ Herramienta de anotación</div>
+    <div class="tool-bar" style="flex-wrap:wrap">
+      <div class="tool-btn active" id="tool-bbox" onclick="setTool('bbox')">
+        <span class="tool-icon">⬜</span>
+        <span>BBox</span>
+      </div>
+      <div class="tool-btn" id="tool-corner" onclick="setTool('corner')">
+        <span class="tool-icon">📐</span>
+        <span>Esquinero</span>
+      </div>
+      <div class="tool-btn" id="tool-polygon" onclick="setTool('polygon')">
+        <span class="tool-icon">🔷</span>
+        <span>Polígono</span>
+      </div>
+      <div class="tool-btn" id="tool-sam" onclick="setTool('sam')">
+        <span class="tool-icon">🎯</span>
+        <span>SAM<span style="font-size:8px;background:var(--amber);color:#0a1628;border-radius:4px;padding:1px 4px;margin-left:3px;vertical-align:top">β</span></span>
+      </div>
+    </div>
+    <div class="tool-hint" id="tool-hint-bbox">Toca y arrastra para dibujar un rectángulo</div>
+    <div class="tool-hint" id="tool-hint-corner" style="display:none">📐 Arrastra para el rectángulo base · luego ajusta el brazo del esquinero con los deslizadores flotantes</div>
+    <div class="tool-hint" id="tool-hint-polygon" style="display:none">Toca para agregar puntos · Doble toque para cerrar</div>
+    <div class="tool-hint" id="tool-hint-sam" style="display:none">🎯 Toca una pieza dentro del arrume y SAM genera el polígono. Primera vez descarga ~40MB.</div>
+    <div id="sam-status" style="display:none;font-size:11px;color:var(--amber);margin-top:6px;padding:6px 10px;background:rgba(245,158,11,.08);border-radius:8px;text-align:center"></div>
+
+    <!-- Modo Arrume -->
+    <label style="display:flex;align-items:center;gap:10px;margin-top:10px;padding:10px;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;cursor:pointer" for="arrume-toggle">
+      <input type="checkbox" id="arrume-toggle" onchange="toggleArrume(this.checked)" style="width:18px;height:18px;margin:0;accent-color:var(--amber)">
+      <div style="flex:1">
+        <div style="font-size:13px;font-weight:700;color:var(--text)">🔗 Modo Arrume</div>
+        <div style="font-size:10px;color:var(--steel)">Mantiene la clase activa y dibuja varias piezas iguales sin reabrir catálogo</div>
+      </div>
+      <span id="arrume-counter" style="display:none;font-family:monospace;font-weight:800;color:var(--amber);font-size:16px">×0</span>
+    </label>
+  </div>
+
+  <!-- Imagen + Canvas -->
+  <div class="card">
+    <div class="card-title">📸 Imagen</div>
+    <div class="capture-zone" id="capture-zone">
+      <span style="font-size:36px">📷</span>
+      <span style="font-size:12px;color:var(--steel)">Elige origen de la imagen</span>
+      <div class="btn-row" style="width:100%;margin-top:8px">
+        <button class="btn btn-cam btn-sm" onclick="document.getElementById('file-input-cam').click()">📷 Cámara</button>
+        <button class="btn btn-amber btn-sm" onclick="document.getElementById('file-input-gal').click()">🖼️ Galería</button>
+      </div>
+    </div>
+    <input type="file" id="file-input-cam" accept="image/*" capture="environment">
+    <input type="file" id="file-input-gal" accept="image/*" multiple>
+    <div id="bbox-section" style="display:none">
+      <div class="zoom-viewport" id="zoom-viewport">
+        <div class="bbox-wrap" id="bbox-wrap">
+          <img id="bbox-img" class="bbox-img" alt="">
+          <canvas id="bbox-canvas"></canvas>
+        </div>
+      </div>
+      <div class="zoom-bar" id="zoom-bar">
+        <button class="zoom-btn" onclick="zoomBy(1.4)" title="Acercar">➕</button>
+        <button class="zoom-btn" onclick="zoomBy(1/1.4)" title="Alejar">➖</button>
+        <button class="zoom-btn" onclick="zoomReset()" title="Reiniciar zoom">⟲</button>
+        <span class="zoom-lbl" id="zoom-lbl">1.0×</span>
+        <span class="zoom-hint">Pellizca 2 dedos para zoom · 1 dedo dibuja</span>
+      </div>
+      <div class="blur-warn" id="blur-warn" style="display:none">
+        <span id="blur-warn-txt"></span>
+        <span class="x" onclick="document.getElementById('blur-warn').style.display='none'">✕</span>
+      </div>
+      <div class="poly-toolbar" id="poly-toolbar" style="display:none">
+        <button class="btn btn-amber btn-sm" onclick="closePolygon()">✅ Cerrar polígono</button>
+        <button class="btn btn-danger btn-sm" onclick="cancelPolygon()">✕ Cancelar</button>
+        <span style="font-size:11px;color:var(--steel);align-self:center" id="poly-pts-count">0 puntos</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Anotaciones -->
+  <div class="card" id="annos-card" style="display:none">
+    <div class="card-title" id="annos-title">📦 Anotaciones (0)</div>
+    <div class="anno-list" id="anno-list"></div>
+    <div style="margin-top:8px;font-size:11px;color:var(--steel)">✅ marcadas se subirán · ☐ desmarcadas se omitirán · Toca la etiqueta para cambiar clase</div>
+  </div>
+
+  <!-- Estadísticas por clase -->
+  <div class="card">
+    <div class="card-title" style="display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick="toggleStats()">
+      <span>📊 Balance del dataset <span id="stats-total" style="color:var(--amber);font-weight:800">0</span></span>
+      <span id="stats-caret" style="font-size:14px;color:var(--steel)">▼</span>
+    </div>
+    <div id="stats-body" style="display:none">
+      <div style="font-size:11px;color:var(--steel);margin-bottom:8px">Meta inicial: <b style="color:var(--amber)">30 img/clase</b> (varios ángulos). Se ampliará tras el primer entrenamiento.</div>
+      <div id="stats-list"></div>
+      <div class="btn-row" style="margin-top:8px">
+        <button class="btn btn-ghost btn-sm" onclick="resetStats()">🗑️ Reiniciar contador</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="prog-wrap" id="prog-wrap"><div class="prog-bar" id="prog-bar"></div></div>
+
+  <div class="btn-row">
+    <button class="btn btn-ghost btn-sm" onclick="resetAll()" style="flex:none;padding:13px 16px">🔄</button>
+    <button class="btn btn-amber" id="btn-review" onclick="openReview()" disabled>👁️ Revisar</button>
+    <button class="btn btn-up" id="btn-upload" onclick="uploadAll()" disabled>⬆️ Subir</button>
+  </div>
+
+</div>
+
+<!-- ══ HISTORIAL ══ -->
+<div class="page" id="page-historial">
+  <div class="card">
+    <div class="card-title">📋 Historial de sesión</div>
+    <div class="log-list" id="log-list">
+      <p style="color:var(--steel);font-size:13px;text-align:center;padding:20px">Las subidas aparecerán aquí</p>
+    </div>
+  </div>
+</div>
+
+<!-- ══ CATÁLOGO ══ -->
+<div class="page" id="page-catalogo">
+  <div class="card">
+    <div class="card-title">📖 Catálogo UNISPAN</div>
+    <div class="cat-search" style="margin-bottom:8px">
+      <span class="ico">🔍</span>
+      <input type="text" id="cat-main-search" placeholder="Buscar..." oninput="renderCatalogPage(this.value)" style="margin-bottom:0;padding-left:36px">
+    </div>
+    <div class="cat-families" id="cat-main-families"></div>
+    <div class="ref-grid" id="cat-main-grid"></div>
+  </div>
+</div>
+
+<!-- ══ EXPERTO ══ -->
+<div class="page" id="page-experto">
+  <div class="card">
+    <div class="card-title">🎓 Agente Experto UNISPAN</div>
+    <div style="font-size:12px;color:var(--steel);margin-bottom:10px">
+      Consulta sobre láminas, bridas, platinas, refuerzos, perforaciones y estructura de las paneles formaletas. Toca un tema o escribe tu pregunta.
+    </div>
+
+    <!-- Calculadora bidireccional perforaciones ⇄ medidas -->
+    <div style="background:#0b1220;border:1px solid #334;border-radius:10px;padding:10px;margin-bottom:10px">
+      <div style="font-size:12px;color:var(--amber);font-weight:700;margin-bottom:8px">🧮 Calculadora de perforaciones</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:12px">
+        <div>
+          <label style="color:var(--steel);font-size:11px">Ancho (mm)</label>
+          <input type="number" id="calc-w" placeholder="600" oninput="calcFromDims()" style="width:100%;padding:8px;border-radius:8px;border:1px solid #334;background:#0f1520;color:#eee">
+        </div>
+        <div>
+          <label style="color:var(--steel);font-size:11px">Longitud (mm)</label>
+          <input type="number" id="calc-l" placeholder="2400" oninput="calcFromDims()" style="width:100%;padding:8px;border-radius:8px;border:1px solid #334;background:#0f1520;color:#eee">
+        </div>
+        <div>
+          <label style="color:var(--steel);font-size:11px">Frontales (cont.)</label>
+          <input type="number" id="calc-nf" placeholder="12" oninput="calcFromCounts()" style="width:100%;padding:8px;border-radius:8px;border:1px solid #334;background:#0f1520;color:#eee">
+        </div>
+        <div>
+          <label style="color:var(--steel);font-size:11px">Laterales (cont.)</label>
+          <input type="number" id="calc-nl" placeholder="48" oninput="calcFromCounts()" style="width:100%;padding:8px;border-radius:8px;border:1px solid #334;background:#0f1520;color:#eee">
+        </div>
+      </div>
+      <div id="calc-out" style="margin-top:8px;padding:8px;background:#1a2130;border-radius:8px;font-size:12px;color:#cbd5e1;text-align:center">Ingresa medidas o conteos · inicio 25 mm · paso 50 mm</div>
+    </div>
+
+    <!-- Análisis IA + Memoria de imágenes -->
+    <div style="background:#0b1220;border:1px solid #334;border-radius:10px;padding:10px;margin-bottom:10px">
+      <div style="font-size:12px;color:var(--amber);font-weight:700;margin-bottom:8px">🧠 Análisis IA y memoria</div>
+      <div style="font-size:11px;color:var(--steel);margin-bottom:8px">
+        El agente aprende de cada imagen capturada (aspecto, nitidez, clases anotadas).
+        Opcional: pega una API key de OpenAI para <b>análisis visual profundo</b> (gpt-4o-mini).
+      </div>
+      <label style="font-size:11px;color:var(--steel)">API Key OpenAI (opcional)</label>
+      <input type="password" id="openai-key" placeholder="sk-..." autocomplete="off" style="width:100%;padding:8px;border-radius:8px;border:1px solid #334;background:#0f1520;color:#eee;margin-bottom:6px">
+      <div class="btn-row" style="gap:6px">
+        <button class="btn btn-amber btn-sm" onclick="analyzeCurrentWithAI()">🔍 Analizar imagen actual</button>
+        <button class="btn btn-ghost btn-sm" onclick="showMemorySummary()">📊 Ver memoria</button>
+        <button class="btn btn-danger btn-sm" onclick="clearMemory()" style="flex:none;padding:8px 10px">🗑️</button>
+      </div>
+      <div id="ai-analysis-out" style="margin-top:8px;padding:8px;background:#1a2130;border-radius:8px;font-size:11px;color:#cbd5e1;display:none"></div>
+    </div>
 
 
-  
-    <script type="module">
-import { createHotContext } from "/@vite/client";
-const hot = createHotContext("/__dummy__runtime-error-plugin");
+    <div id="expert-chips" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px"></div>
+    <div id="expert-chat" style="max-height:52vh;overflow-y:auto;padding:8px;background:#0f1520;border-radius:10px;border:1px solid #223;font-size:13px;line-height:1.5"></div>
+    <div style="display:flex;gap:6px;margin-top:10px">
+      <input type="text" id="expert-input" placeholder="Ej: ¿cómo identifico un PM por perforaciones?" style="flex:1;padding:12px;border-radius:10px;border:1px solid #334;background:#0f1520;color:#eee" onkeydown="if(event.key==='Enter')expertAsk()">
+      <button class="btn btn-amber btn-sm" onclick="expertAsk()">Enviar</button>
+    </div>
+    <div style="font-size:10px;color:var(--steel);margin-top:8px">💡 Base de conocimiento local · funciona sin conexión</div>
+  </div>
+</div>
 
-function sendError(error) {
-  if (!(error instanceof Error)) {
-    error = new Error("(unknown runtime error)");
-  }
-  const serialized = {
-    message: error.message,
-    stack: error.stack,
-  };
-  hot.send("runtime-error-plugin:error", serialized);
+</main>
+
+<!-- Modal catálogo -->
+<div class="modal-bg" id="cat-modal-bg" onclick="closeCatModal(event)">
+  <div class="modal">
+    <div class="modal-title"><span>Seleccionar clase</span><span class="modal-close" onclick="closeCatModalDirect()">✕</span></div>
+    <div class="cat-search"><span class="ico">🔍</span><input type="text" id="cat-modal-search" placeholder="Buscar..." oninput="renderCatModal(this.value)" style="margin-bottom:8px;padding-left:36px"></div>
+    <div class="cat-families" id="cat-modal-families"></div>
+    <div class="cat-list" id="cat-modal-list"></div>
+  </div>
+</div>
+
+<!-- Modal revisión -->
+<div class="modal-bg" id="review-modal-bg" onclick="closeReviewModal(event)">
+  <div class="modal">
+    <div class="modal-title"><span>👁️ Revisar antes de subir</span><span class="modal-close" onclick="closeReviewModalDirect()">✕</span></div>
+    <div class="review-img-wrap">
+      <img id="review-img" class="review-img" alt="">
+      <canvas id="review-canvas"></canvas>
+    </div>
+    <div class="review-annos" id="review-annos"></div>
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="closeReviewModalDirect()">Volver</button>
+      <button class="btn btn-up" onclick="confirmAndUpload()">✅ Confirmar y subir</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── Catálogo ──────────────────────────────────────────────────────────────────
+const CATALOG=[];
+[2400,1200,900,800,750,600].forEach(l=>[600,550,500,450,420,400,380,350,320,300].forEach(a=>CATALOG.push({code:`PM-${l}x${a}`,family:"PM",spec:`${l}×${a}mm`})));
+[2400,1200,900,800,750,600].forEach(l=>[270,250,230,200,150,120,100,90,80].forEach(a=>CATALOG.push({code:`PB-${l}x${a}`,family:"PB",spec:`${l}×${a}mm`})));
+[2400,1200,900,800,600].forEach(l=>CATALOG.push({code:`EI-${l}x150x150`,family:"EI",spec:`${l}×150×150mm`}));
+
+const COLORS=["#f59e0b","#3b82f6","#a855f7","#22c55e","#ef4444","#06b6d4","#f97316","#84cc16","#ec4899","#14b8a6"];
+const PROJECT="reconocimiento-de-piezas-rllp1";
+
+// ── Estado global ─────────────────────────────────────────────────────────────
+let currentClase="", selectedFile=null;
+let sessionCount=0, totalCount=+localStorage.getItem("rf_total")||0, okCount=+localStorage.getItem("rf_ok")||0;
+let recientes=JSON.parse(localStorage.getItem("rf_recientes")||"[]");
+let catModalFam="ALL", catPageFam="ALL", uploadLog=[];
+let annotations=[];
+
+// Contador de imágenes por clase (persistente)
+let classCounts=JSON.parse(localStorage.getItem("rf_class_counts")||"{}");
+const CLASS_GOAL=30;
+
+// Modo del catálogo: "select" (asigna currentClase) | "reassign" (reasigna anno)
+let catModalMode="select", catReassignId=null;
+
+// Zoom / Pan
+let zoomScale=1, zoomTx=0, zoomTy=0;
+let pinchState=null; // {d0, s0, cx, cy, tx0, ty0}
+let panState=null;   // {x0, y0, tx0, ty0}
+
+// Herramienta activa: 'bbox' | 'polygon' | 'sam'
+let activeTool="bbox";
+
+// ── Modo Arrume ──────────────────────────────────────────────────────────────
+let arrumeMode=false, arrumeCount=0;
+function toggleArrume(on){
+  arrumeMode=on; arrumeCount=0;
+  const c=document.getElementById("arrume-counter");
+  c.style.display=on?"inline-block":"none";
+  c.textContent="×0";
+  if(on && !currentClase) showToast("⚠️ Selecciona una clase primero para el arrume","err");
+  else if(on) showToast(`🔗 Arrume ON: ${currentClase||"?"}`,"ok");
+}
+function bumpArrume(){
+  if(!arrumeMode) return;
+  arrumeCount++;
+  document.getElementById("arrume-counter").textContent="×"+arrumeCount;
 }
 
-// Only notify the parent frame after the server confirms the error passed
-// the filter and the overlay will be shown.
-hot.on("runtime-error-plugin:notify-parent", () => {
-  try {
-    window.parent.postMessage({ type: "runtime-error", id: null }, "*");
-  } catch (_) {}
-});
+// ── SAM state ────────────────────────────────────────────────────────────────
+let samModel=null, samProcessor=null, samInputs=null, samEmbeddings=null;
+let samLoading=false, samImgKey=null;
 
-window.addEventListener("error", (evt) => {
-  sendError(evt.error);
-});
+// Estado BBox
+let bboxDrawing=false, bboxStart={x:0,y:0}, bboxCurrent=null;
 
-window.addEventListener("unhandledrejection", (evt) => {
-  sendError(evt.reason);
-});
-</script>
+// Estado Polygon
+let polyPoints=[], polyDrawing=false, polyPreview=null;
 
-    <script type="module">import { injectIntoGlobalHook } from "/@react-refresh";
-injectIntoGlobalHook(window);
-window.$RefreshReg$ = () => {};
-window.$RefreshSig$ = () => (type) => type;</script>
+// Imagen
+let imgNatW=0, imgNatH=0, imgDispW=0, imgDispH=0;
 
-    <script type="module" src="/@vite/client"></script>
+// Memoria de imágenes analizadas (persistente)
+let imgMemory=JSON.parse(localStorage.getItem("rf_img_memory")||"[]");
+function saveMemory(){ try{ localStorage.setItem("rf_img_memory",JSON.stringify(imgMemory.slice(0,200))); }catch(_){} }
 
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#0a1628">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>UNISPAN — Captura Dataset v6</title>
-    <style>
-      * {
-        box-sizing: border-box;
-        margin: 0;
-        padding: 0;
-        touch-action: manipulation;
-      }
-      :root {
-        --bg: #0a1628;
-        --surface: #102a43;
-        --surface2: #1a3a5c;
-        --border: rgba(99, 125, 152, 0.25);
-        --amber: #f59e0b;
-        --steel: #627d98;
-        --text: #e2e8f0;
-        --text2: #94a3b8;
-        --ok: #22c55e;
-        --danger: #ef4444;
-        --radius: 14px;
-      }
-      body {
-        background: var(--bg);
-        color: var(--text);
-        font-family: -apple-system, "Inter", sans-serif;
-        min-height: 100dvh;
-        display: flex;
-        flex-direction: column;
-      }
-      header {
-        background: rgba(10, 22, 40, 0.95);
-        backdrop-filter: blur(12px);
-        border-bottom: 1px solid var(--border);
-        padding: 14px 16px;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        position: sticky;
-        top: 0;
-        z-index: 100;
-      }
-      .logo {
-        width: 36px;
-        height: 36px;
-        background: var(--amber);
-        border-radius: 10px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: 800;
-        font-size: 16px;
-        color: #0a1628;
-        flex-shrink: 0;
-      }
-      header h1 {
-        font-size: 15px;
-        font-weight: 700;
-      }
-      header p {
-        font-size: 11px;
-        color: var(--steel);
-      }
-      .tabs {
-        display: flex;
-        border-bottom: 1px solid var(--border);
-        background: var(--bg);
-        position: sticky;
-        top: 64px;
-        z-index: 99;
-      }
-      .tab {
-        flex: 1;
-        padding: 12px 8px;
-        font-size: 12px;
-        font-weight: 600;
-        text-align: center;
-        color: var(--steel);
-        border-bottom: 2px solid transparent;
-        cursor: pointer;
-        transition: all 0.15s;
-      }
-      .tab.active {
-        color: var(--amber);
-        border-bottom-color: var(--amber);
-      }
-      main {
-        flex: 1;
-        padding: 14px;
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-      }
-      .page {
-        display: none;
-        flex-direction: column;
-        gap: 12px;
-      }
-      .page.active {
-        display: flex;
-      }
-      .card {
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: var(--radius);
-        padding: 14px;
-      }
-      .card-title {
-        font-size: 11px;
-        font-weight: 700;
-        color: var(--steel);
-        text-transform: uppercase;
-        letter-spacing: 0.06em;
-        margin-bottom: 10px;
-      }
-      label {
-        font-size: 13px;
-        color: var(--text2);
-        display: block;
-        margin-bottom: 4px;
-      }
-      input,
-      select {
-        width: 100%;
-        background: var(--bg);
-        border: 1px solid var(--border);
-        border-radius: 10px;
-        padding: 10px 12px;
-        color: var(--text);
-        font-size: 14px;
-        margin-bottom: 10px;
-        outline: none;
-        -webkit-appearance: none;
-      }
-      input:focus,
-      select:focus {
-        border-color: var(--amber);
-      }
-      input[type="file"] {
-        display: none;
-      }
-      input[type="password"] {
-        letter-spacing: 2px;
-      }
+const savedKey=localStorage.getItem("rf_api_key");
+if(savedKey) document.getElementById("api-key").value=savedKey;
+document.getElementById("api-key").addEventListener("blur",()=>localStorage.setItem("rf_api_key",document.getElementById("api-key").value.trim()));
+document.getElementById("cnt-total").textContent=totalCount;
+document.getElementById("cnt-ok").textContent=okCount;
 
-      /* Tool selector */
-      .tool-bar {
-        display: flex;
-        gap: 8px;
-        margin-bottom: 10px;
-      }
-      .tool-btn {
-        flex: 1;
-        padding: 10px 8px;
-        border-radius: 10px;
-        border: 1.5px solid var(--border);
-        background: var(--bg);
-        color: var(--text2);
-        font-size: 12px;
-        font-weight: 600;
-        cursor: pointer;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 4px;
-        transition: all 0.15s;
-      }
-      .tool-btn.active {
-        border-color: var(--amber);
-        background: rgba(245, 158, 11, 0.1);
-        color: var(--amber);
-      }
-      .tool-btn.active.pieza-btn {
-        border-color: #06b6d4;
-        background: rgba(6, 182, 212, 0.1);
-        color: #22d3ee;
-      }
-      .tool-icon {
-        font-size: 20px;
-      }
-      .tool-hint {
-        font-size: 10px;
-        color: var(--steel);
-        text-align: center;
-        margin-bottom: 6px;
-        padding: 6px 10px;
-        background: rgba(245, 158, 11, 0.06);
-        border-radius: 8px;
-      }
-      .tool-hint.pieza-hint {
-        background: rgba(6, 182, 212, 0.06);
-      }
-      /* Anotaciones individuales */
-      .anno-item.individual {
-        border-color: rgba(6, 182, 212, 0.5);
-        border-style: dashed;
-      }
-      .badge-ind {
-        display: inline-flex;
-        align-items: center;
-        gap: 3px;
-        font-size: 10px;
-        padding: 2px 7px;
-        border-radius: 6px;
-        background: rgba(6, 182, 212, 0.15);
-        color: #22d3ee;
-        border: 1px solid rgba(6, 182, 212, 0.3);
-        font-weight: 700;
-      }
-      .badge-qty {
-        display: inline-flex;
-        align-items: center;
-        gap: 3px;
-        font-size: 10px;
-        padding: 2px 7px;
-        border-radius: 6px;
-        background: rgba(34, 197, 94, 0.2);
-        color: var(--ok);
-        border: 1px solid rgba(34, 197, 94, 0.3);
-        font-weight: 700;
-      }
-
-      /* BBox / Canvas + Zoom viewport */
-      .zoom-viewport {
-        position: relative;
-        overflow: hidden;
-        border-radius: 12px;
-        background: #000;
-        touch-action: none;
-        user-select: none;
-      }
-      .bbox-wrap {
-        position: relative;
-        transform-origin: 0 0;
-        transition: transform 0.05s linear;
-        touch-action: none;
-        user-select: none;
-      }
-      .bbox-img {
-        width: 100%;
-        display: block;
-        user-select: none;
-        -webkit-user-drag: none;
-        pointer-events: none;
-      }
-      #bbox-canvas {
-        position: absolute;
-        inset: 0;
-        width: 100%;
-        height: 100%;
-        touch-action: none;
-      }
-      .capture-zone {
-        border: 2px dashed var(--border);
-        border-radius: var(--radius);
-        min-height: 160px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        cursor: pointer;
-        transition: border-color 0.2s;
-      }
-      .capture-zone.has-img {
-        display: none;
-      }
-
-      /* Zoom controls */
-      .zoom-bar {
-        display: flex;
-        gap: 6px;
-        margin-top: 8px;
-        align-items: center;
-        flex-wrap: wrap;
-      }
-      .zoom-btn {
-        background: var(--bg);
-        border: 1.5px solid var(--border);
-        color: var(--text);
-        border-radius: 8px;
-        padding: 7px 11px;
-        font-size: 14px;
-        font-weight: 700;
-        cursor: pointer;
-        min-width: 38px;
-      }
-      .zoom-btn:active {
-        background: var(--surface2);
-      }
-      .zoom-lbl {
-        font-size: 11px;
-        color: var(--steel);
-        font-family: monospace;
-      }
-      .zoom-hint {
-        font-size: 10px;
-        color: var(--steel);
-        flex: 1;
-        text-align: right;
-      }
-
-      /* Blur warning */
-      .blur-warn {
-        background: rgba(239, 68, 68, 0.12);
-        border: 1.5px solid rgba(239, 68, 68, 0.4);
-        color: #fca5a5;
-        padding: 9px 11px;
-        border-radius: 10px;
-        font-size: 12px;
-        margin-top: 8px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-      }
-      .blur-warn.ok {
-        background: rgba(34, 197, 94, 0.1);
-        border-color: rgba(34, 197, 94, 0.3);
-        color: #86efac;
-      }
-      .blur-warn .x {
-        margin-left: auto;
-        cursor: pointer;
-        font-size: 16px;
-      }
-
-      /* Class stats */
-      .stat-row {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 7px 10px;
-        background: var(--bg);
-        border-radius: 8px;
-        font-size: 12px;
-        margin-bottom: 4px;
-      }
-      .stat-code {
-        font-family: monospace;
-        font-weight: 700;
-        color: var(--text);
-      }
-      .stat-count {
-        font-family: monospace;
-        font-weight: 700;
-        color: var(--amber);
-      }
-      .stat-count.low {
-        color: #fca5a5;
-      }
-      .stat-count.ok {
-        color: var(--ok);
-      }
-      .stat-bar {
-        height: 4px;
-        background: var(--bg);
-        border-radius: 99px;
-        overflow: hidden;
-        margin-top: 3px;
-      }
-      .stat-bar-fill {
-        height: 100%;
-        background: var(--amber);
-        border-radius: 99px;
-      }
-
-      /* Agente Experto */
-      .exp-chips { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px; }
-      .exp-chip {
-        background: rgba(255,255,255,.06);
-        border: 1.5px solid var(--border);
-        color: var(--steel);
-        border-radius: 20px;
-        padding: 6px 12px;
-        font-size: 11.5px;
-        cursor: pointer;
-      }
-      .exp-chip:hover { border-color: var(--amber); color: var(--amber); }
-      .exp-chat { display:flex; flex-direction:column; gap:10px; max-height: 420px; overflow-y:auto; margin-bottom:10px; }
-      .exp-msg { max-width: 92%; padding: 10px 12px; border-radius: 12px; font-size: 13px; line-height:1.5; }
-      .exp-msg.user { align-self:flex-end; background: rgba(245,158,11,.18); border:1px solid rgba(245,158,11,.35); }
-      .exp-msg.bot { align-self:flex-start; background: var(--surface2); border:1px solid var(--border); white-space:pre-line; }
-      .exp-msg.bot b { color: var(--amber); }
-      .exp-related { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
-      .exp-related span {
-        font-size:10.5px; background:rgba(59,130,246,.15); color:#93c5fd;
-        border-radius:10px; padding:3px 8px; cursor:pointer; border:1px solid rgba(59,130,246,.3);
-      }
-      .exp-inputrow { display:flex; gap:8px; }
-      .exp-inputrow input { flex:1; }
-      /* Calculadora perforaciones */
-      .calc-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:8px; }
-      .calc-field label { font-size:11px; color:var(--steel); display:block; margin-bottom:4px; }
-      .calc-result {
-        margin-top:10px; padding:10px 12px; border-radius:10px;
-        background: rgba(34,197,94,.1); border:1px solid rgba(34,197,94,.35);
-        font-size:12.5px; color: var(--ok); display:none;
-      }
-      .calc-result b { color: var(--text); }
-      .perf-table { width:100%; border-collapse:collapse; font-size:11.5px; margin-top:8px; }
-      .perf-table th, .perf-table td { padding:5px 6px; text-align:center; border-bottom:1px solid var(--border); }
-      .perf-table th { color:var(--amber); font-weight:700; }
-
-      /* Esquinero overlay */
-      #esq-overlay {
-        position: absolute;
-        bottom: 6px;
-        left: 50%;
-        transform: translateX(-50%);
-        background: rgba(10,22,40,.96);
-        border: 1.5px solid var(--amber);
-        border-radius: 14px;
-        padding: 10px 14px;
-        z-index: 20;
-        display: none;
-        flex-direction: column;
-        gap: 8px;
-        min-width: 230px;
-        max-width: 90%;
-        box-shadow: 0 4px 24px rgba(0,0,0,.6);
-      }
-      #esq-overlay .esq-title {
-        font-size: 12px;
-        font-weight: 700;
-        color: var(--amber);
-        text-align: center;
-        letter-spacing: .5px;
-      }
-      .esq-row { display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--steel); }
-      .esq-row label { min-width: 58px; }
-      .esq-row input[type=range] { flex:1; accent-color: var(--amber); }
-      .esq-row span { min-width: 28px; text-align: right; color: var(--text); font-size: 11px; }
-      .esq-orient { display: flex; gap: 6px; justify-content: center; }
-      .esq-orient button {
-        background: rgba(255,255,255,.06);
-        border: 1.5px solid var(--border);
-        color: var(--text);
-        border-radius: 8px;
-        padding: 5px 10px;
-        font-size: 16px;
-        cursor: pointer;
-        transition: all .15s;
-      }
-      .esq-orient button.active {
-        background: rgba(245,158,11,.2);
-        border-color: var(--amber);
-        color: var(--amber);
-      }
-      .esq-btns { display: flex; gap: 8px; }
-      .esq-btns button {
-        flex:1;
-        padding: 8px;
-        border-radius: 10px;
-        font-size: 12px;
-        font-weight: 700;
-        cursor: pointer;
-        border: none;
-      }
-      .esq-confirm { background: var(--amber); color: #000; }
-      .esq-cancel  { background: rgba(255,255,255,.08); color: var(--steel); }
-
-      /* Modo Arrume toggle */
-      .arrume-toggle-row {
-        display: flex; align-items: center; justify-content: space-between;
-        margin-top: 10px; padding: 8px 10px; border-radius: 10px;
-        background: rgba(255,255,255,.04); border: 1.5px solid var(--border);
-      }
-      .arrume-toggle-row.on { border-color: var(--amber); background: rgba(245,158,11,.08); }
-      .arrume-toggle-label { font-size: 12px; font-weight: 600; display:flex; align-items:center; gap:6px; }
-      .arrume-switch {
-        width: 40px; height: 22px; border-radius: 12px; background: var(--border);
-        position: relative; cursor: pointer; transition: background .2s; flex-shrink:0;
-      }
-      .arrume-switch.on { background: var(--amber); }
-      .arrume-switch::after {
-        content: ''; position: absolute; top: 2px; left: 2px; width: 18px; height: 18px;
-        border-radius: 50%; background: #fff; transition: left .2s;
-      }
-      .arrume-switch.on::after { left: 20px; }
-      .arrume-count { font-size: 11px; color: var(--amber); font-weight: 700; }
-
-      /* Polygon toolbar */
-      .poly-toolbar {
-        display: flex;
-        gap: 6px;
-        margin-top: 8px;
-      }
-
-      /* Anno list */
-      .anno-list {
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-        margin-top: 10px;
-      }
-      .anno-item {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        padding: 8px 10px;
-        border-radius: 10px;
-        border: 1.5px solid var(--border);
-        background: var(--bg);
-        font-size: 12px;
-        flex-wrap: wrap;
-      }
-      .anno-color {
-        width: 14px;
-        height: 14px;
-        border-radius: 4px;
-        flex-shrink: 0;
-      }
-      .anno-label {
-        flex: 1;
-        font-family: monospace;
-        font-weight: 700;
-        min-width: 0;
-      }
-      .anno-type {
-        font-size: 10px;
-        color: var(--steel);
-        background: var(--surface);
-        border-radius: 5px;
-        padding: 2px 6px;
-      }
-      .anno-check {
-        font-size: 18px;
-        cursor: pointer;
-      }
-      .anno-del {
-        cursor: pointer;
-        font-size: 16px;
-        color: var(--steel);
-      }
-
-      /* Clase selector */
-      .quick-grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 5px;
-        margin-bottom: 6px;
-      }
-      .quick-btn {
-        background: var(--bg);
-        border: 1.5px solid var(--border);
-        border-radius: 8px;
-        padding: 7px 4px;
-        color: var(--text2);
-        font-size: 10px;
-        font-weight: 600;
-        text-align: center;
-        cursor: pointer;
-        transition: all 0.15s;
-      }
-      .quick-btn.active {
-        background: rgba(245, 158, 11, 0.15);
-        border-color: var(--amber);
-        color: var(--amber);
-      }
-
-      /* Progress */
-      .prog-wrap {
-        background: var(--bg);
-        border-radius: 99px;
-        height: 5px;
-        overflow: hidden;
-        display: none;
-        margin-top: 10px;
-      }
-      .prog-wrap.show {
-        display: block;
-      }
-      .prog-bar {
-        height: 100%;
-        background: var(--amber);
-        border-radius: 99px;
-        transition: width 0.4s;
-        width: 0%;
-      }
-
-      /* Buttons */
-      .btn-row {
-        display: flex;
-        gap: 8px;
-      }
-      .btn {
-        flex: 1;
-        padding: 13px;
-        border-radius: 12px;
-        font-size: 13px;
-        font-weight: 700;
-        cursor: pointer;
-        border: none;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 6px;
-        transition:
-          opacity 0.15s,
-          transform 0.1s;
-        -webkit-tap-highlight-color: transparent;
-      }
-      .btn:active {
-        transform: scale(0.97);
-      }
-      .btn:disabled {
-        opacity: 0.4;
-        cursor: not-allowed;
-      }
-      .btn-cam {
-        background: var(--surface);
-        color: var(--text);
-        border: 1.5px solid var(--border);
-      }
-      .btn-up {
-        background: var(--amber);
-        color: #0a1628;
-      }
-      .btn-up.loading {
-        background: #b45309;
-      }
-      .btn-sm {
-        padding: 8px 12px;
-        font-size: 12px;
-        border-radius: 9px;
-        flex: none;
-      }
-      .btn-danger {
-        background: rgba(239, 68, 68, 0.15);
-        color: var(--danger);
-        border: 1.5px solid rgba(239, 68, 68, 0.3);
-      }
-      .btn-ok {
-        background: rgba(34, 197, 94, 0.15);
-        color: var(--ok);
-        border: 1.5px solid rgba(34, 197, 94, 0.3);
-      }
-      .btn-ghost {
-        background: var(--surface);
-        color: var(--text2);
-        border: 1.5px solid var(--border);
-      }
-      .btn-amber {
-        background: rgba(245, 158, 11, 0.15);
-        color: var(--amber);
-        border: 1.5px solid rgba(245, 158, 11, 0.3);
-      }
-
-      /* Counter */
-      .counter {
-        display: flex;
-        gap: 8px;
-      }
-      .counter-item {
-        flex: 1;
-        background: var(--bg);
-        border-radius: 10px;
-        padding: 10px;
-        text-align: center;
-      }
-      .counter-num {
-        font-size: 22px;
-        font-weight: 800;
-        color: var(--amber);
-      }
-      .counter-lbl {
-        font-size: 10px;
-        color: var(--steel);
-        margin-top: 1px;
-      }
-
-      /* Log */
-      .log-list {
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-      }
-      .log-item {
-        background: var(--bg);
-        border-radius: 10px;
-        padding: 10px;
-        border: 1.5px solid transparent;
-      }
-      .log-item.error {
-        border-color: rgba(239, 68, 68, 0.3);
-      }
-      .log-header {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-      }
-      .log-thumb {
-        width: 48px;
-        height: 48px;
-        border-radius: 8px;
-        object-fit: cover;
-        flex-shrink: 0;
-      }
-      .log-info {
-        flex: 1;
-        min-width: 0;
-      }
-      .log-name {
-        font-weight: 700;
-        color: var(--text);
-        font-family: monospace;
-        font-size: 13px;
-      }
-      .log-meta {
-        color: var(--steel);
-        margin-top: 2px;
-        font-size: 11px;
-      }
-      .log-annos {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 4px;
-        margin-top: 6px;
-      }
-      .log-anno-tag {
-        padding: 3px 8px;
-        border-radius: 6px;
-        font-size: 10px;
-        font-weight: 700;
-        font-family: monospace;
-      }
-      .log-actions {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 4px;
-        flex-shrink: 0;
-      }
-
-      /* Catalog */
-      .cat-search {
-        position: relative;
-        margin-bottom: 8px;
-      }
-      .cat-search input {
-        margin-bottom: 0;
-        padding-left: 36px;
-      }
-      .cat-search .ico {
-        position: absolute;
-        left: 12px;
-        top: 50%;
-        transform: translateY(-50%);
-        font-size: 14px;
-      }
-      .cat-families {
-        display: flex;
-        gap: 6px;
-        flex-wrap: wrap;
-        margin-bottom: 8px;
-      }
-      .fam-btn {
-        padding: 5px 12px;
-        border-radius: 99px;
-        font-size: 11px;
-        font-weight: 700;
-        border: 1.5px solid var(--border);
-        color: var(--steel);
-        cursor: pointer;
-        transition: all 0.15s;
-      }
-      .fam-btn.active {
-        background: rgba(245, 158, 11, 0.15);
-        border-color: var(--amber);
-        color: var(--amber);
-      }
-      .cat-list {
-        max-height: 220px;
-        overflow-y: auto;
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
-      }
-      .cat-item {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 10px 12px;
-        background: var(--bg);
-        border-radius: 10px;
-        cursor: pointer;
-        border: 1.5px solid transparent;
-      }
-      .cat-item .ci-code {
-        font-weight: 700;
-        font-size: 13px;
-        font-family: monospace;
-        color: var(--amber);
-      }
-      .cat-item .ci-spec {
-        font-size: 11px;
-        color: var(--steel);
-        margin-top: 2px;
-      }
-      .ref-grid {
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-      }
-      .ref-card {
-        background: var(--bg);
-        border-radius: 10px;
-        padding: 12px;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-      }
-      .ref-fam {
-        width: 36px;
-        height: 36px;
-        border-radius: 8px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: 800;
-        font-size: 11px;
-        flex-shrink: 0;
-      }
-      .ref-fam.PM {
-        background: rgba(59, 130, 246, 0.15);
-        color: #60a5fa;
-      }
-      .ref-fam.PB {
-        background: rgba(168, 85, 247, 0.15);
-        color: #c084fc;
-      }
-      .ref-fam.EI {
-        background: rgba(245, 158, 11, 0.15);
-        color: var(--amber);
-      }
-      .ref-info {
-        flex: 1;
-        min-width: 0;
-      }
-      .ref-code {
-        font-family: monospace;
-        font-weight: 700;
-        font-size: 13px;
-      }
-      .ref-spec {
-        font-size: 11px;
-        color: var(--steel);
-        margin-top: 2px;
-      }
-      .ref-copy {
-        font-size: 20px;
-        cursor: pointer;
-        padding: 4px;
-      }
-
-      /* Modal */
-      .modal-bg {
-        display: none;
-        position: fixed;
-        inset: 0;
-        background: rgba(0, 0, 0, 0.7);
-        z-index: 200;
-        align-items: flex-end;
-      }
-      .modal-bg.show {
-        display: flex;
-      }
-      .modal {
-        background: var(--surface);
-        border-radius: 20px 20px 0 0;
-        padding: 20px 16px 32px;
-        width: 100%;
-        max-height: 85vh;
-        overflow-y: auto;
-      }
-      .modal-title {
-        font-size: 15px;
-        font-weight: 700;
-        margin-bottom: 14px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-      }
-      .modal-close {
-        font-size: 22px;
-        cursor: pointer;
-        color: var(--steel);
-      }
-
-      /* Review */
-      .review-img-wrap {
-        position: relative;
-        border-radius: 12px;
-        overflow: hidden;
-        background: #000;
-        margin-bottom: 12px;
-      }
-      .review-img {
-        width: 100%;
-        display: block;
-      }
-      #review-canvas {
-        position: absolute;
-        inset: 0;
-        width: 100%;
-        height: 100%;
-        pointer-events: none;
-      }
-      .review-annos {
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-        margin-bottom: 14px;
-      }
-      .review-anno {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 10px 12px;
-        background: var(--bg);
-        border-radius: 10px;
-        border: 1.5px solid transparent;
-      }
-      .review-anno.approved {
-        border-color: var(--ok);
-      }
-      .review-anno.rejected {
-        border-color: var(--danger);
-        opacity: 0.5;
-      }
-      .review-check {
-        font-size: 22px;
-        cursor: pointer;
-        flex-shrink: 0;
-      }
-
-      /* Toast */
-      .toast {
-        position: fixed;
-        bottom: 20px;
-        left: 50%;
-        transform: translateX(-50%) translateY(80px);
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: 12px;
-        padding: 11px 18px;
-        font-size: 13px;
-        font-weight: 600;
-        transition: transform 0.3s;
-        z-index: 500;
-        white-space: nowrap;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-      }
-      .toast.show {
-        transform: translateX(-50%) translateY(0);
-      }
-      .toast.ok {
-        border-color: var(--ok);
-        color: var(--ok);
-      }
-      .toast.err {
-        border-color: var(--danger);
-        color: var(--danger);
-      }
-    </style>
-    <script type="module">"use strict";(()=>{var B="0.5.21";var y={HIGHLIGHT_COLOR:"#0079F2",HIGHLIGHT_BG:"#0079F210",ALLOWED_PARENT_DOMAINS:[".replit.dev",".replit.com",".replit-staging.com",".rp-humain.com",".repl.co"],THEME_PREVIEW_STYLE_ID:"replit-theme-preview",MAX_SIBLING_HIGHLIGHTERS:1e3,MAX_DESCENDANTS_FOR_SCREENSHOT:1500},oe=`
-  [contenteditable] {
-    outline: none !important;
-  }
-
-  [contenteditable]:focus {
-    outline: none !important;
-  }
-`,se=`
-  .beacon-highlighter {
-    content: '';
-    position: absolute;
-    z-index: ${Number.MAX_SAFE_INTEGER-3};
-    box-sizing: border-box;
-    pointer-events: none;
-    outline: 2px dashed ${y.HIGHLIGHT_COLOR} !important;
-    outline-offset: 0 !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    transform: none !important;
-    background: ${y.HIGHLIGHT_BG} !important;
-    opacity: 0;
-  }
-  
-  .beacon-hover-highlighter {
-    position: fixed;
-    z-index: ${Number.MAX_SAFE_INTEGER};
-  }
-  
-  .beacon-selected-highlighter {
-    position: fixed;
-    pointer-events: none;
-    outline: 2px solid ${y.HIGHLIGHT_COLOR} !important;
-    outline-offset: 3px !important;
-    background: none !important;
-  }
-  
-  .beacon-label {
-    position: absolute;
-    background-color: ${y.HIGHLIGHT_COLOR};
-    color: #FFFFFF;
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 14px;
-    font-family: monospace;
-    line-height: 1;
-    white-space: nowrap;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-    transform: translateY(-100%);
-    margin-top: -4px;
-    left: 0;
-    z-index: ${Number.MAX_SAFE_INTEGER-2};
-    pointer-events: none;
-    opacity: 0;
-  }
-  
-  .beacon-hover-label {
-    position: fixed;
-    z-index: ${Number.MAX_SAFE_INTEGER};
-  }
-  
-  .beacon-selected-label {
-    position: fixed;
-    pointer-events: none;
-  }
-  
-  .beacon-sibling-highlighter {
-    position: fixed;
-    pointer-events: none;
-    outline: 2px dashed ${y.HIGHLIGHT_COLOR} !important;
-    outline-offset: 0 !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    transform: none !important;
-    background: ${y.HIGHLIGHT_BG} !important;
-  }
-`;function je(n,t){return n[13]=1,n[14]=t>>8,n[15]=t&255,n[16]=t>>8,n[17]=t&255,n}var ge=112,me=72,fe=89,pe=115,$;function qe(){let n=new Int32Array(256);for(let t=0;t<256;t++){let e=t;for(let i=0;i<8;i++)e=e&1?3988292384^e>>>1:e>>>1;n[t]=e}return n}function Qe(n){let t=-1;$||($=qe());for(let e=0;e<n.length;e++)t=$[(t^n[e])&255]^t>>>8;return t^-1}function Ze(n){let t=n.length-1;for(let e=t;e>=4;e--)if(n[e-4]===9&&n[e-3]===ge&&n[e-2]===me&&n[e-1]===fe&&n[e]===pe)return e-3;return 0}function Je(n,t,e=!1){let i=new Uint8Array(13);t*=39.3701,i[0]=ge,i[1]=me,i[2]=fe,i[3]=pe,i[4]=t>>>24,i[5]=t>>>16,i[6]=t>>>8,i[7]=t&255,i[8]=i[4],i[9]=i[5],i[10]=i[6],i[11]=i[7],i[12]=1;let r=Qe(i),o=new Uint8Array(4);if(o[0]=r>>>24,o[1]=r>>>16,o[2]=r>>>8,o[3]=r&255,e){let l=Ze(n);return n.set(i,l),n.set(o,l+13),n}else{let l=new Uint8Array(4);l[0]=0,l[1]=0,l[2]=0,l[3]=9;let s=new Uint8Array(54);return s.set(n,0),s.set(l,33),s.set(i,37),s.set(o,50),s}}var Ee="[modern-screenshot]",A=typeof window<"u",et=A&&"Worker"in window,tt=A&&"atob"in window,Fn=A&&"btoa"in window,Y=A?window.navigator?.userAgent:"",be=Y.includes("Chrome"),k=Y.includes("AppleWebKit")&&!be,X=Y.includes("Firefox"),nt=n=>n&&"__CONTEXT__"in n,it=n=>n.constructor.name==="CSSFontFaceRule",rt=n=>n.constructor.name==="CSSImportRule",v=n=>n.nodeType===1,I=n=>typeof n.className=="object",ye=n=>n.tagName==="image",ot=n=>n.tagName==="use",L=n=>v(n)&&typeof n.style<"u"&&!I(n),st=n=>n.nodeType===8,lt=n=>n.nodeType===3,H=n=>n.tagName==="IMG",F=n=>n.tagName==="VIDEO",at=n=>n.tagName==="CANVAS",ct=n=>n.tagName==="TEXTAREA",ht=n=>n.tagName==="INPUT",dt=n=>n.tagName==="STYLE",ut=n=>n.tagName==="SCRIPT",gt=n=>n.tagName==="SELECT",mt=n=>n.tagName==="SLOT",ft=n=>n.tagName==="IFRAME",pt=(...n)=>console.warn(Ee,...n);function Et(n){let t=n?.createElement?.("canvas");return t&&(t.height=t.width=1),!!t&&"toDataURL"in t&&!!t.toDataURL("image/webp").includes("image/webp")}var K=n=>n.startsWith("data:");function we(n,t){if(n.match(/^[a-z]+:\/\//i))return n;if(A&&n.match(/^\/\//))return window.location.protocol+n;if(n.match(/^[a-z]+:/i)||!A)return n;let e=U().implementation.createHTMLDocument(),i=e.createElement("base"),r=e.createElement("a");return e.head.appendChild(i),e.body.appendChild(r),t&&(i.href=t),r.href=n,r.href}function U(n){return(n&&v(n)?n?.ownerDocument:n)??window.document}var V="http://www.w3.org/2000/svg";function bt(n,t,e){let i=U(e).createElementNS(V,"svg");return i.setAttributeNS(null,"width",n.toString()),i.setAttributeNS(null,"height",t.toString()),i.setAttributeNS(null,"viewBox",`0 0 ${n} ${t}`),i}function yt(n,t){let e=new XMLSerializer().serializeToString(n);return t&&(e=e.replace(/[\u0000-\u0008\v\f\u000E-\u001F\uD800-\uDFFF\uFFFE\uFFFF]/gu,"")),`data:image/svg+xml;charset=utf-8,${encodeURIComponent(e)}`}async function wt(n,t="image/png",e=1){try{return await new Promise((i,r)=>{n.toBlob(o=>{o?i(o):r(new Error("Blob is null"))},t,e)})}catch(i){if(tt)return St(n.toDataURL(t,e));throw i}}function St(n){let[t,e]=n.split(","),i=t.match(/data:(.+);/)?.[1]??void 0,r=window.atob(e),o=r.length,l=new Uint8Array(o);for(let s=0;s<o;s+=1)l[s]=r.charCodeAt(s);return new Blob([l],{type:i})}function Se(n,t){return new Promise((e,i)=>{let r=new FileReader;r.onload=()=>e(r.result),r.onerror=()=>i(r.error),r.onabort=()=>i(new Error(`Failed read blob to ${t}`)),t==="dataUrl"?r.readAsDataURL(n):t==="arrayBuffer"&&r.readAsArrayBuffer(n)})}var vt=n=>Se(n,"dataUrl"),Tt=n=>Se(n,"arrayBuffer");function R(n,t){let e=U(t).createElement("img");return e.decoding="sync",e.loading="eager",e.src=n,e}function M(n,t){return new Promise(e=>{let{timeout:i,ownerDocument:r,onError:o,onWarn:l}=t??{},s=typeof n=="string"?R(n,U(r)):n,c=null,h=null;function a(){e(s),c&&clearTimeout(c),h?.()}if(i&&(c=setTimeout(a,i)),F(s)){let d=s.currentSrc||s.src;if(!d)return s.poster?M(s.poster,t).then(e):a();if(s.readyState>=2)return a();let u=a,m=g=>{l?.("Failed video load",d,g),o?.(g),a()};h=()=>{s.removeEventListener("loadeddata",u),s.removeEventListener("error",m)},s.addEventListener("loadeddata",u,{once:!0}),s.addEventListener("error",m,{once:!0})}else{let d=ye(s)?s.href.baseVal:s.currentSrc||s.src;if(!d)return a();let u=async()=>{if(H(s)&&"decode"in s)try{await s.decode()}catch(g){l?.("Failed to decode image, trying to render anyway",s.dataset.originalSrc||d,g)}a()},m=g=>{l?.("Failed image load",s.dataset.originalSrc||d,g),a()};if(H(s)&&s.complete)return u();h=()=>{s.removeEventListener("load",u),s.removeEventListener("error",m)},s.addEventListener("load",u,{once:!0}),s.addEventListener("error",m,{once:!0})}})}async function Ct(n,t){L(n)&&(H(n)||F(n)?await M(n,t):await Promise.all(["img","video"].flatMap(e=>Array.from(n.querySelectorAll(e)).map(i=>M(i,t)))))}var ve=function(){let t=0,e=()=>`0000${(Math.random()*36**4<<0).toString(36)}`.slice(-4);return()=>(t+=1,`u${e()}${t}`)}();function Te(n){return n?.split(",").map(t=>t.trim().replace(/"|'/g,"").toLowerCase()).filter(Boolean)}var le=0;function At(n){let t=`${Ee}[#${le}]`;return le++,{time:e=>n&&console.time(`${t} ${e}`),timeEnd:e=>n&&console.timeEnd(`${t} ${e}`),warn:(...e)=>n&&pt(...e)}}function Rt(n){return{cache:n?"no-cache":"force-cache"}}async function z(n,t){return nt(n)?n:Ht(n,{...t,autoDestruct:!0})}async function Ht(n,t){let{scale:e=1,workerUrl:i,workerNumber:r=1}=t||{},o=!!t?.debug,l=t?.features??!0,s=n.ownerDocument??(A?window.document:void 0),c=n.ownerDocument?.defaultView??(A?window:void 0),h=new Map,a={width:0,height:0,quality:1,type:"image/png",scale:e,backgroundColor:null,style:null,filter:null,maximumCanvasSize:0,timeout:3e4,progress:null,debug:o,fetch:{requestInit:Rt(t?.fetch?.bypassingCache),placeholderImage:"data:image/png;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7",bypassingCache:!1,...t?.fetch},fetchFn:null,font:{},drawImageInterval:100,workerUrl:null,workerNumber:r,onCloneNode:null,onEmbedNode:null,onCreateForeignObjectSvg:null,includeStyleProperties:null,autoDestruct:!1,...t,__CONTEXT__:!0,log:At(o),node:n,ownerDocument:s,ownerWindow:c,dpi:e===1?null:96*e,svgStyleElement:Ce(s),svgDefsElement:s?.createElementNS(V,"defs"),svgStyles:new Map,defaultComputedStyles:new Map,workers:[...Array.from({length:et&&i&&r?r:0})].map(()=>{try{let m=new Worker(i);return m.onmessage=async g=>{let{url:f,result:E}=g.data;E?h.get(f)?.resolve?.(E):h.get(f)?.reject?.(new Error(`Error receiving message from worker: ${f}`))},m.onmessageerror=g=>{let{url:f}=g.data;h.get(f)?.reject?.(new Error(`Error receiving message from worker: ${f}`))},m}catch(m){return a.log.warn("Failed to new Worker",m),null}}).filter(Boolean),fontFamilies:new Map,fontCssTexts:new Map,acceptOfImage:`${[Et(s)&&"image/webp","image/svg+xml","image/*","*/*"].filter(Boolean).join(",")};q=0.8`,requests:h,drawImageCount:0,tasks:[],features:l,isEnable:m=>m==="restoreScrollPosition"?typeof l=="boolean"?!1:l[m]??!1:typeof l=="boolean"?l:l[m]??!0};a.log.time("wait until load"),await Ct(n,{timeout:a.timeout,onWarn:a.log.warn}),a.log.timeEnd("wait until load");let{width:d,height:u}=xt(n,a);return a.width=d,a.height=u,a}function Ce(n){if(!n)return;let t=n.createElement("style"),e=t.ownerDocument.createTextNode(`
-.______background-clip--text {
-  background-clip: text;
-  -webkit-background-clip: text;
+// ── Tabs ──────────────────────────────────────────────────────────────────────
+function switchTab(n){
+  document.querySelectorAll(".tab").forEach((t,i)=>t.classList.toggle("active",["captura","historial","catalogo","experto"][i]===n));
+  document.querySelectorAll(".page").forEach(p=>p.classList.toggle("active",p.id==="page-"+n));
+  if(n==="catalogo") renderCatalogPage("");
+  if(n==="experto") expertInit();
 }
-`);return t.appendChild(e),t}function xt(n,t){let{width:e,height:i}=t;if(v(n)&&(!e||!i)){let r=n.getBoundingClientRect();e=e||r.width||Number(n.getAttribute("width"))||0,i=i||r.height||Number(n.getAttribute("height"))||0}return{width:e,height:i}}async function Lt(n,t){let{log:e,timeout:i,drawImageCount:r,drawImageInterval:o}=t;e.time("image to canvas");let l=await M(n,{timeout:i,onWarn:t.log.warn}),{canvas:s,context2d:c}=Mt(n.ownerDocument,t),h=()=>{try{c?.drawImage(l,0,0,s.width,s.height)}catch(a){t.log.warn("Failed to drawImage",a)}};if(h(),t.isEnable("fixSvgXmlDecode"))for(let a=0;a<r;a++)await new Promise(d=>{setTimeout(()=>{h(),d()},a+o)});return t.drawImageCount=0,e.timeEnd("image to canvas"),s}function Mt(n,t){let{width:e,height:i,scale:r,backgroundColor:o,maximumCanvasSize:l}=t,s=n.createElement("canvas");s.width=Math.floor(e*r),s.height=Math.floor(i*r),s.style.width=`${e}px`,s.style.height=`${i}px`,l&&(s.width>l||s.height>l)&&(s.width>l&&s.height>l?s.width>s.height?(s.height*=l/s.width,s.width=l):(s.width*=l/s.height,s.height=l):s.width>l?(s.height*=l/s.width,s.width=l):(s.width*=l/s.height,s.height=l));let c=s.getContext("2d");return c&&o&&(c.fillStyle=o,c.fillRect(0,0,s.width,s.height)),{canvas:s,context2d:c}}function Ae(n,t){if(n.ownerDocument)try{let o=n.toDataURL();if(o!=="data:,")return R(o,n.ownerDocument)}catch(o){t.log.warn("Failed to clone canvas",o)}let e=n.cloneNode(!1),i=n.getContext("2d"),r=e.getContext("2d");try{return i&&r&&r.putImageData(i.getImageData(0,0,n.width,n.height),0,0),e}catch(o){t.log.warn("Failed to clone canvas",o)}return e}function _t(n,t){try{if(n?.contentDocument?.body)return j(n.contentDocument.body,t)}catch(e){t.log.warn("Failed to clone iframe",e)}return n.cloneNode(!1)}function It(n){let t=n.cloneNode(!1);return n.currentSrc&&n.currentSrc!==n.src&&(t.src=n.currentSrc,t.srcset=""),t.loading==="lazy"&&(t.loading="eager"),t}async function Pt(n,t){if(n.ownerDocument&&!n.currentSrc&&n.poster)return R(n.poster,n.ownerDocument);let e=n.cloneNode(!1);e.crossOrigin="anonymous",n.currentSrc&&n.currentSrc!==n.src&&(e.src=n.currentSrc);let i=e.ownerDocument;if(i){let r=!0;if(await M(e,{onError:()=>r=!1,onWarn:t.log.warn}),!r)return n.poster?R(n.poster,n.ownerDocument):e;e.currentTime=n.currentTime,await new Promise(l=>{e.addEventListener("seeked",l,{once:!0})});let o=i.createElement("canvas");o.width=n.offsetWidth,o.height=n.offsetHeight;try{let l=o.getContext("2d");l&&l.drawImage(e,0,0,o.width,o.height)}catch(l){return t.log.warn("Failed to clone video",l),n.poster?R(n.poster,n.ownerDocument):e}return Ae(o,t)}return e}function Dt(n,t){return at(n)?Ae(n,t):ft(n)?_t(n,t):H(n)?It(n):F(n)?Pt(n,t):n.cloneNode(!1)}function Nt(n){let t=n.sandbox;if(!t){let{ownerDocument:e}=n;try{e&&(t=e.createElement("iframe"),t.id=`__SANDBOX__-${ve()}`,t.width="0",t.height="0",t.style.visibility="hidden",t.style.position="fixed",e.body.appendChild(t),t.contentWindow?.document.write('<!DOCTYPE html><meta charset="UTF-8"><title></title><body>'),n.sandbox=t)}catch(i){n.log.warn("Failed to getSandBox",i)}}return t}var Ot=["width","height","-webkit-text-fill-color"],Bt=["stroke","fill"];function Re(n,t,e){let{defaultComputedStyles:i}=e,r=n.nodeName.toLowerCase(),o=I(n)&&r!=="svg",l=o?Bt.map(f=>[f,n.getAttribute(f)]).filter(([,f])=>f!==null):[],s=[o&&"svg",r,l.map((f,E)=>`${f}=${E}`).join(","),t].filter(Boolean).join(":");if(i.has(s))return i.get(s);let h=Nt(e)?.contentWindow;if(!h)return new Map;let a=h?.document,d,u;o?(d=a.createElementNS(V,"svg"),u=d.ownerDocument.createElementNS(d.namespaceURI,r),l.forEach(([f,E])=>{u.setAttributeNS(null,f,E)}),d.appendChild(u)):d=u=a.createElement(r),u.textContent=" ",a.body.appendChild(d);let m=h.getComputedStyle(u,t),g=new Map;for(let f=m.length,E=0;E<f;E++){let p=m.item(E);Ot.includes(p)||g.set(p,m.getPropertyValue(p))}return a.body.removeChild(d),i.set(s,g),g}function He(n,t,e){let i=new Map,r=[],o=new Map;if(e)for(let s of e)l(s);else for(let s=n.length,c=0;c<s;c++){let h=n.item(c);l(h)}for(let s=r.length,c=0;c<s;c++)o.get(r[c])?.forEach((h,a)=>i.set(a,h));function l(s){let c=n.getPropertyValue(s),h=n.getPropertyPriority(s),a=s.lastIndexOf("-"),d=a>-1?s.substring(0,a):void 0;if(d){let u=o.get(d);u||(u=new Map,o.set(d,u)),u.set(s,[c,h])}t.get(s)===c&&!h||(d?r.push(d):i.set(s,[c,h]))}return i}function kt(n,t,e,i){let{ownerWindow:r,includeStyleProperties:o,currentParentNodeStyle:l}=i,s=t.style,c=r.getComputedStyle(n),h=Re(n,null,i);l?.forEach((d,u)=>{h.delete(u)});let a=He(c,h,o);a.delete("transition-property"),a.delete("all"),a.delete("d"),a.delete("content"),e&&(a.delete("margin-top"),a.delete("margin-right"),a.delete("margin-bottom"),a.delete("margin-left"),a.delete("margin-block-start"),a.delete("margin-block-end"),a.delete("margin-inline-start"),a.delete("margin-inline-end"),a.set("box-sizing",["border-box",""])),a.get("background-clip")?.[0]==="text"&&t.classList.add("______background-clip--text"),be&&(a.has("font-kerning")||a.set("font-kerning",["normal",""]),(a.get("overflow-x")?.[0]==="hidden"||a.get("overflow-y")?.[0]==="hidden")&&a.get("text-overflow")?.[0]==="ellipsis"&&n.scrollWidth===n.clientWidth&&a.set("text-overflow",["clip",""]));for(let d=s.length,u=0;u<d;u++)s.removeProperty(s.item(u));return a.forEach(([d,u],m)=>{s.setProperty(m,d,u)}),a}function Ft(n,t){(ct(n)||ht(n)||gt(n))&&t.setAttribute("value",n.value)}var Ut=[":before",":after"],Vt=[":-webkit-scrollbar",":-webkit-scrollbar-button",":-webkit-scrollbar-thumb",":-webkit-scrollbar-track",":-webkit-scrollbar-track-piece",":-webkit-scrollbar-corner",":-webkit-resizer"];function Gt(n,t,e,i,r){let{ownerWindow:o,svgStyleElement:l,svgStyles:s,currentNodeStyle:c}=i;if(!l||!o)return;function h(a){let d=o.getComputedStyle(n,a),u=d.getPropertyValue("content");if(!u||u==="none")return;r?.(u),u=u.replace(/(')|(")|(counter\(.+\))/g,"");let m=[ve()],g=Re(n,a,i);c?.forEach((b,S)=>{g.delete(S)});let f=He(d,g,i.includeStyleProperties);f.delete("content"),f.delete("-webkit-locale"),f.get("background-clip")?.[0]==="text"&&t.classList.add("______background-clip--text");let E=[`content: '${u}';`];if(f.forEach(([b,S],C)=>{E.push(`${C}: ${b}${S?" !important":""};`)}),E.length===1)return;try{t.className=[t.className,...m].join(" ")}catch(b){i.log.warn("Failed to copyPseudoClass",b);return}let p=E.join(`
-  `),w=s.get(p);w||(w=[],s.set(p,w)),w.push(`.${m[0]}:${a}`)}Ut.forEach(h),e&&Vt.forEach(h)}var ae=new Set(["symbol"]);async function ce(n,t,e,i,r){if(v(e)&&(dt(e)||ut(e))||i.filter&&!i.filter(e))return;ae.has(t.nodeName)||ae.has(e.nodeName)?i.currentParentNodeStyle=void 0:i.currentParentNodeStyle=i.currentNodeStyle;let o=await j(e,i,!1,r);i.isEnable("restoreScrollPosition")&&Wt(n,o),t.appendChild(o)}async function he(n,t,e,i){let r=(v(n)?n.shadowRoot?.firstChild:void 0)??n.firstChild;for(let o=r;o;o=o.nextSibling)if(!st(o))if(v(o)&&mt(o)&&typeof o.assignedNodes=="function"){let l=o.assignedNodes();for(let s=0;s<l.length;s++)await ce(n,t,l[s],e,i)}else await ce(n,t,o,e,i)}function Wt(n,t){if(!L(n)||!L(t))return;let{scrollTop:e,scrollLeft:i}=n;if(!e&&!i)return;let{transform:r}=t.style,o=new DOMMatrix(r),{a:l,b:s,c,d:h}=o;o.a=1,o.b=0,o.c=0,o.d=1,o.translateSelf(-i,-e),o.a=l,o.b=s,o.c=c,o.d=h,t.style.transform=o.toString()}function $t(n,t){let{backgroundColor:e,width:i,height:r,style:o}=t,l=n.style;if(e&&l.setProperty("background-color",e,"important"),i&&l.setProperty("width",`${i}px`,"important"),r&&l.setProperty("height",`${r}px`,"important"),o)for(let s in o)l[s]=o[s]}var Kt=/^[\w-:]+$/;async function j(n,t,e=!1,i){let{ownerDocument:r,ownerWindow:o,fontFamilies:l}=t;if(r&&lt(n))return i&&/\S/.test(n.data)&&i(n.data),r.createTextNode(n.data);if(r&&o&&v(n)&&(L(n)||I(n))){let c=await Dt(n,t);if(t.isEnable("removeAbnormalAttributes")){let g=c.getAttributeNames();for(let f=g.length,E=0;E<f;E++){let p=g[E];Kt.test(p)||c.removeAttribute(p)}}let h=t.currentNodeStyle=kt(n,c,e,t);e&&$t(c,t);let a=!1;if(t.isEnable("copyScrollbar")){let g=[h.get("overflow-x")?.[0],h.get("overflow-y")?.[0]];a=g.includes("scroll")||(g.includes("auto")||g.includes("overlay"))&&(n.scrollHeight>n.clientHeight||n.scrollWidth>n.clientWidth)}let d=h.get("text-transform")?.[0],u=Te(h.get("font-family")?.[0]),m=u?g=>{d==="uppercase"?g=g.toUpperCase():d==="lowercase"?g=g.toLowerCase():d==="capitalize"&&(g=g[0].toUpperCase()+g.substring(1)),u.forEach(f=>{let E=l.get(f);E||l.set(f,E=new Set),g.split("").forEach(p=>E.add(p))})}:void 0;return Gt(n,c,a,t,m),Ft(n,c),F(n)||await he(n,c,t,m),c}let s=n.cloneNode(!1);return await he(n,s,t),s}function Yt(n){if(n.ownerDocument=void 0,n.ownerWindow=void 0,n.svgStyleElement=void 0,n.svgDefsElement=void 0,n.svgStyles.clear(),n.defaultComputedStyles.clear(),n.sandbox){try{n.sandbox.remove()}catch(t){n.log.warn("Failed to destroyContext",t)}n.sandbox=void 0}n.workers=[],n.fontFamilies.clear(),n.fontCssTexts.clear(),n.requests.clear(),n.tasks=[]}function Xt(n){let{url:t,timeout:e,responseType:i,...r}=n,o=new AbortController,l=e?setTimeout(()=>o.abort(),e):void 0;return fetch(t,{signal:o.signal,...r}).then(s=>{if(!s.ok)throw new Error("Failed fetch, not 2xx response",{cause:s});switch(i){case"arrayBuffer":return s.arrayBuffer();case"dataUrl":return s.blob().then(vt);case"text":default:return s.text()}}).finally(()=>clearTimeout(l))}function _(n,t){let{url:e,requestType:i="text",responseType:r="text",imageDom:o}=t,l=e,{timeout:s,acceptOfImage:c,requests:h,fetchFn:a,fetch:{requestInit:d,bypassingCache:u,placeholderImage:m},font:g,workers:f,fontFamilies:E}=n;i==="image"&&(k||X)&&n.drawImageCount++;let p=h.get(e);if(!p){u&&u instanceof RegExp&&u.test(l)&&(l+=(/\?/.test(l)?"&":"?")+new Date().getTime());let w=i.startsWith("font")&&g&&g.minify,b=new Set;w&&i.split(";")[1].split(",").forEach(O=>{E.has(O)&&E.get(O).forEach(re=>b.add(re))});let S=w&&b.size,C={url:l,timeout:s,responseType:S?"arrayBuffer":r,headers:i==="image"?{accept:c}:void 0,...d};p={type:i,resolve:void 0,reject:void 0,response:null},p.response=(async()=>{if(a&&i==="image"){let T=await a(e);if(T)return T}return!k&&e.startsWith("http")&&f.length?new Promise((T,O)=>{f[h.size&f.length-1].postMessage({rawUrl:e,...C}),p.resolve=T,p.reject=O}):Xt(C)})().catch(T=>{if(h.delete(e),i==="image"&&m)return n.log.warn("Failed to fetch image base64, trying to use placeholder image",l),typeof m=="string"?m:m(o);throw T}),h.set(e,p)}return p.response}async function xe(n,t,e,i){if(!Le(n))return n;for(let[r,o]of zt(n,t))try{let l=await _(e,{url:o,requestType:i?"image":"text",responseType:"dataUrl"});n=n.replace(jt(r),`$1${l}$3`)}catch(l){e.log.warn("Failed to fetch css data url",r,l)}return n}function Le(n){return/url\((['"]?)([^'"]+?)\1\)/.test(n)}var Me=/url\((['"]?)([^'"]+?)\1\)/g;function zt(n,t){let e=[];return n.replace(Me,(i,r,o)=>(e.push([o,we(o,t)]),i)),e.filter(([i])=>!K(i))}function jt(n){let t=n.replace(/([.*+?^${}()|\[\]\/\\])/g,"\\$1");return new RegExp(`(url\\(['"]?)(${t})(['"]?\\))`,"g")}var qt=["background-image","border-image-source","-webkit-border-image","-webkit-mask-image","list-style-image"];function Qt(n,t){return qt.map(e=>{let i=n.getPropertyValue(e);return!i||i==="none"?null:((k||X)&&t.drawImageCount++,xe(i,null,t,!0).then(r=>{!r||i===r||n.setProperty(e,r,n.getPropertyPriority(e))}))}).filter(Boolean)}function Zt(n,t){if(H(n)){let e=n.currentSrc||n.src;if(!K(e))return[_(t,{url:e,imageDom:n,requestType:"image",responseType:"dataUrl"}).then(i=>{i&&(n.srcset="",n.dataset.originalSrc=e,n.src=i||"")})];(k||X)&&t.drawImageCount++}else if(I(n)&&!K(n.href.baseVal)){let e=n.href.baseVal;return[_(t,{url:e,imageDom:n,requestType:"image",responseType:"dataUrl"}).then(i=>{i&&(n.dataset.originalSrc=e,n.href.baseVal=i||"")})]}return[]}function Jt(n,t){let{ownerDocument:e,svgDefsElement:i}=t,r=n.getAttribute("href")??n.getAttribute("xlink:href");if(!r)return[];let[o,l]=r.split("#");if(l){let s=`#${l}`,c=e?.querySelector(`svg ${s}`);if(o&&n.setAttribute("href",s),i?.querySelector(s))return[];if(c)return i?.appendChild(c.cloneNode(!0)),[];if(o)return[_(t,{url:o,responseType:"text"}).then(h=>{i?.insertAdjacentHTML("beforeend",h)})]}return[]}function _e(n,t){let{tasks:e}=t;v(n)&&((H(n)||ye(n))&&e.push(...Zt(n,t)),ot(n)&&e.push(...Jt(n,t))),L(n)&&e.push(...Qt(n.style,t)),n.childNodes.forEach(i=>{_e(i,t)})}async function en(n,t){let{ownerDocument:e,svgStyleElement:i,fontFamilies:r,fontCssTexts:o,tasks:l,font:s}=t;if(!(!e||!i||!r.size))if(s&&s.cssText){let c=ue(s.cssText,t);i.appendChild(e.createTextNode(`${c}
-`))}else{let c=Array.from(e.styleSheets).filter(a=>{try{return"cssRules"in a&&!!a.cssRules.length}catch(d){return t.log.warn(`Error while reading CSS rules from ${a.href}`,d),!1}});await Promise.all(c.flatMap(a=>Array.from(a.cssRules).map(async(d,u)=>{if(rt(d)){let m=u+1,g=d.href,f="";try{f=await _(t,{url:g,requestType:"text",responseType:"text"})}catch(p){t.log.warn(`Error fetch remote css import from ${g}`,p)}let E=f.replace(Me,(p,w,b)=>p.replace(b,we(b,g)));for(let p of nn(E))try{a.insertRule(p,p.startsWith("@import")?m+=1:a.cssRules.length)}catch(w){t.log.warn("Error inserting rule from remote css import",{rule:p,error:w})}}}))),c.flatMap(a=>Array.from(a.cssRules)).filter(a=>it(a)&&Le(a.style.getPropertyValue("src"))&&Te(a.style.getPropertyValue("font-family"))?.some(d=>r.has(d))).forEach(a=>{let d=a,u=o.get(d.cssText);u?i.appendChild(e.createTextNode(`${u}
-`)):l.push(xe(d.cssText,d.parentStyleSheet?d.parentStyleSheet.href:null,t).then(m=>{m=ue(m,t),o.set(d.cssText,m),i.appendChild(e.createTextNode(`${m}
-`))}))})}}var tn=/(\/\*[\s\S]*?\*\/)/g,de=/((@.*?keyframes [\s\S]*?){([\s\S]*?}\s*?)})/gi;function nn(n){if(n==null)return[];let t=[],e=n.replace(tn,"");for(;;){let o=de.exec(e);if(!o)break;t.push(o[0])}e=e.replace(de,"");let i=/@import[\s\S]*?url\([^)]*\)[\s\S]*?;/gi,r=new RegExp("((\\s*?(?:\\/\\*[\\s\\S]*?\\*\\/)?\\s*?@media[\\s\\S]*?){([\\s\\S]*?)}\\s*?})|(([\\s\\S]*?){([\\s\\S]*?)})","gi");for(;;){let o=i.exec(e);if(o)r.lastIndex=i.lastIndex;else if(o=r.exec(e),o)i.lastIndex=r.lastIndex;else break;t.push(o[0])}return t}var rn=/url\([^)]+\)\s*format\((["']?)([^"']+)\1\)/g,on=/src:\s*(?:url\([^)]+\)\s*format\([^)]+\)[,;]\s*)+/g;function ue(n,t){let{font:e}=t,i=e?e?.preferredFormat:void 0;return i?n.replace(on,r=>{for(;;){let[o,,l]=rn.exec(r)||[];if(!l)return"";if(l===i)return`src: ${o};`}}):n}async function sn(n,t){let e=await z(n,t);if(v(e.node)&&I(e.node))return e.node;let{ownerDocument:i,log:r,tasks:o,svgStyleElement:l,svgDefsElement:s,svgStyles:c,font:h,progress:a,autoDestruct:d,onCloneNode:u,onEmbedNode:m,onCreateForeignObjectSvg:g}=e;r.time("clone node");let f=await j(e.node,e,!0);if(l&&i){let S="";c.forEach((C,T)=>{S+=`${C.join(`,
-`)} {
-  ${T}
+
+// ── Herramienta ───────────────────────────────────────────────────────────────
+function setTool(t){
+  activeTool=t;
+  ["bbox","corner","polygon","sam"].forEach(k=>{
+    document.getElementById("tool-"+k).classList.toggle("active",t===k);
+    const h=document.getElementById("tool-hint-"+k); if(h) h.style.display=t===k?"block":"none";
+  });
+  // Cancelar cualquier dibujo en curso
+  bboxCurrent=null; bboxDrawing=false;
+  cancelPolygon(); cornerCancel();
+  if(t==="sam") ensureSamReady();
 }
-`}),l.appendChild(i.createTextNode(S))}r.timeEnd("clone node"),await u?.(f),h!==!1&&v(f)&&(r.time("embed web font"),await en(f,e),r.timeEnd("embed web font")),r.time("embed node"),_e(f,e);let E=o.length,p=0,w=async()=>{for(;;){let S=o.pop();if(!S)break;try{await S}catch(C){e.log.warn("Failed to run task",C)}a?.(++p,E)}};a?.(p,E),await Promise.all([...Array.from({length:4})].map(w)),r.timeEnd("embed node"),await m?.(f);let b=ln(f,e);return s&&b.insertBefore(s,b.children[0]),l&&b.insertBefore(l,b.children[0]),d&&Yt(e),await g?.(b),b}function ln(n,t){let{width:e,height:i}=t,r=bt(e,i,n.ownerDocument),o=r.ownerDocument.createElementNS(r.namespaceURI,"foreignObject");return o.setAttributeNS(null,"x","0%"),o.setAttributeNS(null,"y","0%"),o.setAttributeNS(null,"width","100%"),o.setAttributeNS(null,"height","100%"),o.append(n),r.appendChild(o),r}async function an(n,t){let e=await z(n,t),i=await sn(e),r=yt(i,e.isEnable("removeControlCharacter"));e.autoDestruct||(e.svgStyleElement=Ce(e.ownerDocument),e.svgDefsElement=e.ownerDocument?.createElementNS(V,"defs"),e.svgStyles.clear());let o=R(r,i.ownerDocument);return await Lt(o,e)}async function q(n,t){let e=await z(n,t),{log:i,type:r,quality:o,dpi:l}=e,s=await an(e);i.time("canvas to blob");let c=await wt(s,r,o);if(["image/png","image/jpeg"].includes(r)&&l){let h=await Tt(c.slice(0,33)),a=new Uint8Array(h);return r==="image/png"?a=Je(a,l):r==="image/jpeg"&&(a=je(a,l)),i.timeEnd("canvas to blob"),new Blob([a,c.slice(33)],{type:r})}return i.timeEnd("canvas to blob"),c}var P={METADATA:"data-replit-metadata",COMPONENT_NAME:"data-component-name"};var Ie={color:"color",radius:"borderTopLeftRadius",text:"fontSize",font:"fontFamily"};function De(n){try{let t=new URL(n);return cn(t)?!0:y.ALLOWED_PARENT_DOMAINS.some(e=>t.hostname===e.slice(1)||t.hostname.endsWith(e))}catch{return!1}}function cn(n){return n.protocol!=="http:"||!n.port?!1:n.hostname==="localhost"||n.hostname==="127.0.0.1"||n.hostname==="[::1]"}function W(n){if(!n)return null;let t=document.elementFromPoint(n.clientX,n.clientY);return t instanceof HTMLElement?t:null}function hn(n,t=300){if(!n)return"";let e=String(n);return e.length<=t?e:e.slice(0,t)+"..."}function x(n){let t=n.getAttribute(P.COMPONENT_NAME)??n.tagName.toLowerCase();return hn(t,50)}function Q(n){return n.className.toString?n.className.toString():String(n.className)}function Ne(n,t=80){let e="";for(let i=0;i<n.childNodes.length;i++){let r=n.childNodes[i];if(r.nodeType===Node.TEXT_NODE&&(e+=r.textContent??"",e.length>t))return e.slice(0,t)+"..."}return e.trim()}var dn=new Set(["script","style","noscript","link","meta","br","svg"]);function Oe(n){let t={children:[],parent:null};return Object.defineProperty(t,"parent",{value:n,writable:!0,enumerable:!1,configurable:!0}),t}function Be(n,t,e,i){let r=Oe(t),o={tagName:n.tagName.toLowerCase(),textContent:Ne(n),id:n.id||void 0,className:Q(n)||void 0,nodeId:e.get(n),relatedElements:r};i.set(n,o);for(let l=0;l<n.children.length;l++)Be(n.children[l],o,e,i)}var G=class{ids=new WeakMap;nextId=0;get(t){let e=this.ids.get(t);if(e!==void 0)return e;let i=this.nextId++;return this.ids.set(t,i),i}};function Z(n,t,e,i,r){let o=e.get(n),l=Oe(t),s=l.children,c={tagName:n.tagName.toLowerCase(),textContent:Ne(n),id:n.id||void 0,className:Q(n)||void 0,nodeId:o,relatedElements:l};i.set(n,c);for(let h=0;h<n.children.length;h++){let a=n.children[h],d=a.tagName.toLowerCase();if(a!==r){if(d==="svg"){Be(a,c,e,i);continue}dn.has(d)||s.push(Z(a,c,e,i,r))}}return c}function un(n){let t={};if(typeof document>"u"||typeof CSS>"u")return t;let e=document.createElement("div");e.style.cssText="position:fixed;left:-9999px;top:-9999px;visibility:hidden;pointer-events:none";try{document.body.appendChild(e);let i=window.getComputedStyle(e);for(let[r,o]of Object.entries(n)){let l=Ie[r];l&&(t[r]=o.map(({suffix:s,expr:c})=>{let h="";try{e.style[l]="",e.style[l]=c,h=i[l]}catch{h=""}return{suffix:s,value:h}}))}}catch{}finally{e.remove()}return t}function gn(){let n=typeof window>"u"?void 0:window.REPLIT_APP_THEME_TOKENS;if(n)return un(n)}function J(n,t){let e=window.getComputedStyle(n),i=p=>p.toLowerCase()==="currentcolor"?e.color:p,r=i(e.borderTopColor),o=i(e.borderRightColor),l=i(e.borderBottomColor),s=i(e.borderLeftColor),c=n.nextElementSibling,h=n.parentElement?.parentElement??null,a=mn(n),d={backgroundColor:e.backgroundColor,borderTopColor:r,borderRightColor:o,borderBottomColor:l,borderLeftColor:s,borderTopLeftRadius:e.borderTopLeftRadius,borderTopRightRadius:e.borderTopRightRadius,borderBottomRightRadius:e.borderBottomRightRadius,borderBottomLeftRadius:e.borderBottomLeftRadius,borderTopWidth:e.borderTopWidth,borderRightWidth:e.borderRightWidth,borderBottomWidth:e.borderBottomWidth,borderLeftWidth:e.borderLeftWidth,color:e.color,display:e.display,position:e.position,width:e.width,height:e.height,fontSize:e.fontSize,fontFamily:e.fontFamily,fontWeight:e.fontWeight,margin:e.margin,padding:e.padding,opacity:e.opacity,textAlign:e.textAlign,flexDirection:e.flexDirection,flexWrap:e.flexWrap,justifyContent:e.justifyContent,alignItems:e.alignItems,gap:e.gap,rowGap:e.rowGap,columnGap:e.columnGap},u=t.get(n),m=n.parentElement?t.get(n.parentElement)??null:null,g={children:u?.relatedElements.children??[],parent:u?.relatedElements.parent??m,nextSibling:c?t.get(c)??void 0:void 0,grandParent:h?t.get(h)??void 0:void 0},f=gn();return{tagName:n.tagName.toLowerCase(),nodeId:u?.nodeId,elementPath:n.getAttribute(P.METADATA)??"",elementName:x(n),textContent:n.textContent??"",originalTextContent:n.getAttribute("data-original-text")?decodeURIComponent(n.getAttribute("data-original-text")??""):void 0,srcAttribute:n.getAttribute("src")??"",hasChildElements:n.childElementCount>0,id:n.id,className:Q(n),colorVariables:a,...f?{themeTokens:f}:{},computedStyles:d,textAlign:e.textAlign,relatedElements:g}}function mn(n){let t=new Set(["inherit","initial","unset","revert","revert-layer"]),e={},i=window.getComputedStyle(n);for(let r=0;r<i.length;r++){let o=i.item(r);if(!o.startsWith("--"))continue;let l=i.getPropertyValue(o).trim();!l||t.has(l.toLowerCase())||!CSS.supports("color",l)||(e[o]=l)}return e}async function ke(n){try{let e=window.getComputedStyle(n).backgroundColor;return Fe(e)&&(e=window.getComputedStyle(document.documentElement).backgroundColor),await q(n,{type:"image/png",backgroundColor:e})}catch(t){console.error("[replit-cartographer] Failed to take screenshot:",t);return}}function Fe(n){return n==="transparent"||n==="rgba(0, 0, 0, 0)"||n.endsWith(", 0)")||n.endsWith(",0)")}async function ee({restoreScrollPosition:n=!1}={}){try{let t=document.documentElement,e=window.getComputedStyle(t).backgroundColor,i=Fe(e)?"#ffffff":e;return await q(t,{type:"image/png",backgroundColor:i,...n?{features:{restoreScrollPosition:!0}}:{}})}catch(t){console.error("[replit-cartographer] Failed to take page screenshot:",t);return}}function fn(){return{x:window.scrollX||document.documentElement.scrollLeft||document.body?.scrollLeft||0,y:window.scrollY||document.documentElement.scrollTop||document.body?.scrollTop||0}}function pn(){return{width:Math.max(1,Math.ceil(window.innerWidth||document.documentElement.clientWidth)),height:Math.max(1,Math.ceil(window.innerHeight||document.documentElement.clientHeight))}}function En(n){let t=document.documentElement,e=document.body;return{width:Math.max(n.width,t.scrollWidth,t.offsetWidth,t.clientWidth,e?.scrollWidth??0,e?.offsetWidth??0,e?.clientWidth??0),height:Math.max(n.height,t.scrollHeight,t.offsetHeight,t.clientHeight,e?.scrollHeight??0,e?.offsetHeight??0,e?.clientHeight??0)}}function bn(n){return new Promise((t,e)=>{let i=URL.createObjectURL(n),r=new Image,o=()=>{URL.revokeObjectURL(i)};r.onload=()=>{o(),t(r)},r.onerror=()=>{o(),e(new Error("Failed to load screenshot blob"))},r.src=i})}function yn(n){return new Promise(t=>{n.toBlob(e=>{t(e??void 0)},"image/png")})}function Pe({documentSize:n,imageSize:t,scrollOffset:e,viewportSize:i}){if(t<=i+1)return{start:0,size:Math.max(1,t)};let r=t/n,o=Math.max(1,Math.min(t,Math.ceil(i*r))),l=Math.max(0,t-o);return{start:Math.min(l,Math.max(0,Math.floor(e*r))),size:o}}function wn({documentSize:n,rootRect:t,scrollOffset:e,viewport:i}){let r=({rootAxisSize:l,viewportAxisSize:s})=>Math.ceil(l)<=s+1,o=({documentAxisSize:l,rootAxisSize:s,scrollAxisOffset:c,viewportAxisSize:h})=>c!==0&&l>h+1&&r({rootAxisSize:s,viewportAxisSize:h});return o({documentAxisSize:n.width,rootAxisSize:t.width,scrollAxisOffset:e.x,viewportAxisSize:i.width})||o({documentAxisSize:n.height,rootAxisSize:t.height,scrollAxisOffset:e.y,viewportAxisSize:i.height})}async function Ue(){try{let n=pn(),t=En(n),e=fn(),i=document.documentElement.getBoundingClientRect(),r=wn({documentSize:t,rootRect:i,scrollOffset:e,viewport:n}),o=r?{x:0,y:0}:e,l=await ee({restoreScrollPosition:r});if(!l)return;let s=await bn(l),c={height:s.naturalHeight||s.height,width:s.naturalWidth||s.width},h=Pe({documentSize:t.width,imageSize:c.width,scrollOffset:o.x,viewportSize:n.width}),a=Pe({documentSize:t.height,imageSize:c.height,scrollOffset:o.y,viewportSize:n.height}),d=document.createElement("canvas");d.width=h.size,d.height=a.size;let u=d.getContext("2d");return u?(u.drawImage(s,h.start,a.start,h.size,a.size,0,0,h.size,a.size),await yn(d)):void 0}catch{return}}function te(n){let t=n.getBoundingClientRect(),e=window.innerHeight,i=window.innerWidth;return t.bottom>0&&t.top<e&&t.right>0&&t.left<i}function D(n,t=y.MAX_SIBLING_HIGHLIGHTERS,e=!1){let o=n.getAttribute(P.METADATA);if(!o)return[];let l=`[${P.METADATA}="${o}"]`,s=document,c=n.parentElement;c&&c.childElementCount>50&&(s=c);let h=s.querySelectorAll(l),a=Math.min(t,5e3),d=[],u=0;for(let m=0;m<h.length&&u<a;m++){let g=h[m];if(g instanceof HTMLElement&&g!==n){if(e&&!te(g))continue;d.push(g),u++}}return d}function Ve(n,t,e){let i=n.children;for(let r=0;r<i.length;r++)if(e.value+=1,e.value>t||Ve(i[r],t,e))return!0;return!1}function Ge(n){let t={value:0};return Ve(n,y.MAX_DESCENDANTS_FOR_SCREENSHOT,t)}var Sn=9,We=2,vn=new Set(["auto","scroll","overlay"]),Tn=32;function Cn(n,t){let e=document.createElement("div").style;e.cssText=n;let i=document.createElement("div").style;i.cssText=t;for(let r=0;r<i.length;r+=1){let o=i.item(r);o&&e.setProperty(o,i.getPropertyValue(o),i.getPropertyPriority(o))}return e.cssText.trim()}function An(n){let t=n.getAttribute("data-original-style");return t!==null?decodeURIComponent(t):n.getAttribute("style")??""}function Rn(n){return Math.ceil(Math.max(n.body?.scrollHeight??0,n.documentElement?.scrollHeight??0,n.body?.offsetHeight??0,n.documentElement?.offsetHeight??0,n.body?.clientHeight??0,n.documentElement?.clientHeight??0))}function $e(n){return vn.has(n)}function Hn(n,t){let i=(n.defaultView??window).getComputedStyle(t);return t.scrollHeight>t.clientHeight&&($e(i.overflowY)||$e(i.overflow))}function xn(n){if(n.parentElement)return n.parentElement;let t=n.getRootNode();return t instanceof ShadowRoot&&t.host instanceof HTMLElement?t.host:null}function Ln(n,t){let e=n.defaultView??window,i=t;for(;i;){let r=e.getComputedStyle(i);if(r.visibility==="hidden"||r.display==="none"||parseFloat(r.opacity)===0)return!0;i=xn(i)}return!1}function*Ye(n){for(let t of n.querySelectorAll("*"))yield t,t.shadowRoot&&(yield*Ye(t.shadowRoot))}function Mn(n,t){let e=Xe(n,t);return e.height>0&&e.width>0}function _n(n){return Math.ceil(Math.max(n.scrollHeight,n.offsetHeight,n.clientHeight))}function Xe(n,t){let e=n.defaultView??window,i=t.getBoundingClientRect(),r=Math.max(i.top,0),o=Math.min(i.right,e.innerWidth),l=Math.min(i.bottom,e.innerHeight),s=Math.max(i.left,0);return{height:Math.max(0,Math.ceil(l-r)),width:Math.max(0,Math.ceil(o-s))}}function Ke(n){return n.visibleHeight*n.visibleWidth}function In(n,t){if(!t)return!0;let e=Ke(n),i=Ke(t);return e!==i?e>i:n.visibleWidth!==t.visibleWidth?n.visibleWidth>t.visibleWidth:n.visibleHeight!==t.visibleHeight?n.visibleHeight>t.visibleHeight:n.contentHeight>t.contentHeight}function Pn(n){if(!n.body)return 0;let t=null;for(let e of Ye(n.body)){if(!Hn(n,e)||Ln(n,e)||!Mn(n,e))continue;let i=Xe(n,e),r={contentHeight:_n(e),visibleHeight:i.height,visibleWidth:i.width};In(r,t)&&(t=r)}return t?.contentHeight??0}function Dn(n,t){let e=n.documentElement?.clientHeight??0;return t>e+Tn}function Nn(n=document){let t=Rn(n);return Dn(n,t)?t:Math.max(t,Pn(n))}function On(n){Event.prototype.stopPropagation.call(n)}var N=class n{selectedElement=null;selectedSiblingElements=[];visibleSelectedSiblingElements=[];isActive=!1;isCanvasGestureRelayEnabled=!1;isContextMenuRelayEnabled=!1;lastHighlightedElement=null;enableEditing=!1;dragStartPointer=null;dragRelayPointerId=null;scrollGestureState="idle";scrollGestureTimer=null;hoverMessages=!1;shadowHost=null;shadowRoot=null;hoverHighlighter=null;hoverLabel=null;selectedHighlighter=null;selectedLabel=null;hoverSiblingHighlighters=[];selectedSiblingHighlighters=[];mutationObserver=null;stableIds=new G;nodeMap=new Map;throttledRecalculate=null;source;acceptsRawMessages;installedVersion;constructor({source:t="installed",acceptsRawMessages:e=!0,installedVersion:i}={}){this.source=t,this.acceptsRawMessages=e,this.installedVersion=i,this.setupMessageListener(),this.observeLightDarkModeSwitch(),this.setupPinchInterception(),this.setupScrollChaining(),this.setupDragInterception(),this.setupIframeDoubleClickRelay(),this.setupContextMenuInterception(),this.notifyScriptLoaded(),this.throttledRecalculate=this.throttleRAF(this.recalculateSelectedElement.bind(this))}throttleRAF(t){let e=null,i=null;return(...r)=>{i=r,e===null&&(e=requestAnimationFrame(()=>{i!==null&&t(...i),e=null,i=null}))}}isPureTextElement(t){if(!t||!(t instanceof HTMLElement))return!1;let e=t.tagName.toLowerCase();return e==="style"||e==="script"||e==="img"||t.childElementCount>0?!1:Array.from(t.childNodes).every(r=>r.nodeType===Node.TEXT_NODE)}initializeHighlighter(){this.shadowHost=document.createElement("div"),this.shadowHost.style.all="initial",this.shadowRoot=this.shadowHost.attachShadow({mode:"open"}),document.body.appendChild(this.shadowHost);let t=document.createElement("style");t.textContent=se,this.shadowRoot.appendChild(t);let e=document.createElement("style");e.textContent=oe,document.head.appendChild(e),this.hoverHighlighter=document.createElement("div"),this.hoverLabel=document.createElement("div"),this.hoverHighlighter.className="beacon-highlighter beacon-hover-highlighter",this.hoverLabel.className="beacon-label beacon-hover-label",this.selectedHighlighter=document.createElement("div"),this.selectedLabel=document.createElement("div"),this.selectedHighlighter.className="beacon-highlighter beacon-selected-highlighter",this.selectedLabel.className="beacon-label beacon-selected-label",this.shadowRoot.appendChild(this.selectedHighlighter),this.shadowRoot.appendChild(this.selectedLabel),this.shadowRoot.appendChild(this.hoverHighlighter),this.shadowRoot.appendChild(this.hoverLabel)}setupMessageListener(){window.addEventListener("message",this.handleMessage.bind(this))}setupPinchInterception(){window.self!==window.top&&window.addEventListener("wheel",t=>{!this.isCanvasGestureRelayEnabled||!this.isZoomModifierWheel(t)||(t.preventDefault(),this.postMessageToParent({type:"PINCH_WHEEL",timestamp:Date.now(),deltaY:t.deltaY,clientX:t.clientX,clientY:t.clientY,shiftKey:t.shiftKey,altKey:t.altKey,ctrlKey:t.ctrlKey,metaKey:t.metaKey}))},{passive:!1})}setupIframeDoubleClickRelay(){window.self!==window.top&&(document.addEventListener("mousedown",t=>{!this.shouldRelayIframeDoubleClick()||t.detail<2||t.preventDefault()},!0),document.addEventListener("dblclick",t=>{this.shouldRelayIframeDoubleClick()&&(t.preventDefault(),On(t),this.postMessageToParent({type:"IFRAME_DOUBLE_CLICK",timestamp:Date.now(),clientX:t.clientX,clientY:t.clientY}))},!0))}setupContextMenuInterception(){window.self!==window.top&&window.addEventListener("contextmenu",t=>{if(!this.isContextMenuRelayEnabled)return;t.preventDefault(),t["stopImmediatePropagation"](),this.postMessageToParent({type:"IFRAME_CONTEXT_MENU",timestamp:Date.now(),clientX:t.clientX,clientY:t.clientY,altKey:t.altKey,ctrlKey:t.ctrlKey,metaKey:t.metaKey,shiftKey:t.shiftKey})},{capture:!0})}isZoomModifierWheel(t){return t.ctrlKey||t.altKey||t.metaKey}static SCROLL_GESTURE_GAP_MS=150;setupScrollChaining(){window.self!==window.top&&window.addEventListener("wheel",t=>{!this.isCanvasGestureRelayEnabled||this.isZoomModifierWheel(t)||(this.scrollGestureState==="idle"&&(this.scrollGestureState=this.shouldHandOffScrollToParent(t)?"at-boundary":"scrolling"),this.scrollGestureTimer&&clearTimeout(this.scrollGestureTimer),this.scrollGestureTimer=setTimeout(()=>{this.scrollGestureState="idle",this.scrollGestureTimer=null},n.SCROLL_GESTURE_GAP_MS),this.scrollGestureState==="at-boundary"&&(t.preventDefault(),this.postMessageToParent({type:"SCROLL_BOUNDARY",timestamp:Date.now(),deltaX:t.deltaX,deltaY:t.deltaY,clientX:t.clientX,clientY:t.clientY,shiftKey:t.shiftKey,altKey:t.altKey,ctrlKey:t.ctrlKey,metaKey:t.metaKey})))},{passive:!1})}shouldHandOffScrollToParent(t){let e=this.getRelevantScrollAxes(this.normalizeScrollDeltas(t));if(e.length===0)return!1;let i=document.elementFromPoint(t.clientX,t.clientY),r=e.map(({axis:o,delta:l})=>this.canAnyAncestorContinueScrollingOnAxis(i,o,l));return e.length===1?!r[0]:r.every(o=>!o)}getRelevantScrollAxes(t){let e=Math.abs(t.deltaX),i=Math.abs(t.deltaY);return e===0&&i===0?[]:e===0?[{axis:"y",delta:t.deltaY}]:i===0?[{axis:"x",delta:t.deltaX}]:e>=i*We?[{axis:"x",delta:t.deltaX}]:i>=e*We?[{axis:"y",delta:t.deltaY}]:[{axis:"x",delta:t.deltaX},{axis:"y",delta:t.deltaY}]}normalizeScrollDeltas(t){let{deltaX:e,deltaY:i}=t;return t.shiftKey&&!this.isMacPlatform()&&(e=i,i=0),{deltaX:e,deltaY:i}}isMacPlatform(){return navigator.platform.toUpperCase().includes("MAC")}canAnyAncestorContinueScrollingOnAxis(t,e,i){let r=t;for(;r;){if(r instanceof HTMLElement&&this.canElementScrollInDirection(r,e,i))return!0;r=r.parentElement}let o=document.scrollingElement;return o instanceof HTMLElement&&this.canElementScrollInDirection(o,e,i)}canElementScrollInDirection(t,e,i){if(i===0||!this.isScrollableOnAxis(t,e))return!1;let r=e==="x"?t.scrollLeft:t.scrollTop,o=e==="x"?t.scrollWidth-t.clientWidth:t.scrollHeight-t.clientHeight;return o<=0?!1:i>0?r<o-1:r>1}isScrollableOnAxis(t,e){let i=e==="x"?getComputedStyle(t).overflowX:getComputedStyle(t).overflowY;return t===document.scrollingElement||t===document.documentElement||t===document.body?i!=="hidden"&&i!=="clip":i==="auto"||i==="overlay"||i==="scroll"}setupDragInterception(){if(window.self===window.top)return;window.addEventListener("pointerdown",e=>{if(!this.shouldRelayCanvasPointerGestures()){this.dragStartPointer=null,this.dragRelayPointerId=null;return}e.button!==0||e.isPrimary===!1||(this.dragStartPointer={pointerId:e.pointerId,button:e.button,clientX:e.clientX,clientY:e.clientY,shiftKey:e.shiftKey,altKey:e.altKey,ctrlKey:e.ctrlKey,metaKey:e.metaKey})}),window.addEventListener("pointermove",e=>{if(!this.shouldRelayCanvasPointerGestures()){this.dragStartPointer=null,this.dragRelayPointerId=null;return}if(this.dragRelayPointerId===e.pointerId){e.preventDefault(),this.postMessageToParent({type:"DRAG_MOVE",timestamp:Date.now(),pointerId:e.pointerId,movementX:e.movementX,movementY:e.movementY,pressure:e.pressure,shiftKey:e.shiftKey,altKey:e.altKey,ctrlKey:e.ctrlKey,metaKey:e.metaKey});return}let i=this.dragStartPointer;if(i===null||i.pointerId!==e.pointerId)return;let r=e.clientX-i.clientX,o=e.clientY-i.clientY;r*r+o*o<Sn||(e.preventDefault(),this.cancelInteraction(),this.dragStartPointer=null,this.dragRelayPointerId=e.pointerId,this.postMessageToParent({type:"DRAG_START",timestamp:Date.now(),pointerId:e.pointerId,button:i.button,pressure:e.pressure,isPen:e.pointerType==="pen",clientX:e.clientX,clientY:e.clientY,startClientX:i.clientX,startClientY:i.clientY,shiftKey:i.shiftKey,altKey:i.altKey,ctrlKey:i.ctrlKey,metaKey:i.metaKey}))});let t=e=>{this.dragStartPointer?.pointerId===e.pointerId&&(this.dragStartPointer=null),this.dragRelayPointerId===e.pointerId&&(this.postMessageToParent({type:"DRAG_END",timestamp:Date.now(),pointerId:e.pointerId,button:e.button,clientX:e.clientX,clientY:e.clientY,pressure:e.pressure,isPen:e.pointerType==="pen",shiftKey:e.shiftKey,altKey:e.altKey,ctrlKey:e.ctrlKey,metaKey:e.metaKey}),this.dragRelayPointerId=null)};window.addEventListener("pointerup",t),window.addEventListener("pointercancel",t)}shouldRelayCanvasPointerGestures(){return this.isCanvasGestureRelayEnabled&&!(this.enableEditing&&this.selectedElement!==null)}shouldRelayIframeDoubleClick(){return this.isCanvasGestureRelayEnabled&&!this.enableEditing}notifyScriptLoaded(){let t={type:"SELECTOR_SCRIPT_LOADED",timestamp:Date.now(),version:B,source:this.source,supportsTargetedRouting:!0,...this.installedVersion?{installedVersion:this.installedVersion}:{}};this.postMessageToParent(t)}postMessageToParent(t){window.parent&&window.parent.postMessage(t,"*")}handleMouseMove=t=>{if(this.isActive){if(this.hoverMessages){let e=W(t);if(!e||e===this.shadowHost||e===this.selectedElement||e===this.lastHighlightedElement)return;this.lastHighlightedElement=e;let i=e===document.body||e===document.documentElement?document.body:e,r=i.getBoundingClientRect();this.postMessageToParent({type:"ELEMENT_HOVERED",timestamp:Date.now(),elementBounds:{x:r.x,y:r.y,width:r.width,height:r.height},elementName:x(i)});return}if(this.hoverHighlighter){let e=W(t);if(!e||e===this.hoverHighlighter||e===this.selectedHighlighter||e===this.shadowHost||this.selectedSiblingHighlighters.includes(e)||this.hoverSiblingHighlighters.includes(e)){this.hideHighlight(this.hoverHighlighter,this.hoverLabel),this.lastHighlightedElement=null,this.clearHoverSiblingHighlighters();return}if(e===this.selectedElement){this.hideHighlight(this.hoverHighlighter,this.hoverLabel),this.lastHighlightedElement=null,this.clearHoverSiblingHighlighters();return}this.lastHighlightedElement&&this.lastHighlightedElement!==e&&this.lastHighlightedElement!==this.selectedElement&&this.lastHighlightedElement.removeAttribute("contenteditable"),this.lastHighlightedElement=e,this.updateHighlighterPosition(e,this.hoverHighlighter,this.hoverLabel)}}};handleMouseLeave=()=>{if(this.isActive){if(this.hoverMessages){this.lastHighlightedElement&&(this.lastHighlightedElement=null,this.postMessageToParent({type:"ELEMENT_HOVERED",timestamp:Date.now(),elementBounds:null,elementName:""}));return}this.hoverHighlighter&&(this.hoverHighlighter.style.opacity="0"),this.hoverLabel&&(this.hoverLabel.style.opacity="0"),this.hoverSiblingHighlighters.length>0&&this.clearHoverSiblingHighlighters(),this.lastHighlightedElement&&this.lastHighlightedElement!==this.selectedElement&&this.lastHighlightedElement.removeAttribute("contenteditable")}};calculateLabelPosition(t,e){return e<28?{top:`${e}px`,left:`${t.left}px`,transform:"none",marginTop:"2px"}:{top:`${e}px`,left:`${t.left}px`,transform:"translateY(-100%)",marginTop:"-4px"}}updateHighlighterPosition(t,e,i){if(!e||!i)return;let r=D(t,y.MAX_SIBLING_HIGHLIGHTERS,!1);this.enableEditing&&r.length<=1&&t===this.selectedElement&&this.isPureTextElement(t)&&t.setAttribute("contenteditable","plaintext-only");let o=t.getBoundingClientRect(),l=window.innerHeight,s=Math.max(0,o.top),c=Math.min(l,o.bottom),h=Math.max(0,c-s);Object.assign(e.style,{opacity:h>0?"1":"0",top:`${s}px`,left:`${o.left}px`,width:`${o.width}px`,height:`${h}px`}),i.textContent=x(t);let a=this.calculateLabelPosition(o,s);Object.assign(i.style,{...a,opacity:h>0?"1":"0"}),e===this.selectedHighlighter?this.highlightSelectedSiblings(t):this.highlightHoverSiblings(t)}hideHighlight(t,e){t&&(t.style.opacity="0"),e&&(e.style.opacity="0");let i=t===this.hoverHighlighter,r=t===this.selectedHighlighter;i&&this.clearHoverSiblingHighlighters(),r&&this.clearSelectedSiblingHighlighters()}async buildElementPayload(t){this.nodeMap=new Map,Z(document.body,null,this.stableIds,this.nodeMap,this.shadowHost);let e=J(t,this.nodeMap),i;if(!Ge(t))try{i=await ke(t)}catch(r){console.error("[replit-cartographer] Error capturing element screenshot:",r)}return{metadata:e,screenshotBlob:i}}handleClick=async t=>{if(!this.isActive)return;t.preventDefault(),t.stopPropagation();let e=W(t);if((!e||e===this.hoverHighlighter||e===this.selectedHighlighter||e===this.shadowHost)&&(e=this.lastHighlightedElement),!e||e===this.selectedElement)return;if(this.hoverMessages){this.selectedElement=e,document.getElementById("replit-beacon-crosshair")?.remove();let s=e===document.body||e===document.documentElement?document.body:e,{metadata:c,screenshotBlob:h}=await this.buildElementPayload(s),a=s.getBoundingClientRect();this.postMessageToParent({type:"ELEMENT_SELECTED",payload:{...c,screenshotBlob:h??void 0,siblingCount:0},elementBounds:{x:a.x,y:a.y,width:a.width,height:a.height},timestamp:Date.now()});return}this.clearSelection(),this.selectedElement=e;let i=D(e),r=i.length>0;r&&this.highlightSelectedSiblings(e),e.hasAttribute("data-original-text")||e.setAttribute("data-original-text",encodeURIComponent(e.textContent??"")),!e.hasAttribute("data-original-style")&&e.hasAttribute("style")&&e.setAttribute("data-original-style",encodeURIComponent(e.getAttribute("style")??"")),!e.hasAttribute("data-original-src")&&e.hasAttribute("src")&&e.setAttribute("data-original-src",encodeURIComponent(e.getAttribute("src")??"")),!r&&this.enableEditing&&this.isPureTextElement(e)&&(this.selectedElement.setAttribute("contenteditable","plaintext-only"),this.selectedElement.focus()),this.selectedHighlighter&&this.selectedLabel&&(this.selectedHighlighter.style.outlineStyle="solid",this.selectedHighlighter.style.opacity="1",this.selectedHighlighter.style.pointerEvents="none",this.selectedLabel.style.opacity="1",this.selectedLabel.textContent=x(e)),this.hoverHighlighter&&(this.hoverHighlighter.style.opacity="0",this.hoverHighlighter.style.pointerEvents="none"),this.hoverLabel&&(this.hoverLabel.style.opacity="0"),this.clearHoverSiblingHighlighters(),this.updateHighlighterPosition(e,this.selectedHighlighter,this.selectedLabel);let{metadata:o,screenshotBlob:l}=await this.buildElementPayload(e);this.observeSelectedElement(),this.postMessageToParent({type:"ELEMENT_SELECTED",payload:{...o,screenshotBlob:l??void 0,siblingCount:r?i.length:0},timestamp:Date.now()})};restoreElements(){document.querySelectorAll('[data-replit-dirty="true"], [data-original-text], [data-original-style], [data-original-src]').forEach(e=>{if(e.hasAttribute("data-original-text")){if(e.textContent!==decodeURIComponent(e.getAttribute("data-original-text")||"")){let i=decodeURIComponent(e.getAttribute("data-original-text")||"");e.textContent=i}e.removeAttribute("data-original-text")}if(e.hasAttribute("data-original-style")){let i=decodeURIComponent(e.getAttribute("data-original-style")||"");e.setAttribute("style",i),e.removeAttribute("data-original-style")}else e.removeAttribute("style");if(e.hasAttribute("data-original-src")&&e.getAttribute("src")!==decodeURIComponent(e.getAttribute("data-original-src")||"")){let i=decodeURIComponent(e.getAttribute("data-original-src")||"");e.setAttribute("src",i),e.removeAttribute("data-original-src")}e.removeAttribute("data-replit-dirty")})}clearSelection(){this.selectedElement&&(this.selectedElement.removeAttribute("contenteditable"),this.selectedElement=null),this.clearSelectedSiblingHighlighters(),this.mutationObserver&&(this.mutationObserver.disconnect(),this.mutationObserver=null)}isCommandMessage(t){switch(t.type){case"TOGGLE_REPLIT_VISUAL_EDITOR":case"CLEAR_SELECTION":case"UPDATE_SELECTED_ELEMENT":case"CLEAR_ELEMENT_DIRTY":case"RESTORE_DIRTY_ELEMENTS":case"APPLY_THEME_PREVIEW":case"CLEAR_THEME_PREVIEW":case"SCREENSHOT_PAGE":case"REQUEST_CONTENT_HEIGHT":case"RELAY_TO_IFRAME":return!0;default:return!1}}getMessageForThisBeacon(t){return t.type==="REPLIT_BEACON_TARGETED_MESSAGE"?t.targetSource!==this.source||!t.message||!this.isCommandMessage(t.message)?null:t.message:!this.acceptsRawMessages||!this.isCommandMessage(t)?null:t}handleMessage=t=>{if(!De(t.origin))return;let e=t.data;if(!e||typeof e!="object")return;let i=this.getMessageForThisBeacon(e);if(i)switch(i.type){case"TOGGLE_REPLIT_VISUAL_EDITOR":{this.handleVisualEditorToggle(i);break}case"CLEAR_SELECTION":{if(this.clearSelection(),this.hideHighlight(this.selectedHighlighter,this.selectedLabel),this.lastHighlightedElement=null,this.hoverMessages&&!document.getElementById("replit-beacon-crosshair")){let r=document.createElement("style");r.id="replit-beacon-crosshair",r.textContent="* { cursor: crosshair !important; }",document.head.appendChild(r)}break}case"UPDATE_SELECTED_ELEMENT":{if(!this.selectedElement)return;let{attributes:r}=i;[this.selectedElement,...this.selectedSiblingElements].forEach(l=>{r.style!==void 0&&(l.setAttribute("style",Cn(An(l),r.style)),l.setAttribute("data-replit-dirty","true")),r.textContent!==void 0&&(l.textContent=r.textContent,l.setAttribute("data-replit-dirty","true")),r.className!==void 0&&(l.className=r.className,l.setAttribute("data-replit-dirty","true")),r.src!==void 0&&(l.setAttribute("src",r.src),l.setAttribute("data-replit-dirty","true"))}),this.updateHighlighterPosition(this.selectedElement,this.selectedHighlighter,this.selectedLabel),this.selectedSiblingElements.length>0&&(this.clearHighlighters(this.selectedSiblingHighlighters),this.selectedSiblingHighlighters=[],this.selectedSiblingHighlighters=this.highlightElements(this.selectedSiblingElements));break}case"CLEAR_ELEMENT_DIRTY":{let r=document.querySelectorAll('[data-replit-dirty="true"]');for(let o of r)o.removeAttribute("data-replit-dirty"),o.removeAttribute("data-original-text"),o.removeAttribute("data-original-style"),o.removeAttribute("data-original-src");break}case"RESTORE_DIRTY_ELEMENTS":{this.restoreElements();break}case"APPLY_THEME_PREVIEW":{this.handleApplyThemePreview(i);break}case"CLEAR_THEME_PREVIEW":{this.handleClearThemePreview();break}case"SCREENSHOT_PAGE":{this.handleScreenshotPage(i.requestId,i.capture);break}case"RELAY_TO_IFRAME":{this.handleRelayToIframe(i.event);break}case"REQUEST_CONTENT_HEIGHT":{this.handleContentHeightRequest(i.requestId);break}}};handleRelayToIframe(t){switch(t.kind){case"cancel-interaction":{this.cancelInteraction();break}case"set-canvas-gesture-relay":{this.isCanvasGestureRelayEnabled=t.enabled,this.dragStartPointer=null,this.dragRelayPointerId=null,this.scrollGestureState="idle",this.scrollGestureTimer&&(clearTimeout(this.scrollGestureTimer),this.scrollGestureTimer=null);break}case"set-canvas-relay-context-menu":{this.isContextMenuRelayEnabled=t.enabled;break}}}cancelInteraction(){document.getSelection()?.removeAllRanges(),document.activeElement instanceof HTMLElement&&document.activeElement.blur()}handleApplyThemePreview(t){if(t.type!=="APPLY_THEME_PREVIEW")return;let e=document.getElementById(y.THEME_PREVIEW_STYLE_ID);e||(e=document.createElement("style"),e.id=y.THEME_PREVIEW_STYLE_ID,document.head.appendChild(e)),e.textContent=t.themeContent}handleClearThemePreview(){let t=document.getElementById(y.THEME_PREVIEW_STYLE_ID);t&&t.remove()}async handleScreenshotPage(t,e="page"){try{let i=e==="viewport"?await Ue():await ee();this.postMessageToParent({type:"SCREENSHOT_PAGE_RESULT",timestamp:Date.now(),requestId:t,screenshotBlob:i})}catch(i){console.error("[replit-cartographer] Error capturing page screenshot:",i),this.postMessageToParent({type:"SCREENSHOT_PAGE_RESULT",timestamp:Date.now(),requestId:t,error:i instanceof Error?i.message:"Unknown screenshot error"})}}measureContentHeight(){return Nn()}handleContentHeightRequest(t){try{let e=this.measureContentHeight();this.postMessageToParent({type:"CONTENT_HEIGHT_RESULT",timestamp:Date.now(),requestId:t,contentHeight:e})}catch(e){this.postMessageToParent({type:"CONTENT_HEIGHT_RESULT",timestamp:Date.now(),requestId:t,error:e instanceof Error?e.message:"Unknown content height error"})}}handleVisualEditorToggle(t){if(t.type!=="TOGGLE_REPLIT_VISUAL_EDITOR")return;let e=!!t.enabled,i=this.hoverMessages;this.enableEditing=!!t.enableEditing,this.hoverMessages=!!t.hoverMessages,e?(this.hoverMessages||window.dispatchEvent(new CustomEvent("replit-init-tailwind")),this.postMessageToParent({type:"REPLIT_VISUAL_EDITOR_ENABLED",timestamp:Date.now(),hoverMessages:this.hoverMessages||void 0})):this.postMessageToParent({type:"REPLIT_VISUAL_EDITOR_DISABLED",timestamp:Date.now()}),this.isActive!==e?(this.isActive=e,this.toggleEventListeners(e)):this.isActive&&e&&i!==this.hoverMessages&&(this.toggleEventListeners(!1),this.toggleEventListeners(!0))}observeSelectedElement(){if(this.selectedElement){if(!this.isPureTextElement(this.selectedElement)){this.mutationObserver&&(this.mutationObserver.disconnect(),this.mutationObserver=null);return}this.mutationObserver&&this.mutationObserver.disconnect(),this.mutationObserver=new MutationObserver(t=>{if(t.some(i=>i.type==="characterData")&&this.selectedElement){this.selectedElement.setAttribute("data-replit-dirty","true");let i=J(this.selectedElement,this.nodeMap);this.postMessageToParent({type:"ELEMENT_TEXT_CHANGED",payload:i,timestamp:Date.now()}),this.updateHighlighterPosition(this.selectedElement,this.selectedHighlighter,this.selectedLabel)}}),this.mutationObserver.observe(this.selectedElement,{characterData:!0,childList:!1,attributes:!1,subtree:!0})}}observeLightDarkModeSwitch(){let t=new MutationObserver(i=>{i.forEach(r=>{r.type==="attributes"&&r.attributeName==="class"&&(r.target.classList.contains("dark")?this.postMessageToParent({type:"DARK_MODE_USED",timestamp:Date.now()}):this.postMessageToParent({type:"LIGHT_MODE_USED",timestamp:Date.now()}))})}),e=document.documentElement;t.observe(e,{attributes:!0,attributeFilter:["class"],childList:!1,subtree:!1})}recalculateSelectedElement=()=>{if(this.isActive){if(this.hoverMessages){if(this.lastHighlightedElement&&this.lastHighlightedElement!==this.selectedElement){let t=this.lastHighlightedElement===document.body||this.lastHighlightedElement===document.documentElement?document.body:this.lastHighlightedElement,e=t.getBoundingClientRect();this.postMessageToParent({type:"ELEMENT_HOVERED",timestamp:Date.now(),elementBounds:{x:e.x,y:e.y,width:e.width,height:e.height},elementName:x(t)})}return}this.selectedElement&&this.updateHighlighterPosition(this.selectedElement,this.selectedHighlighter,this.selectedLabel),this.lastHighlightedElement&&this.updateHighlighterPosition(this.lastHighlightedElement,this.hoverHighlighter,this.hoverLabel),this.selectedSiblingElements.length>0&&this.updateSiblingHighlighterPositions()}};updateSiblingHighlighterPositions(){for(let t=0;t<this.selectedSiblingHighlighters.length;t++){let e=this.selectedSiblingHighlighters[t],i=this.visibleSelectedSiblingElements[t];if(!e||!i)continue;let r=i.getBoundingClientRect(),o=window.innerHeight,l=Math.max(0,r.top),s=Math.min(o,r.bottom),c=Math.max(0,s-l);Object.assign(e.style,{opacity:c>0?"1":"0",top:`${l}px`,left:`${r.left}px`,width:`${r.width}px`,height:`${c}px`})}}handleKeyDown=t=>{if(this.isActive&&(t.key==="Escape"||t.key==="Esc")){if(this.hoverMessages){if(this.selectedElement){if(this.clearSelection(),this.lastHighlightedElement=null,!document.getElementById("replit-beacon-crosshair")){let e=document.createElement("style");e.id="replit-beacon-crosshair",e.textContent="* { cursor: crosshair !important; }",document.head.appendChild(e)}this.postMessageToParent({type:"ELEMENT_UNSELECTED",timestamp:Date.now()})}else this.handleVisualEditorToggle({type:"TOGGLE_REPLIT_VISUAL_EDITOR",enabled:!1,timestamp:Date.now()});return}this.handleVisualEditorToggle({type:"TOGGLE_REPLIT_VISUAL_EDITOR",enabled:!1,timestamp:Date.now()})}};toggleEventListeners(t){if(t){if(this.hoverMessages){let e=document.createElement("style");e.id="replit-beacon-crosshair",e.textContent="* { cursor: crosshair !important; }",document.head.appendChild(e)}else this.initializeHighlighter();this.enableDisabledElements(),document.addEventListener("mousemove",this.handleMouseMove),document.addEventListener("mouseleave",this.handleMouseLeave),document.addEventListener("click",this.handleClick,!0),document.addEventListener("keydown",this.handleKeyDown),this.throttledRecalculate&&(window.addEventListener("resize",this.throttledRecalculate),window.addEventListener("scroll",this.throttledRecalculate,!0))}else document.getElementById("replit-beacon-crosshair")?.remove(),this.restoreDisabledElements(),this.restoreElements(),document.removeEventListener("mousemove",this.handleMouseMove),document.removeEventListener("click",this.handleClick,!0),document.removeEventListener("mouseleave",this.handleMouseLeave),document.removeEventListener("keydown",this.handleKeyDown),this.throttledRecalculate&&(window.removeEventListener("resize",this.throttledRecalculate),window.removeEventListener("scroll",this.throttledRecalculate,!0)),this.mutationObserver&&(this.mutationObserver.disconnect(),this.mutationObserver=null),this.selectedElement&&(this.selectedElement.removeAttribute("contenteditable"),this.selectedElement.removeAttribute("data-original-text"),document.querySelectorAll('[contenteditable="plaintext-only"]').forEach(e=>{e.removeAttribute("contenteditable")})),this.clearSelectedSiblingHighlighters(),this.clearHoverSiblingHighlighters(),this.hoverHighlighter?.remove(),this.hoverLabel?.remove(),this.selectedHighlighter?.remove(),this.selectedLabel?.remove(),this.shadowHost?.remove(),this.hoverHighlighter=null,this.hoverLabel=null,this.selectedHighlighter=null,this.selectedLabel=null,this.shadowHost=null,this.shadowRoot=null,this.selectedElement=null}clearHighlighters(t){return t.forEach(e=>{e.remove()}),[]}clearHoverSiblingHighlighters(){this.hoverSiblingHighlighters=this.clearHighlighters(this.hoverSiblingHighlighters)}clearSelectedSiblingHighlighters(){this.selectedSiblingElements.forEach(t=>{t.removeAttribute("contenteditable")}),this.selectedSiblingElements=[],this.visibleSelectedSiblingElements=[],this.selectedSiblingHighlighters=this.clearHighlighters(this.selectedSiblingHighlighters)}highlightElements(t){if(!this.shadowRoot||t.length===0)return[];let e=[];return t.forEach(i=>{let r=document.createElement("div");r.className="beacon-highlighter beacon-sibling-highlighter",this.shadowRoot?.appendChild(r),e.push(r);let o=i.getBoundingClientRect(),l=window.innerHeight,s=Math.max(0,o.top),c=Math.min(l,o.bottom),h=Math.max(0,c-s);Object.assign(r.style,{opacity:h>0?"1":"0",top:`${s}px`,left:`${o.left}px`,width:`${o.width}px`,height:`${h}px`})}),e}highlightHoverSiblings(t){this.clearHoverSiblingHighlighters();let e=D(t,y.MAX_SIBLING_HIGHLIGHTERS,!0);this.hoverSiblingHighlighters=this.highlightElements(e)}highlightSelectedSiblings(t){this.clearSelectedSiblingHighlighters();let e=D(t),i=e.filter(r=>te(r));this.selectedSiblingElements=e,this.visibleSelectedSiblingElements=i,this.selectedSiblingHighlighters=this.highlightElements(i)}enableDisabledElements(){document.querySelectorAll("button[disabled], input[disabled]").forEach(t=>{t.removeAttribute("disabled"),t.setAttribute("data-replit-disabled","")})}restoreDisabledElements(){document.querySelectorAll("[data-replit-disabled]").forEach(t=>{t.removeAttribute("data-replit-disabled"),t.setAttribute("disabled","")})}};function ne(n){return n.includes("standalone")?"standalone":"installed"}function ie({currentVersion:n,existingVersion:t,existingCoexistenceStandaloneVersion:e}){let i=ne(n);if(!t)return{options:{source:i,acceptsRawMessages:!0},globalVersion:n,coexistenceStandaloneVersion:null};let r=ne(t);return i==="standalone"&&r==="installed"?e?{options:null,globalVersion:null,coexistenceStandaloneVersion:null}:{options:{source:"standalone",acceptsRawMessages:!1,installedVersion:t},globalVersion:null,coexistenceStandaloneVersion:n}:{options:null,globalVersion:null,coexistenceStandaloneVersion:null}}if(typeof window<"u")try{let n=ie({currentVersion:B,existingVersion:window.REPLIT_BEACON_VERSION,existingCoexistenceStandaloneVersion:window.REPLIT_BEACON_COEXISTENCE_STANDALONE_VERSION});n.options&&new N(n.options),n.globalVersion&&(window.REPLIT_BEACON_VERSION=n.globalVersion),n.coexistenceStandaloneVersion&&(window.REPLIT_BEACON_COEXISTENCE_STANDALONE_VERSION=n.coexistenceStandaloneVersion)}catch(n){console.error("[replit-beacon] Failed to initialize:",n)}})();
-</script>
-    <script>(function() {
-  var initialized = false;
 
-  function loadTailwind() {
-    if (initialized) { return; }
-    initialized = true;
-
-        var script = document.createElement('script');
-        script.src = "https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.1.14";
-
-        if (window.REPLIT_APP_TAILWIND_CONFIG) {
-          script.setAttribute('data-config', JSON.stringify(window.REPLIT_APP_TAILWIND_CONFIG));
-        }
-
-        document.head.appendChild(script);
+// ── Clase ─────────────────────────────────────────────────────────────────────
+function setClase(code){
+  if(catModalMode==="reassign" && catReassignId!=null){
+    const a=annotations.find(x=>x.id===catReassignId);
+    if(a){ a.clase=code; renderAnnoList(); redraw(); showToast(`✏️ Clase → ${code}`,"ok"); }
+    catModalMode="select"; catReassignId=null;
+    closeCatModalDirect(); addReciente(code);
+    return;
   }
+  currentClase=code;
+  document.getElementById("clase-custom").value=code;
+  const d=document.getElementById("current-clase-display");
+  d.textContent="✏️ Clase activa: "+code; d.style.display="block";
+  addReciente(code); closeCatModalDirect();
+}
+function reassignClass(id){
+  catModalMode="reassign"; catReassignId=id;
+  openCatModal();
+  // pequeño hint en el título del modal
+  setTimeout(()=>{ const t=document.querySelector("#cat-modal-bg .modal-title span:first-child"); if(t) t.textContent="Reasignar clase a esta anotación"; },50);
+}
+function onCustomInput(v){
+  currentClase=v.trim().toUpperCase();
+  const d=document.getElementById("current-clase-display");
+  if(v){d.textContent="✏️ Clase activa: "+currentClase;d.style.display="block";}
+  else d.style.display="none";
+}
+function addReciente(code){
+  recientes=[code,...recientes.filter(r=>r!==code)].slice(0,8);
+  localStorage.setItem("rf_recientes",JSON.stringify(recientes));
+  renderRecientes();
+}
+function renderRecientes(){
+  const g=document.getElementById("recientes-grid"); g.innerHTML="";
+  recientes.forEach(c=>{const b=document.createElement("div");b.className="quick-btn"+(c===currentClase?" active":"");b.textContent=c;b.onclick=()=>setClase(c);g.appendChild(b);});
+  document.getElementById("recientes-wrap").style.display=recientes.length?"":"none";
+}
+renderRecientes();
 
-  // Listen for the beacon requesting tailwind initialization.
-  window.addEventListener('replit-init-tailwind', function() {
-    if (window.REPLIT_APP_TAILWIND_CONFIG) {
-      loadTailwind();
+// ── File ──────────────────────────────────────────────────────────────────────
+function loadFile(f){
+  if(!f) return;
+  selectedFile=f; annotations=[];
+  const url=URL.createObjectURL(f);
+  const img=document.getElementById("bbox-img");
+  img.onload=()=>{ imgNatW=img.naturalWidth; imgNatH=img.naturalHeight; zoomReset(); initCanvas(); analyzeBlur(img); recordMemory(img,f); };
+  img.src=url;
+  document.getElementById("capture-zone").classList.add("has-img");
+  document.getElementById("bbox-section").style.display="block";
+  document.getElementById("annos-card").style.display="none";
+  document.getElementById("blur-warn").style.display="none";
+  cancelPolygon(); bboxCurrent=null; cornerCancel();
+  // Reset SAM embeddings (nueva imagen → nuevo embedding)
+  samInputs=null; samEmbeddings=null; samImgKey=Date.now();
+  if(activeTool==="sam") ensureSamReady();
+  // Reset contador de arrume
+  arrumeCount=0; const ac=document.getElementById("arrume-counter"); if(ac&&arrumeMode) ac.textContent="×0";
+  renderAnnoList(); updateButtons();
+}
+document.getElementById("file-input-cam").addEventListener("change",e=>loadFile(e.target.files[0]));
+document.getElementById("file-input-gal").addEventListener("change",e=>loadFile(e.target.files[0]));
+
+// ── Blur detection (varianza de Laplaciano sobre imagen escalada) ────────────
+function analyzeBlur(img){
+  try{
+    const S=220; const c=document.createElement("canvas");
+    c.width=S; c.height=S;
+    const g=c.getContext("2d"); g.drawImage(img,0,0,S,S);
+    const d=g.getImageData(0,0,S,S).data;
+    // convertir a luminancia
+    const lum=new Float32Array(S*S);
+    for(let i=0;i<S*S;i++) lum[i]=0.299*d[i*4]+0.587*d[i*4+1]+0.114*d[i*4+2];
+    // Laplaciano 3x3
+    let sum=0, sum2=0, n=0;
+    for(let y=1;y<S-1;y++){
+      for(let x=1;x<S-1;x++){
+        const i=y*S+x;
+        const v=-lum[i-S]-lum[i-1]+4*lum[i]-lum[i+1]-lum[i+S];
+        sum+=v; sum2+=v*v; n++;
+      }
+    }
+    const mean=sum/n, variance=(sum2/n)-mean*mean;
+    const w=document.getElementById("blur-warn");
+    const t=document.getElementById("blur-warn-txt");
+    w.classList.remove("ok");
+    if(variance<80){
+      w.style.display="flex";
+      t.innerHTML=`⚠️ <b>Foto borrosa</b> (nitidez ${variance.toFixed(0)}). Considera repetir la toma.`;
+    } else if(variance<180){
+      w.style.display="flex";
+      t.innerHTML=`⚠️ Nitidez media (${variance.toFixed(0)}). Aceptable, pero mejor sería más clara.`;
     } else {
-      // Config not ready yet — wait for the config-ready event, but proceed
-      // without a config after 1 second.  The config is optional (projects
-      // without a tailwind config file will never fire the ready event).
-      var configTimeout = setTimeout(function() { loadTailwind(); }, 1000);
-      window.addEventListener('replit-tailwind-config-ready', function() {
-        clearTimeout(configTimeout);
-        loadTailwind();
-      }, { once: true });
+      w.style.display="flex"; w.classList.add("ok");
+      t.innerHTML=`✅ Foto nítida (${variance.toFixed(0)}).`;
+      setTimeout(()=>{ if(w.classList.contains("ok")) w.style.display="none"; },2500);
+    }
+  }catch(_){}
+}
+
+// ── Canvas init ───────────────────────────────────────────────────────────────
+const canvas=document.getElementById("bbox-canvas");
+function initCanvas(){
+  const img=document.getElementById("bbox-img");
+  imgDispW=img.offsetWidth; imgDispH=img.offsetHeight;
+  canvas.width=imgDispW; canvas.height=imgDispH;
+  redraw();
+}
+function getPos(e){
+  const rect=canvas.getBoundingClientRect();
+  const t=e.touches?e.touches[0]:e;
+  return{
+    x:Math.max(0,Math.min(canvas.width,(t.clientX-rect.left)*(canvas.width/rect.width))),
+    y:Math.max(0,Math.min(canvas.height,(t.clientY-rect.top)*(canvas.height/rect.height)))
+  };
+}
+window.addEventListener("resize",()=>{ if(selectedFile) initCanvas(); });
+
+// ── Zoom / Pan ────────────────────────────────────────────────────────────────
+function applyZoom(){
+  const w=document.getElementById("bbox-wrap");
+  w.style.transform=`translate(${zoomTx}px,${zoomTy}px) scale(${zoomScale})`;
+  const lbl=document.getElementById("zoom-lbl"); if(lbl) lbl.textContent=zoomScale.toFixed(1)+"×";
+}
+function zoomReset(){ zoomScale=1; zoomTx=0; zoomTy=0; applyZoom(); }
+function zoomBy(factor){
+  const vp=document.getElementById("zoom-viewport"); if(!vp) return;
+  const r=vp.getBoundingClientRect(); const cx=r.width/2, cy=r.height/2;
+  zoomAt(zoomScale*factor, cx, cy);
+}
+function zoomAt(newScale,cx,cy){
+  newScale=Math.max(1,Math.min(6,newScale));
+  // punto en coords de contenido bajo (cx,cy) antes del zoom
+  const kx=(cx-zoomTx)/zoomScale, ky=(cy-zoomTy)/zoomScale;
+  zoomScale=newScale;
+  zoomTx=cx-kx*zoomScale;
+  zoomTy=cy-ky*zoomScale;
+  clampPan();
+  applyZoom();
+}
+function clampPan(){
+  const vp=document.getElementById("zoom-viewport"); if(!vp) return;
+  const r=vp.getBoundingClientRect();
+  const cW=r.width*zoomScale, cH=r.height*zoomScale;
+  const minX=r.width-cW, minY=r.height-cH;
+  if(zoomScale<=1){ zoomTx=0; zoomTy=0; return; }
+  zoomTx=Math.min(0,Math.max(minX,zoomTx));
+  zoomTy=Math.min(0,Math.max(minY,zoomTy));
+}
+function touchDist(t1,t2){ const dx=t1.clientX-t2.clientX, dy=t1.clientY-t2.clientY; return Math.hypot(dx,dy); }
+function touchMid(t1,t2,vpRect){ return {x:(t1.clientX+t2.clientX)/2-vpRect.left, y:(t1.clientY+t2.clientY)/2-vpRect.top}; }
+
+// ── Eventos canvas (con pinch/pan) ───────────────────────────────────────────
+function pointerDown_(e){
+  if(activeTool==="bbox") bboxStart_(e);
+  else if(activeTool==="corner") cornerStart_(e);
+  else if(activeTool==="polygon") polyTap(e);
+  else if(activeTool==="sam") samTap(e);
+}
+function pointerMove_(e){
+  if(activeTool==="bbox") bboxMove_(e);
+  else if(activeTool==="corner") cornerMove_(e);
+  else if(activeTool==="polygon") polyMove_(e);
+}
+function pointerUp_(e){
+  if(activeTool==="bbox") bboxEnd_(e);
+  else if(activeTool==="corner") cornerEnd_(e);
+}
+canvas.addEventListener("mousedown", e=>{ e.preventDefault(); pointerDown_(e); },{passive:false});
+canvas.addEventListener("mousemove", e=>{ e.preventDefault(); pointerMove_(e); },{passive:false});
+canvas.addEventListener("mouseup",   e=>{ e.preventDefault(); pointerUp_(e); },{passive:false});
+
+canvas.addEventListener("touchstart",e=>{
+  e.preventDefault();
+  if(e.touches.length===2){
+    // Iniciar pinch — cancelar dibujos en progreso
+    bboxDrawing=false; bboxCurrent=null;
+    const vp=document.getElementById("zoom-viewport").getBoundingClientRect();
+    const mid=touchMid(e.touches[0],e.touches[1],vp);
+    pinchState={d0:touchDist(e.touches[0],e.touches[1]),s0:zoomScale,cx:mid.x,cy:mid.y,tx0:zoomTx,ty0:zoomTy,mx0:mid.x,my0:mid.y};
+    panState=null;
+    redraw();
+  } else {
+    pointerDown_(e);
+  }
+},{passive:false});
+
+canvas.addEventListener("touchmove", e=>{
+  e.preventDefault();
+  if(pinchState && e.touches.length===2){
+    const vp=document.getElementById("zoom-viewport").getBoundingClientRect();
+    const d=touchDist(e.touches[0],e.touches[1]);
+    const mid=touchMid(e.touches[0],e.touches[1],vp);
+    const newScale=Math.max(1,Math.min(6, pinchState.s0*(d/pinchState.d0)));
+    const kx=(pinchState.cx-pinchState.tx0)/pinchState.s0, ky=(pinchState.cy-pinchState.ty0)/pinchState.s0;
+    zoomScale=newScale;
+    zoomTx=pinchState.cx-kx*zoomScale + (mid.x-pinchState.mx0);
+    zoomTy=pinchState.cy-ky*zoomScale + (mid.y-pinchState.my0);
+    clampPan(); applyZoom();
+    return;
+  }
+  pointerMove_(e);
+},{passive:false});
+
+canvas.addEventListener("touchend",  e=>{
+  e.preventDefault();
+  if(pinchState && e.touches.length<2){ pinchState=null; return; }
+  pointerUp_(e);
+},{passive:false});
+
+canvas.addEventListener("dblclick",  e=>{ e.preventDefault(); if(activeTool==="polygon") closePolygon(); });
+
+// ── BBox ──────────────────────────────────────────────────────────────────────
+function bboxStart_(e){
+  if(!checkClase()) return;
+  const p=getPos(e); bboxDrawing=true; bboxStart=p; bboxCurrent=null;
+}
+function bboxMove_(e){
+  if(!bboxDrawing) return;
+  const p=getPos(e);
+  bboxCurrent={x:Math.min(bboxStart.x,p.x),y:Math.min(bboxStart.y,p.y),w:Math.abs(p.x-bboxStart.x),h:Math.abs(p.y-bboxStart.y)};
+  redraw();
+}
+function bboxEnd_(e){
+  bboxDrawing=false;
+  if(bboxCurrent&&bboxCurrent.w>15&&bboxCurrent.h>15){
+    const id=Date.now();
+    const color=COLORS[annotations.length%COLORS.length];
+    annotations.push({id,clase:currentClase,type:"bbox",bbox:{...bboxCurrent},color,checked:true,qty:null});
+    bboxCurrent=null; redraw(); renderAnnoList(); updateButtons();
+    if(arrumeMode){ bumpArrume(); showToast(`🔗 +1 ${currentClase} (${arrumeCount})`,"ok"); }
+    else showQtyPrompt(id);
+  } else { bboxCurrent=null; redraw(); }
+}
+
+// ── Esquinero (L-shape) ──────────────────────────────────────────────────────
+// Rectángulo base con un "brazo" recortado en una esquina, formando una L.
+// Estado: cornerState = { base:{x,y,w,h}, corner:'TL|TR|BL|BR', armW, armH }
+let cornerState=null;
+let cornerDrawing=false, cornerBaseStart=null;
+function cornerStart_(e){
+  if(!checkClase()) return;
+  const p=getPos(e); cornerDrawing=true; cornerBaseStart=p;
+  cornerState=null;
+}
+function cornerMove_(e){
+  if(!cornerDrawing) return;
+  const p=getPos(e);
+  const b={x:Math.min(cornerBaseStart.x,p.x),y:Math.min(cornerBaseStart.y,p.y),w:Math.abs(p.x-cornerBaseStart.x),h:Math.abs(p.y-cornerBaseStart.y)};
+  cornerState={base:b, corner:"TR", armW:Math.round(b.w*0.4), armH:Math.round(b.h*0.4)};
+  redraw();
+}
+function cornerEnd_(e){
+  cornerDrawing=false;
+  if(!cornerState || cornerState.base.w<20 || cornerState.base.h<20){ cornerState=null; redraw(); return; }
+  openCornerPanel();
+  redraw();
+}
+function cornerCancel(){
+  cornerState=null; cornerDrawing=false;
+  const p=document.getElementById("corner-panel"); if(p) p.remove();
+  redraw();
+}
+function cornerPolygonPoints(){
+  if(!cornerState) return null;
+  const {base:b, corner:c, armW:aw, armH:ah} = cornerState;
+  const W=Math.min(aw,b.w-4), H=Math.min(ah,b.h-4);
+  // Genera 6 puntos según esquina recortada
+  // Base rect corners: TL(x,y) TR(x+w,y) BR(x+w,y+h) BL(x,y+h)
+  const TL={x:b.x,y:b.y}, TR={x:b.x+b.w,y:b.y}, BR={x:b.x+b.w,y:b.y+b.h}, BL={x:b.x,y:b.y+b.h};
+  if(c==="TR") return [TL,{x:b.x+b.w-W,y:b.y},{x:b.x+b.w-W,y:b.y+H},{x:b.x+b.w,y:b.y+H},BR,BL];
+  if(c==="TL") return [{x:b.x+W,y:b.y},TR,BR,BL,{x:b.x,y:b.y+H},{x:b.x+W,y:b.y+H}];
+  if(c==="BR") return [TL,TR,{x:b.x+b.w,y:b.y+b.h-H},{x:b.x+b.w-W,y:b.y+b.h-H},{x:b.x+b.w-W,y:b.y+b.h},BL];
+  if(c==="BL") return [TL,TR,BR,{x:b.x+W,y:b.y+b.h},{x:b.x+W,y:b.y+b.h-H},{x:b.x,y:b.y+b.h-H}];
+  return null;
+}
+function openCornerPanel(){
+  const ex=document.getElementById("corner-panel"); if(ex) ex.remove();
+  const b=cornerState.base;
+  const maxW=Math.floor(b.w-4), maxH=Math.floor(b.h-4);
+  const div=document.createElement("div");
+  div.id="corner-panel"; div.className="float-panel";
+  div.innerHTML=`
+    <div class="fp-head" id="cp-head">
+      <span style="flex:1">📐 Esquinero — ajusta brazo</span>
+      <button class="fp-btn" onclick="document.getElementById('corner-panel').classList.toggle('min')" title="Minimizar">▁</button>
+      <button class="fp-btn" onclick="cornerCancel()" title="Cancelar">✕</button>
+    </div>
+    <div class="fp-body">
+      <div style="font-size:10px;color:var(--steel);margin-bottom:6px">Esquina recortada:</div>
+      <div class="corner-grid">
+        <button class="corner-btn" data-c="TL" onclick="cornerSetCorner('TL')">↖ Sup-Izq</button>
+        <button class="corner-btn active" data-c="TR" onclick="cornerSetCorner('TR')">↗ Sup-Der</button>
+        <button class="corner-btn" data-c="BL" onclick="cornerSetCorner('BL')">↙ Inf-Izq</button>
+        <button class="corner-btn" data-c="BR" onclick="cornerSetCorner('BR')">↘ Inf-Der</button>
+      </div>
+      <div class="slider-row"><label>Brazo ancho</label><input type="range" id="cp-w" min="4" max="${maxW}" value="${cornerState.armW}" oninput="cornerSetArm('w',this.value)"><span class="val" id="cp-w-v">${cornerState.armW}</span></div>
+      <div class="slider-row"><label>Brazo alto</label><input type="range" id="cp-h" min="4" max="${maxH}" value="${cornerState.armH}" oninput="cornerSetArm('h',this.value)"><span class="val" id="cp-h-v">${cornerState.armH}</span></div>
+      <div class="btn-row" style="margin-top:8px">
+        <button class="btn btn-ghost btn-sm" onclick="cornerCancel()">Cancelar</button>
+        <button class="btn btn-amber btn-sm" onclick="cornerConfirm()">✅ Guardar</button>
+      </div>
+    </div>`;
+  document.body.appendChild(div);
+  makeDraggable(div, document.getElementById("cp-head"));
+}
+function cornerSetCorner(c){
+  if(!cornerState) return;
+  cornerState.corner=c;
+  document.querySelectorAll("#corner-panel .corner-btn").forEach(b=>b.classList.toggle("active",b.dataset.c===c));
+  redraw();
+}
+function cornerSetArm(k,v){
+  if(!cornerState) return;
+  v=parseInt(v);
+  if(k==="w"){ cornerState.armW=v; document.getElementById("cp-w-v").textContent=v; }
+  else { cornerState.armH=v; document.getElementById("cp-h-v").textContent=v; }
+  redraw();
+}
+function cornerConfirm(){
+  const pts=cornerPolygonPoints(); if(!pts){ cornerCancel(); return; }
+  const id=Date.now();
+  const color=COLORS[annotations.length%COLORS.length];
+  annotations.push({id,clase:currentClase,type:"polygon",points:pts,color,checked:true,qty:null,fromCorner:true});
+  cornerCancel(); renderAnnoList(); updateButtons();
+  if(arrumeMode){ bumpArrume(); showToast(`🔗 +1 ${currentClase} (${arrumeCount})`,"ok"); }
+  else showQtyPrompt(id);
+}
+
+// Utilidad genérica: hacer un panel arrastrable por un asa
+function makeDraggable(el, handle){
+  let sx=0, sy=0, ox=0, oy=0, dragging=false;
+  const start=(cx,cy)=>{ dragging=true; sx=cx; sy=cy; const r=el.getBoundingClientRect(); ox=r.left; oy=r.top; el.style.left=ox+"px"; el.style.top=oy+"px"; el.style.right="auto"; };
+  const move=(cx,cy)=>{ if(!dragging) return; el.style.left=(ox+cx-sx)+"px"; el.style.top=Math.max(4,oy+cy-sy)+"px"; };
+  const end=()=>{ dragging=false; };
+  handle.addEventListener("mousedown",e=>{ e.preventDefault(); start(e.clientX,e.clientY); });
+  window.addEventListener("mousemove",e=>move(e.clientX,e.clientY));
+  window.addEventListener("mouseup",end);
+  handle.addEventListener("touchstart",e=>{ const t=e.touches[0]; start(t.clientX,t.clientY); },{passive:true});
+  window.addEventListener("touchmove",e=>{ if(!dragging) return; const t=e.touches[0]; move(t.clientX,t.clientY); },{passive:true});
+  window.addEventListener("touchend",end);
+}
+
+
+// ── Polygon ───────────────────────────────────────────────────────────────────
+let lastTapTime=0;
+function polyTap(e){
+  if(!checkClase()) return;
+  const now=Date.now();
+  if(now-lastTapTime<300){ closePolygon(); lastTapTime=0; return; }
+  lastTapTime=now;
+  const p=getPos(e);
+  polyPoints.push(p); polyDrawing=true;
+  document.getElementById("poly-toolbar").style.display="flex";
+  document.getElementById("poly-pts-count").textContent=polyPoints.length+" punto"+(polyPoints.length!==1?"s":"");
+  redraw();
+}
+function polyMove_(e){
+  if(!polyDrawing||!polyPoints.length) return;
+  const p=getPos(e); polyPreview=p; redraw();
+}
+function closePolygon(){
+  if(polyPoints.length<3){ showToast("⚠️ Mínimo 3 puntos para cerrar","err"); return; }
+  const id=Date.now();
+  const color=COLORS[annotations.length%COLORS.length];
+  annotations.push({id,clase:currentClase,type:"polygon",points:[...polyPoints],color,checked:true,qty:null});
+  cancelPolygon(); redraw(); renderAnnoList(); updateButtons();
+  if(arrumeMode){ bumpArrume(); showToast(`🔗 +1 ${currentClase} (${arrumeCount})`,"ok"); }
+  else showQtyPrompt(id);
+}
+function cancelPolygon(){
+  polyPoints=[]; polyDrawing=false; polyPreview=null;
+  document.getElementById("poly-toolbar").style.display="none";
+  redraw();
+}
+
+// ── Redraw ────────────────────────────────────────────────────────────────────
+function redraw(){
+  const ctx=canvas.getContext("2d");
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  // Anotaciones guardadas
+  annotations.forEach(a=>{
+    if(!a.checked) return;
+    ctx.strokeStyle=a.color; ctx.lineWidth=2.5; ctx.globalAlpha=1;
+
+    if(a.type==="bbox"){
+      const b=a.bbox;
+      // Sombra
+      ctx.fillStyle="rgba(0,0,0,0.25)";
+      ctx.fillRect(0,0,canvas.width,b.y);
+      ctx.fillRect(0,b.y+b.h,canvas.width,canvas.height-b.y-b.h);
+      ctx.fillRect(0,b.y,b.x,b.h);
+      ctx.fillRect(b.x+b.w,b.y,canvas.width-b.x-b.w,b.h);
+      ctx.strokeRect(b.x,b.y,b.w,b.h);
+      drawCorners(ctx,b.x,b.y,b.w,b.h,a.color);
+      drawLabel(ctx,a.clase,b.x,b.y,a.color);
+      if(a.isQty){ drawQtyBox(ctx,a,b.x,b.y,b.w,b.h); }
+
+    } else if(a.type==="polygon"){
+      const pts=a.points;
+      ctx.beginPath(); ctx.moveTo(pts[0].x,pts[0].y);
+      pts.forEach(p=>ctx.lineTo(p.x,p.y)); ctx.closePath();
+      ctx.fillStyle=a.color+"33"; ctx.fill();
+      ctx.stroke();
+      pts.forEach(p=>{ ctx.beginPath(); ctx.arc(p.x,p.y,4,0,Math.PI*2); ctx.fillStyle=a.color; ctx.fill(); });
+      drawLabel(ctx,a.clase,pts[0].x,pts[0].y,a.color);
     }
   });
-})();</script>
-    <script>window.REPLIT_APP_THEME_TOKENS = {"color":[{"suffix":"background","expr":"hsl(var(--background))"},{"suffix":"foreground","expr":"hsl(var(--foreground))"},{"suffix":"border","expr":"hsl(var(--border))"},{"suffix":"input","expr":"hsl(var(--input))"},{"suffix":"ring","expr":"hsl(var(--ring))"},{"suffix":"card","expr":"hsl(var(--card))"},{"suffix":"card-foreground","expr":"hsl(var(--card-foreground))"},{"suffix":"card-border","expr":"hsl(var(--card-border))"},{"suffix":"popover","expr":"hsl(var(--popover))"},{"suffix":"popover-foreground","expr":"hsl(var(--popover-foreground))"},{"suffix":"popover-border","expr":"hsl(var(--popover-border))"},{"suffix":"primary","expr":"hsl(var(--primary))"},{"suffix":"primary-foreground","expr":"hsl(var(--primary-foreground))"},{"suffix":"primary-border","expr":"var(--primary-border)"},{"suffix":"secondary","expr":"hsl(var(--secondary))"},{"suffix":"secondary-foreground","expr":"hsl(var(--secondary-foreground))"},{"suffix":"secondary-border","expr":"var(--secondary-border)"},{"suffix":"muted","expr":"hsl(var(--muted))"},{"suffix":"muted-foreground","expr":"hsl(var(--muted-foreground))"},{"suffix":"muted-border","expr":"var(--muted-border)"},{"suffix":"accent","expr":"hsl(var(--accent))"},{"suffix":"accent-foreground","expr":"hsl(var(--accent-foreground))"},{"suffix":"accent-border","expr":"var(--accent-border)"},{"suffix":"destructive","expr":"hsl(var(--destructive))"},{"suffix":"destructive-foreground","expr":"hsl(var(--destructive-foreground))"},{"suffix":"destructive-border","expr":"var(--destructive-border)"}],"font":[{"suffix":"sans","expr":"var(--app-font-sans)"},{"suffix":"mono","expr":"var(--app-font-mono)"}],"radius":[{"suffix":"sm","expr":"calc(var(--radius) - 4px)"},{"suffix":"md","expr":"calc(var(--radius) - 2px)"},{"suffix":"lg","expr":"var(--radius)"},{"suffix":"xl","expr":"calc(var(--radius) + 4px)"}]};</script>
-    <script type="text/javascript" src="/@replit/vite-plugin-dev-banner/banner-script.js" id="replit-dev-banner"></script>
-  <script type="text/javascript" src="https://replit.com/public/js/replit-bridge.js"></script></head>
-  <body>
-    <header>
-      <div class="logo">U</div>
-      <div style="flex:1">
-        <h1>UNISPAN Dataset v6</h1>
-        <p>Zoom · Blur check · Stats por clase</p>
-      </div>
-      <button onclick="descargarHTML()" title="Descargar index.html" style="background:rgba(245,158,11,.15);border:1.5px solid rgba(245,158,11,.4);color:#f59e0b;border-radius:10px;padding:8px 12px;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px;white-space:nowrap;">
-        ⬇️ Descargar v6
-      </button>
-    </header>
 
-    <div class="tabs">
-      <div class="tab active" onclick="switchTab('captura')">📸 Captura</div>
-      <div class="tab" onclick="switchTab('historial')">📋 Historial</div>
-      <div class="tab" onclick="switchTab('catalogo')">📖 Catálogo</div>
-      <div class="tab" onclick="switchTab('experto')">🎓 Experto</div>
-    </div>
+  // BBox en progreso
+  if(bboxCurrent&&bboxDrawing){
+    ctx.strokeStyle="rgba(255,255,255,.8)"; ctx.lineWidth=2; ctx.setLineDash([6,3]);
+    ctx.strokeRect(bboxCurrent.x,bboxCurrent.y,bboxCurrent.w,bboxCurrent.h);
+    ctx.setLineDash([]);
+  }
 
-    <main>
-      <!-- ══ CAPTURA ══ -->
-      <div class="page active" id="page-captura">
-        <div class="counter">
-          <div class="counter-item">
-            <div class="counter-num" id="cnt-session">0</div>
-            <div class="counter-lbl">Sesión</div>
-          </div>
-          <div class="counter-item">
-            <div class="counter-num" id="cnt-total">0</div>
-            <div class="counter-lbl">Total</div>
-          </div>
-          <div class="counter-item">
-            <div class="counter-num" id="cnt-ok" style="color: var(--ok)">0</div>
-            <div class="counter-lbl">Exitosas</div>
-          </div>
-        </div>
+  // Esquinero en progreso (preview de L)
+  if(cornerState){
+    const pts=cornerPolygonPoints();
+    if(pts){
+      ctx.strokeStyle="#f59e0b"; ctx.lineWidth=2.5; ctx.setLineDash(cornerDrawing?[6,3]:[]);
+      ctx.beginPath(); ctx.moveTo(pts[0].x,pts[0].y);
+      pts.forEach(p=>ctx.lineTo(p.x,p.y)); ctx.closePath();
+      ctx.fillStyle="rgba(245,158,11,.15)"; ctx.fill(); ctx.stroke();
+      ctx.setLineDash([]);
+      pts.forEach(p=>{ ctx.beginPath(); ctx.arc(p.x,p.y,4,0,Math.PI*2); ctx.fillStyle="#f59e0b"; ctx.fill(); });
+    }
+  }
 
-        <!-- Config -->
-        <div class="card">
-          <div class="card-title">⚙️ Configuración</div>
-          <label>API Key Roboflow</label>
-          <input type="password" id="api-key" placeholder="rf_xxxxxxxxxxxxxx" autocomplete="off">
-          <label>Split destino</label>
-          <select id="split">
-            <option value="train">Train</option>
-            <option value="valid">Valid</option>
-            <option value="test">Test</option>
-          </select>
-        </div>
 
-        <!-- Clase -->
-        <div class="card">
-          <div class="card-title">🏷️ Clase activa</div>
-          <div id="recientes-wrap" style="display: none">
-            <div style="font-size: 11px; color: var(--steel); margin-bottom: 6px">
-              Recientes:
-            </div>
-            <div class="quick-grid" id="recientes-grid"></div>
-          </div>
-          <div class="btn-row" style="margin-bottom: 8px">
-            <button class="btn btn-ghost btn-sm" onclick="openCatModal()">
-              📖 Catálogo
-            </button>
-            <input type="text" id="clase-custom" placeholder="ej. PM-2400x600" style="margin-bottom: 0; flex: 1" oninput="onCustomInput(this.value)">
-          </div>
-          <div id="current-clase-display" style="
-              display: none;
-              padding: 8px 12px;
-              background: rgba(245, 158, 11, 0.1);
-              border: 1px solid rgba(245, 158, 11, 0.3);
-              border-radius: 8px;
-              font-family: monospace;
-              font-weight: 700;
-              color: var(--amber);
-              font-size: 14px;
-            "></div>
-        </div>
+  // Polígono en progreso
+  if(polyPoints.length){
+    ctx.strokeStyle="rgba(255,255,255,.9)"; ctx.lineWidth=2; ctx.setLineDash([5,3]);
+    ctx.beginPath(); ctx.moveTo(polyPoints[0].x,polyPoints[0].y);
+    polyPoints.forEach(p=>ctx.lineTo(p.x,p.y));
+    if(polyPreview) ctx.lineTo(polyPreview.x,polyPreview.y);
+    ctx.stroke(); ctx.setLineDash([]);
+    polyPoints.forEach((p,i)=>{
+      ctx.beginPath(); ctx.arc(p.x,p.y,i===0?6:4,0,Math.PI*2);
+      ctx.fillStyle=i===0?"#f59e0b":"#fff"; ctx.fill();
+    });
+  }
+}
 
-        <!-- Herramienta -->
-        <div class="card">
-          <div class="card-title">🛠️ Herramienta de anotación</div>
-          <div class="tool-bar">
-            <div class="tool-btn" id="tool-bbox" onclick="setTool('bbox')">
-              <span class="tool-icon">⬜</span>
-              <span>Arrume</span>
-            </div>
-            <div class="tool-btn pieza-btn" id="tool-pieza" onclick="setTool('pieza')">
-              <span class="tool-icon">🔲</span>
-              <span>Pieza</span>
-            </div>
-            <div class="tool-btn" id="tool-polygon" onclick="setTool('polygon')">
-              <span class="tool-icon">🔷</span>
-              <span>Polígono</span>
-            </div>
-            <div class="tool-btn active" id="tool-esquinero" onclick="setTool('esquinero')">
-              <span class="tool-icon">📐</span>
-              <span>Esquinero</span>
-            </div>
-            <div class="tool-btn" id="tool-sam" onclick="setTool('sam')">
-              <span class="tool-icon">🎯</span>
-              <span>SAM</span>
-            </div>
-          </div>
-          <div class="tool-hint" id="tool-hint-bbox" style="display: none;">
-            Toca y arrastra · Anota el arrume completo y pregunta cuántas piezas
-          </div>
-          <div class="tool-hint pieza-hint" id="tool-hint-pieza" style="display: none">
-            Toca y arrastra · Señala una pieza individual dentro del arrume
-            (borde cian)
-          </div>
-          <div class="tool-hint" id="tool-hint-polygon" style="display: none">
-            Toca para agregar puntos · Doble toque para cerrar
-          </div>
-          <div class="tool-hint" id="tool-hint-esquinero" style="display: block;">
-            Toca y arrastra sobre la pieza en L · Ajusta grosor de brazos y orientación
-          </div>
-          <div class="tool-hint" id="tool-hint-sam" style="display: none;">
-            🧪 Beta · Toca una pieza dentro de un arrume → SAM genera su contorno automáticamente
-            <span id="sam-status" style="display:block;margin-top:4px;color:var(--amber);font-weight:700">✅ Listo</span>
-          </div>
-          <div class="arrume-toggle-row" id="arrume-toggle-row" onclick="toggleModoArrume()">
-            <span class="arrume-toggle-label">🔗 Modo Arrume <span class="arrume-count" id="arrume-count" style="display:none"></span></span>
-            <div class="arrume-switch" id="arrume-switch"></div>
-          </div>
-        </div>
+function drawCorners(ctx,x,y,w,h,color){
+  const cs=12; ctx.strokeStyle=color; ctx.lineWidth=4;
+  [[x,y],[x+w,y],[x,y+h],[x+w,y+h]].forEach(([cx,cy])=>{
+    const dx=cx===x?1:-1, dy=cy===y?1:-1;
+    ctx.beginPath(); ctx.moveTo(cx+dx*cs,cy); ctx.lineTo(cx,cy); ctx.lineTo(cx,cy+dy*cs); ctx.stroke();
+  });
+}
+function drawLabel(ctx,text,x,y,color){
+  ctx.font="bold 12px -apple-system,sans-serif";
+  const tw=ctx.measureText(text).width;
+  const lx=x, ly=Math.max(20,y-4);
+  ctx.fillStyle=color; ctx.fillRect(lx,ly-16,tw+10,20);
+  ctx.fillStyle="#000"; ctx.fillText(text,lx+5,ly-2);
+}
+function drawQtyBox(ctx,a,bx,by,bw,bh){
+  const num=a.clase.replace("QTY-","");
+  const qw=Math.min(50,bw*0.25), qh=Math.min(28,bh*0.2);
+  ctx.fillStyle="#22c55ecc"; ctx.fillRect(bx+4,by+4,qw,qh);
+  ctx.fillStyle="#fff"; ctx.font=`bold ${Math.min(qh*.7,18)}px -apple-system,sans-serif`;
+  ctx.textAlign="center"; ctx.textBaseline="middle";
+  ctx.fillText(num,bx+4+qw/2,by+4+qh/2);
+  ctx.textAlign="left"; ctx.textBaseline="alphabetic";
+}
 
-        <!-- Imagen + Canvas -->
-        <div class="card">
-          <div class="card-title">📸 Imagen</div>
-          <div class="capture-zone" id="capture-zone" onclick="document.getElementById('file-input').click()">
-            <span style="font-size: 36px">📷</span>
-            <span style="font-size: 12px; color: var(--steel)">Toca para tomar foto o seleccionar</span>
-          </div>
-          <input type="file" id="file-input" accept="image/*" capture="environment">
-          <div id="bbox-section" style="display: none">
-            <div class="zoom-viewport" id="zoom-viewport">
-              <div class="bbox-wrap" id="bbox-wrap">
-                <img id="bbox-img" class="bbox-img" alt="">
-                <canvas id="bbox-canvas"></canvas>
-              </div>
-              <div id="esq-overlay" style="display: none;">
-                <div class="esq-title">📐 Ajustar esquinero</div>
-                <div class="esq-row">
-                  <label>Brazo H</label>
-                  <input type="range" id="esq-th" min="10" max="90" value="35" oninput="esqUpdate()">
-                  <span id="esq-th-val">35%</span>
-                </div>
-                <div class="esq-row">
-                  <label>Brazo V</label>
-                  <input type="range" id="esq-tv" min="10" max="90" value="35" oninput="esqUpdate()">
-                  <span id="esq-tv-val">35%</span>
-                </div>
-                <div class="esq-orient">
-                  <button id="esq-o-tl" onclick="esqSetOrient('tl')" title="Esquina superior izq." class="active">◤</button>
-                  <button id="esq-o-tr" onclick="esqSetOrient('tr')" title="Esquina superior der.">◥</button>
-                  <button id="esq-o-bl" onclick="esqSetOrient('bl')" title="Esquina inferior izq.">◣</button>
-                  <button id="esq-o-br" onclick="esqSetOrient('br')" title="Esquina inferior der.">◢</button>
-                </div>
-                <div class="esq-btns">
-                  <button class="esq-cancel" onclick="esqCancel()">✕ Cancelar</button>
-                  <button class="esq-confirm" onclick="esqConfirm()">✓ Confirmar</button>
-                </div>
-              </div>
-            </div>
-            <div class="zoom-bar" id="zoom-bar">
-              <button class="zoom-btn" onclick="zoomBy(1.4)" title="Acercar">
-                ➕
-              </button>
-              <button class="zoom-btn" onclick="zoomBy(1/1.4)" title="Alejar">
-                ➖
-              </button>
-              <button class="zoom-btn" onclick="zoomReset()" title="Reiniciar zoom">
-                ⟲
-              </button>
-              <span class="zoom-lbl" id="zoom-lbl">1.0×</span>
-              <span class="zoom-hint">Pellizca 2 dedos para zoom · 1 dedo dibuja</span>
-            </div>
-            <div class="blur-warn" id="blur-warn" style="display: none">
-              <span id="blur-warn-txt"></span>
-              <span class="x" onclick="document.getElementById('blur-warn').style.display='none'">✕</span>
-            </div>
-            <div class="poly-toolbar" id="poly-toolbar" style="display: none">
-              <button class="btn btn-amber btn-sm" onclick="closePolygon()">
-                ✅ Cerrar polígono
-              </button>
-              <button class="btn btn-danger btn-sm" onclick="cancelPolygon()">
-                ✕ Cancelar
-              </button>
-              <span style="font-size: 11px; color: var(--steel); align-self: center" id="poly-pts-count">0 puntos</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Anotaciones -->
-        <div class="card" id="annos-card" style="display: none">
-          <div class="card-title" id="annos-title">📦 Anotaciones (0)</div>
-          <div class="anno-list" id="anno-list"></div>
-          <div style="margin-top: 8px; font-size: 11px; color: var(--steel)">
-            ✅ marcadas se subirán · ☐ desmarcadas se omitirán · Toca la
-            etiqueta para cambiar clase
-          </div>
-        </div>
-
-        <!-- Estadísticas por clase -->
-        <div class="card">
-          <div class="card-title" style="
-              display: flex;
-              justify-content: space-between;
-              align-items: center;
-              cursor: pointer;
-            " onclick="toggleStats()">
-            <span>📊 Balance del dataset
-              <span id="stats-total" style="color: var(--amber); font-weight: 800">(0 img · 0 clases)</span></span>
-            <span id="stats-caret" style="font-size: 14px; color: var(--steel)">▼</span>
-          </div>
-          <div id="stats-body" style="display: none">
-            <div style="font-size: 11px; color: var(--steel); margin-bottom: 8px">
-              Meta inicial:
-              <b style="color: var(--amber)">30 img/clase</b> (varios ángulos).
-              Se ampliará tras el primer entrenamiento.
-            </div>
-            <div id="stats-list"><div style="color:var(--steel);font-size:12px;text-align:center;padding:14px">Sin datos aún. Sube imágenes para ver el balance.</div></div>
-            <div class="btn-row" style="margin-top: 8px">
-              <button class="btn btn-ghost btn-sm" onclick="resetStats()">
-                🗑️ Reiniciar contador
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div class="prog-wrap" id="prog-wrap">
-          <div class="prog-bar" id="prog-bar"></div>
-        </div>
-
-        <div class="btn-row">
-          <button class="btn btn-ghost btn-sm" onclick="resetAll()" style="flex: none; padding: 13px 16px">
-            🔄
-          </button>
-          <button class="btn btn-amber" id="btn-review" onclick="openReview()" disabled="">
-            👁️ Revisar
-          </button>
-          <button class="btn btn-up" id="btn-upload" onclick="uploadAll()" disabled="">
-            ⬆️ Subir
-          </button>
-        </div>
-      </div>
-
-      <!-- ══ HISTORIAL ══ -->
-      <div class="page" id="page-historial">
-        <div class="card">
-          <div class="card-title">📋 Historial de sesión</div>
-          <div class="log-list" id="log-list">
-            <p style="
-                color: var(--steel);
-                font-size: 13px;
-                text-align: center;
-                padding: 20px;
-              ">
-              Las subidas aparecerán aquí
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <!-- ══ CATÁLOGO ══ -->
-      <div class="page" id="page-catalogo">
-        <div class="card">
-          <div class="card-title">📖 Catálogo UNISPAN</div>
-          <div class="cat-search" style="margin-bottom: 8px">
-            <span class="ico">🔍</span>
-            <input type="text" id="cat-main-search" placeholder="Buscar..." oninput="renderCatalogPage(this.value)" style="margin-bottom: 0; padding-left: 36px">
-          </div>
-          <div class="cat-families" id="cat-main-families"></div>
-          <div class="ref-grid" id="cat-main-grid"></div>
-        </div>
-      </div>
-
-      <!-- ══ EXPERTO ══ -->
-      <div class="page" id="page-experto">
-        <div class="card">
-          <div class="card-title">🎓 Agente Experto UNISPAN</div>
-          <p style="font-size:12px;color:var(--steel);margin-bottom:10px">
-            Base de conocimiento offline sobre identificación de piezas · sin API key
-          </p>
-          <div class="exp-chips" id="exp-chips"><span class="exp-chip" onclick="expAskTopic('lamina')">🪵 Lámina</span><span class="exp-chip" onclick="expAskTopic('bridas')">🔲 Bridas</span><span class="exp-chip" onclick="expAskTopic('platinas')">🔩 Platinas</span><span class="exp-chip" onclick="expAskTopic('refuerzo-gen')">🛠️ Refuerzos</span><span class="exp-chip" onclick="expAskTopic('refuerzo-trans')">↔️ Ref. transversal</span><span class="exp-chip" onclick="expAskTopic('refuerzo-estruct')">🏗️ Ref. estructural</span><span class="exp-chip" onclick="expAskTopic('angulos')">📐 Ángulos EI/EE</span><span class="exp-chip" onclick="expAskTopic('perf-rect')">▭ Ranuras</span><span class="exp-chip" onclick="expAskTopic('perf-anom')">⚠️ Perf. anómalas</span><span class="exp-chip" onclick="expAskTopic('perf-frontal')">🔢 Perf. frontales</span><span class="exp-chip" onclick="expAskTopic('perf-lateral')">🔢 Perf. laterales</span><span class="exp-chip" onclick="expAskTopic('inicio-perf')">📏 Inicio 25mm</span><span class="exp-chip" onclick="expAskTopic('distancia-centros')">📏 Paso 50mm</span><span class="exp-chip" onclick="expAskTopic('tabla-perf')">📊 Tabla referencia</span><span class="exp-chip" onclick="expAskTopic('procedimiento')">✅ Cómo identificar</span><span class="exp-chip" onclick="expAskTopic('guia-fotos')">📸 Guía de fotos</span></div>
-          <div class="exp-chat" id="exp-chat"><div class="exp-msg bot">👋 Hola, soy el agente experto de UNISPAN. Pregúntame sobre láminas, bridas, refuerzos, perforaciones o toca un tema rápido arriba.</div></div>
-          <div class="exp-inputrow">
-            <input type="text" id="exp-input" placeholder="Ej: ¿cómo identifico las bridas?" onkeydown="if(event.key==='Enter')expAsk()">
-            <button class="btn" style="width:auto;padding:0 16px" onclick="expAsk()">➤</button>
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="card-title">🧮 Calculadora de perforaciones</div>
-          <p style="font-size:11.5px;color:var(--steel);margin-bottom:6px">
-            Regla UNISPAN: inicio 25 mm desde el borde · paso entre centros 50 mm
-          </p>
-          <div class="calc-grid">
-            <div class="calc-field"><label>Ancho (mm)</label><input type="number" id="calc-ancho" placeholder="ej. 600" oninput="calcPerf('ancho')"></div>
-            <div class="calc-field"><label>Longitud (mm)</label><input type="number" id="calc-largo" placeholder="ej. 2400" oninput="calcPerf('largo')"></div>
-            <div class="calc-field"><label>Perf. frontales</label><input type="number" id="calc-frontal" placeholder="ej. 12" oninput="calcPerf('frontal')"></div>
-            <div class="calc-field"><label>Perf. laterales</label><input type="number" id="calc-lateral" placeholder="ej. 48" oninput="calcPerf('lateral')"></div>
-          </div>
-          <div class="calc-result" id="calc-result"></div>
-        </div>
-      </div>
-    </main>
-
-    <!-- Modal catálogo -->
-    <div class="modal-bg" id="cat-modal-bg" onclick="closeCatModal(event)">
-      <div class="modal">
-        <div class="modal-title">
-          <span>Seleccionar clase</span><span class="modal-close" onclick="closeCatModalDirect()">✕</span>
-        </div>
-        <div class="cat-search">
-          <span class="ico">🔍</span><input type="text" id="cat-modal-search" placeholder="Buscar..." oninput="renderCatModal(this.value)" style="margin-bottom: 8px; padding-left: 36px">
-        </div>
-        <div class="cat-families" id="cat-modal-families"><div class="fam-btn active">Todas</div><div class="fam-btn">PM</div><div class="fam-btn">PB</div><div class="fam-btn">EI</div></div>
-        <div class="cat-list" id="cat-modal-list"><div class="cat-item"><div onclick="setClase('PM-2400x600')"><div class="ci-code">PM-2400x600</div><div class="ci-spec">2400×600mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-2400x600')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-2400x550')"><div class="ci-code">PM-2400x550</div><div class="ci-spec">2400×550mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-2400x550')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-2400x500')"><div class="ci-code">PM-2400x500</div><div class="ci-spec">2400×500mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-2400x500')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-2400x450')"><div class="ci-code">PM-2400x450</div><div class="ci-spec">2400×450mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-2400x450')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-2400x420')"><div class="ci-code">PM-2400x420</div><div class="ci-spec">2400×420mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-2400x420')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-2400x400')"><div class="ci-code">PM-2400x400</div><div class="ci-spec">2400×400mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-2400x400')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-2400x380')"><div class="ci-code">PM-2400x380</div><div class="ci-spec">2400×380mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-2400x380')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-2400x350')"><div class="ci-code">PM-2400x350</div><div class="ci-spec">2400×350mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-2400x350')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-2400x320')"><div class="ci-code">PM-2400x320</div><div class="ci-spec">2400×320mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-2400x320')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-2400x300')"><div class="ci-code">PM-2400x300</div><div class="ci-spec">2400×300mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-2400x300')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-1200x600')"><div class="ci-code">PM-1200x600</div><div class="ci-spec">1200×600mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-1200x600')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-1200x550')"><div class="ci-code">PM-1200x550</div><div class="ci-spec">1200×550mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-1200x550')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-1200x500')"><div class="ci-code">PM-1200x500</div><div class="ci-spec">1200×500mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-1200x500')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-1200x450')"><div class="ci-code">PM-1200x450</div><div class="ci-spec">1200×450mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-1200x450')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-1200x420')"><div class="ci-code">PM-1200x420</div><div class="ci-spec">1200×420mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-1200x420')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-1200x400')"><div class="ci-code">PM-1200x400</div><div class="ci-spec">1200×400mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-1200x400')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-1200x380')"><div class="ci-code">PM-1200x380</div><div class="ci-spec">1200×380mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-1200x380')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-1200x350')"><div class="ci-code">PM-1200x350</div><div class="ci-spec">1200×350mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-1200x350')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-1200x320')"><div class="ci-code">PM-1200x320</div><div class="ci-spec">1200×320mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-1200x320')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-1200x300')"><div class="ci-code">PM-1200x300</div><div class="ci-spec">1200×300mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-1200x300')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-900x600')"><div class="ci-code">PM-900x600</div><div class="ci-spec">900×600mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-900x600')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-900x550')"><div class="ci-code">PM-900x550</div><div class="ci-spec">900×550mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-900x550')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-900x500')"><div class="ci-code">PM-900x500</div><div class="ci-spec">900×500mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-900x500')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-900x450')"><div class="ci-code">PM-900x450</div><div class="ci-spec">900×450mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-900x450')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-900x420')"><div class="ci-code">PM-900x420</div><div class="ci-spec">900×420mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-900x420')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-900x400')"><div class="ci-code">PM-900x400</div><div class="ci-spec">900×400mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-900x400')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-900x380')"><div class="ci-code">PM-900x380</div><div class="ci-spec">900×380mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-900x380')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-900x350')"><div class="ci-code">PM-900x350</div><div class="ci-spec">900×350mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-900x350')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-900x320')"><div class="ci-code">PM-900x320</div><div class="ci-spec">900×320mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-900x320')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-900x300')"><div class="ci-code">PM-900x300</div><div class="ci-spec">900×300mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-900x300')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-800x600')"><div class="ci-code">PM-800x600</div><div class="ci-spec">800×600mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-800x600')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-800x550')"><div class="ci-code">PM-800x550</div><div class="ci-spec">800×550mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-800x550')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-800x500')"><div class="ci-code">PM-800x500</div><div class="ci-spec">800×500mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-800x500')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-800x450')"><div class="ci-code">PM-800x450</div><div class="ci-spec">800×450mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-800x450')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-800x420')"><div class="ci-code">PM-800x420</div><div class="ci-spec">800×420mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-800x420')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-800x400')"><div class="ci-code">PM-800x400</div><div class="ci-spec">800×400mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-800x400')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-800x380')"><div class="ci-code">PM-800x380</div><div class="ci-spec">800×380mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-800x380')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-800x350')"><div class="ci-code">PM-800x350</div><div class="ci-spec">800×350mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-800x350')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-800x320')"><div class="ci-code">PM-800x320</div><div class="ci-spec">800×320mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-800x320')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-800x300')"><div class="ci-code">PM-800x300</div><div class="ci-spec">800×300mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-800x300')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-750x600')"><div class="ci-code">PM-750x600</div><div class="ci-spec">750×600mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-750x600')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-750x550')"><div class="ci-code">PM-750x550</div><div class="ci-spec">750×550mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-750x550')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-750x500')"><div class="ci-code">PM-750x500</div><div class="ci-spec">750×500mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-750x500')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-750x450')"><div class="ci-code">PM-750x450</div><div class="ci-spec">750×450mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-750x450')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-750x420')"><div class="ci-code">PM-750x420</div><div class="ci-spec">750×420mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-750x420')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-750x400')"><div class="ci-code">PM-750x400</div><div class="ci-spec">750×400mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-750x400')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-750x380')"><div class="ci-code">PM-750x380</div><div class="ci-spec">750×380mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-750x380')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-750x350')"><div class="ci-code">PM-750x350</div><div class="ci-spec">750×350mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-750x350')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-750x320')"><div class="ci-code">PM-750x320</div><div class="ci-spec">750×320mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-750x320')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-750x300')"><div class="ci-code">PM-750x300</div><div class="ci-spec">750×300mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-750x300')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-600x600')"><div class="ci-code">PM-600x600</div><div class="ci-spec">600×600mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-600x600')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-600x550')"><div class="ci-code">PM-600x550</div><div class="ci-spec">600×550mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-600x550')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-600x500')"><div class="ci-code">PM-600x500</div><div class="ci-spec">600×500mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-600x500')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-600x450')"><div class="ci-code">PM-600x450</div><div class="ci-spec">600×450mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-600x450')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-600x420')"><div class="ci-code">PM-600x420</div><div class="ci-spec">600×420mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-600x420')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-600x400')"><div class="ci-code">PM-600x400</div><div class="ci-spec">600×400mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-600x400')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-600x380')"><div class="ci-code">PM-600x380</div><div class="ci-spec">600×380mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-600x380')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-600x350')"><div class="ci-code">PM-600x350</div><div class="ci-spec">600×350mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-600x350')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-600x320')"><div class="ci-code">PM-600x320</div><div class="ci-spec">600×320mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-600x320')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-600x300')"><div class="ci-code">PM-600x300</div><div class="ci-spec">600×300mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-600x300')">📋</span></div></div>
-      </div>
-    </div>
-
-    <!-- Modal revisión -->
-    <div class="modal-bg" id="review-modal-bg" onclick="closeReviewModal(event)">
-      <div class="modal">
-        <div class="modal-title">
-          <span>👁️ Revisar antes de subir</span><span class="modal-close" onclick="closeReviewModalDirect()">✕</span>
-        </div>
-        <div class="review-img-wrap">
-          <img id="review-img" class="review-img" alt="">
-          <canvas id="review-canvas"></canvas>
-        </div>
-        <div class="review-annos" id="review-annos"></div>
-        <div class="btn-row">
-          <button class="btn btn-ghost" onclick="closeReviewModalDirect()">
-            Volver
-          </button>
-          <button class="btn btn-up" onclick="confirmAndUpload()">
-            ✅ Confirmar y subir
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <div class="toast ok" id="toast">✅ SAM listo</div>
-
-    <script>
-      // ── Catálogo ──────────────────────────────────────────────────────────────────
-      const CATALOG = [];
-      [2400, 1200, 900, 800, 750, 600].forEach((l) =>
-        [600, 550, 500, 450, 420, 400, 380, 350, 320, 300].forEach((a) =>
-          CATALOG.push({
-            code: `PM-${l}x${a}`,
-            family: "PM",
-            spec: `${l}×${a}mm`,
-          }),
-        ),
-      );
-      [2400, 1200, 900, 800, 750, 600].forEach((l) =>
-        [270, 250, 230, 200, 150, 120, 100, 90, 80].forEach((a) =>
-          CATALOG.push({
-            code: `PB-${l}x${a}`,
-            family: "PB",
-            spec: `${l}×${a}mm`,
-          }),
-        ),
-      );
-      [2400, 1200, 900, 800, 600].forEach((l) =>
-        CATALOG.push({
-          code: `EI-${l}x150x150`,
-          family: "EI",
-          spec: `${l}×150×150mm`,
-        }),
-      );
-
-      const COLORS = [
-        "#f59e0b",
-        "#3b82f6",
-        "#a855f7",
-        "#22c55e",
-        "#ef4444",
-        "#06b6d4",
-        "#f97316",
-        "#84cc16",
-        "#ec4899",
-        "#14b8a6",
-      ];
-      const PROJECT = "reconocimiento-de-piezas-rllp1";
-
-      // ── Estado global ─────────────────────────────────────────────────────────────
-      let currentClase = "",
-        selectedFile = null;
-      let sessionCount = 0,
-        totalCount = +localStorage.getItem("rf_total") || 0,
-        okCount = +localStorage.getItem("rf_ok") || 0;
-      let recientes = JSON.parse(localStorage.getItem("rf_recientes") || "[]");
-      let catModalFam = "ALL",
-        catPageFam = "ALL",
-        uploadLog = [];
-      let annotations = [];
-
-      // Contador de imágenes por clase (persistente)
-      let classCounts = JSON.parse(
-        localStorage.getItem("rf_class_counts") || "{}",
-      );
-      const CLASS_GOAL = 30;
-
-      // Modo del catálogo: "select" (asigna currentClase) | "reassign" (reasigna anno)
-      let catModalMode = "select",
-        catReassignId = null;
-
-      // Zoom / Pan
-      let zoomScale = 1,
-        zoomTx = 0,
-        zoomTy = 0;
-      let pinchState = null; // {d0, s0, cx, cy, tx0, ty0}
-      let panState = null; // {x0, y0, tx0, ty0}
-
-      // Herramienta activa: 'bbox' | 'pieza' | 'polygon' | 'esquinero'
-      let activeTool = "bbox";
-
-      // Estado BBox
-      let bboxDrawing = false,
-        bboxStart = { x: 0, y: 0 },
-        bboxCurrent = null;
-
-      // Estado Polygon
-      let polyPoints = [],
-        polyDrawing = false,
-        polyPreview = null;
-
-      // Estado Esquinero (forma en L)
-      let esqDrawing = false,
-        esqBox = null, // {x,y,w,h} bbox base
-        esqOrient = "tl", // tl | tr | bl | br
-        esqThPct = 35, // % grosor brazo horizontal
-        esqTvPct = 35; // % grosor brazo vertical
-
-      // Estado Modo Arrume: clase pegajosa + salta prompt QTY, cuenta piezas anotadas
-      let modoArrume = false,
-        arrumeCount = 0;
-      let expertoInit = false;
-
-      // Estado SAM (SlimSAM tap-to-segment)
-      let samModel = null,
-        samProcessor = null,
-        samImageInputs = null,
-        samImageEmbeddings = null,
-        samReady = false,
-        samLoading = false,
-        samEncoding = false,
-        samEncodedForFile = null;
-
-      // Imagen
-      let imgNatW = 0,
-        imgNatH = 0,
-        imgDispW = 0,
-        imgDispH = 0;
-
-      const savedKey = localStorage.getItem("rf_api_key");
-      if (savedKey) document.getElementById("api-key").value = savedKey;
-      document
-        .getElementById("api-key")
-        .addEventListener("blur", () =>
-          localStorage.setItem(
-            "rf_api_key",
-            document.getElementById("api-key").value.trim(),
-          ),
-        );
-      document.getElementById("cnt-total").textContent = totalCount;
-      document.getElementById("cnt-ok").textContent = okCount;
-
-      // ── Tabs ──────────────────────────────────────────────────────────────────────
-      function switchTab(n) {
-        document
-          .querySelectorAll(".tab")
-          .forEach((t, i) =>
-            t.classList.toggle(
-              "active",
-              ["captura", "historial", "catalogo", "experto"][i] === n,
-            ),
-          );
-        document
-          .querySelectorAll(".page")
-          .forEach((p) => p.classList.toggle("active", p.id === "page-" + n));
-        if (n === "catalogo") renderCatalogPage("");
-        if (n === "experto" && !expertoInit) initExperto();
-      }
-
-      // ── Herramienta ───────────────────────────────────────────────────────────────
-      function setTool(t) {
-        activeTool = t;
-        document
-          .getElementById("tool-bbox")
-          .classList.toggle("active", t === "bbox");
-        document
-          .getElementById("tool-pieza")
-          .classList.toggle("active", t === "pieza");
-        document
-          .getElementById("tool-polygon")
-          .classList.toggle("active", t === "polygon");
-        document
-          .getElementById("tool-esquinero")
-          .classList.toggle("active", t === "esquinero");
-        document
-          .getElementById("tool-sam")
-          .classList.toggle("active", t === "sam");
-        document.getElementById("tool-hint-bbox").style.display =
-          t === "bbox" ? "block" : "none";
-        document.getElementById("tool-hint-pieza").style.display =
-          t === "pieza" ? "block" : "none";
-        document.getElementById("tool-hint-polygon").style.display =
-          t === "polygon" ? "block" : "none";
-        document.getElementById("tool-hint-esquinero").style.display =
-          t === "esquinero" ? "block" : "none";
-        document.getElementById("tool-hint-sam").style.display =
-          t === "sam" ? "block" : "none";
-        // Cancelar cualquier dibujo en curso
-        bboxCurrent = null;
-        bboxDrawing = false;
-        cancelPolygon();
-        esqCancel();
-        if (t === "sam") initSAM();
-      }
-
-      // ── Modo Arrume ───────────────────────────────────────────────────────────────
-      function toggleModoArrume() {
-        modoArrume = !modoArrume;
-        arrumeCount = 0;
-        document
-          .getElementById("arrume-toggle-row")
-          .classList.toggle("on", modoArrume);
-        document
-          .getElementById("arrume-switch")
-          .classList.toggle("on", modoArrume);
-        const cnt = document.getElementById("arrume-count");
-        cnt.style.display = modoArrume ? "inline" : "none";
-        cnt.textContent = modoArrume ? "×0" : "";
-        showToast(
-          modoArrume
-            ? "🔗 Modo Arrume activado — dibuja pieza tras pieza sin interrupciones"
-            : "Modo Arrume desactivado",
-          "ok",
-        );
-      }
-      function arrumeTick() {
-        arrumeCount++;
-        document.getElementById("arrume-count").textContent =
-          "×" + arrumeCount;
-        showToast(`🔗 Pieza ${arrumeCount} anotada: ${currentClase}`, "ok");
-      }
-
-      // ── Clase ─────────────────────────────────────────────────────────────────────
-      function setClase(code) {
-        if (catModalMode === "reassign" && catReassignId != null) {
-          const a = annotations.find((x) => x.id === catReassignId);
-          if (a) {
-            a.clase = code;
-            // Recomputar claseUpload si tiene cantidad asignada
-            if (a.qty) a.claseUpload = `${code}_x${a.qty}`;
-            renderAnnoList();
-            redraw();
-            showToast(`✏️ Clase → ${code}`, "ok");
-          }
-          catModalMode = "select";
-          catReassignId = null;
-          closeCatModalDirect();
-          addReciente(code);
-          return;
-        }
-        currentClase = code;
-        document.getElementById("clase-custom").value = code;
-        const d = document.getElementById("current-clase-display");
-        d.textContent = "✏️ Clase activa: " + code;
-        d.style.display = "block";
-        addReciente(code);
-        closeCatModalDirect();
-      }
-      function reassignClass(id) {
-        catModalMode = "reassign";
-        catReassignId = id;
-        openCatModal();
-        // pequeño hint en el título del modal
-        setTimeout(() => {
-          const t = document.querySelector(
-            "#cat-modal-bg .modal-title span:first-child",
-          );
-          if (t) t.textContent = "Reasignar clase a esta anotación";
-        }, 50);
-      }
-      function onCustomInput(v) {
-        currentClase = v.trim().toUpperCase();
-        const d = document.getElementById("current-clase-display");
-        if (v) {
-          d.textContent = "✏️ Clase activa: " + currentClase;
-          d.style.display = "block";
-        } else d.style.display = "none";
-      }
-      function addReciente(code) {
-        recientes = [code, ...recientes.filter((r) => r !== code)].slice(0, 8);
-        localStorage.setItem("rf_recientes", JSON.stringify(recientes));
-        renderRecientes();
-      }
-      function renderRecientes() {
-        const g = document.getElementById("recientes-grid");
-        g.innerHTML = "";
-        recientes.forEach((c) => {
-          const b = document.createElement("div");
-          b.className = "quick-btn" + (c === currentClase ? " active" : "");
-          b.textContent = c;
-          b.onclick = () => setClase(c);
-          g.appendChild(b);
-        });
-        document.getElementById("recientes-wrap").style.display =
-          recientes.length ? "" : "none";
-      }
-      renderRecientes();
-
-      // ── File ──────────────────────────────────────────────────────────────────────
-      document.getElementById("file-input").addEventListener("change", (e) => {
-        const f = e.target.files[0];
-        if (!f) return;
-        selectedFile = f;
-        annotations = [];
-        const url = URL.createObjectURL(f);
-        const img = document.getElementById("bbox-img");
-        img.onload = () => {
-          imgNatW = img.naturalWidth;
-          imgNatH = img.naturalHeight;
-          zoomReset();
-          initCanvas();
-          analyzeBlur(img);
-        };
-        img.src = url;
-        document.getElementById("capture-zone").classList.add("has-img");
-        document.getElementById("bbox-section").style.display = "block";
-        document.getElementById("annos-card").style.display = "none";
-        document.getElementById("blur-warn").style.display = "none";
-        cancelPolygon();
-        esqCancel();
-        bboxCurrent = null;
-        samImageEmbeddings = null;
-        samEncodedForFile = null;
-        if (activeTool === "sam") samSetStatus("");
-        renderAnnoList();
-        updateButtons();
+// ── SAM (Segment Anything vía transformers.js) ──────────────────────────────
+function samStatus(msg,show=true){
+  const el=document.getElementById("sam-status");
+  if(!el) return;
+  el.style.display=show?"block":"none";
+  if(show) el.innerHTML=msg;
+}
+async function ensureSamReady(){
+  if(!selectedFile){ samStatus("📷 Toma una foto primero para activar SAM"); return; }
+  if(samLoading){ return; }
+  if(samModel && samInputs && samEmbeddings){ samStatus("✅ SAM listo · Toca una pieza",true); return; }
+  samLoading=true;
+  try{
+    if(!samModel){
+      samStatus("⏳ Cargando SAM (~40MB, solo primera vez)…");
+      const mod=await import("https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.0.2");
+      window._tf=mod;
+      samStatus("⏳ Inicializando modelo…");
+      samModel=await mod.SamModel.from_pretrained("Xenova/slimsam-77-uniform",{dtype:"fp16"}).catch(async ()=>{
+        return await mod.SamModel.from_pretrained("Xenova/slimsam-77-uniform");
       });
+      samProcessor=await mod.AutoProcessor.from_pretrained("Xenova/slimsam-77-uniform");
+    }
+    if(!samInputs || !samEmbeddings){
+      samStatus("⏳ Analizando imagen…");
+      const mod=window._tf;
+      const img=document.getElementById("bbox-img");
+      const raw=await mod.RawImage.fromURL(img.src);
+      samInputs=await samProcessor(raw);
+      samEmbeddings=await samModel.get_image_embeddings(samInputs);
+    }
+    samStatus("✅ SAM listo · Toca una pieza dentro del arrume");
+  }catch(err){
+    console.error("SAM error:",err);
+    samStatus(`❌ SAM no disponible: ${(err.message||err).toString().slice(0,80)}`);
+  }finally{ samLoading=false; }
+}
 
-      // ── Blur detection (varianza de Laplaciano sobre imagen escalada) ────────────
-      function analyzeBlur(img) {
-        try {
-          const S = 220;
-          const c = document.createElement("canvas");
-          c.width = S;
-          c.height = S;
-          const g = c.getContext("2d");
-          g.drawImage(img, 0, 0, S, S);
-          const d = g.getImageData(0, 0, S, S).data;
-          // convertir a luminancia
-          const lum = new Float32Array(S * S);
-          for (let i = 0; i < S * S; i++)
-            lum[i] =
-              0.299 * d[i * 4] + 0.587 * d[i * 4 + 1] + 0.114 * d[i * 4 + 2];
-          // Laplaciano 3x3
-          let sum = 0,
-            sum2 = 0,
-            n = 0;
-          for (let y = 1; y < S - 1; y++) {
-            for (let x = 1; x < S - 1; x++) {
-              const i = y * S + x;
-              const v =
-                -lum[i - S] - lum[i - 1] + 4 * lum[i] - lum[i + 1] - lum[i + S];
-              sum += v;
-              sum2 += v * v;
-              n++;
-            }
-          }
-          const mean = sum / n,
-            variance = sum2 / n - mean * mean;
-          const w = document.getElementById("blur-warn");
-          const t = document.getElementById("blur-warn-txt");
-          w.classList.remove("ok");
-          if (variance < 80) {
-            w.style.display = "flex";
-            t.innerHTML = `⚠️ <b>Foto borrosa</b> (nitidez ${variance.toFixed(0)}). Considera repetir la toma.`;
-          } else if (variance < 180) {
-            w.style.display = "flex";
-            t.innerHTML = `⚠️ Nitidez media (${variance.toFixed(0)}). Aceptable, pero mejor sería más clara.`;
-          } else {
-            w.style.display = "flex";
-            w.classList.add("ok");
-            t.innerHTML = `✅ Foto nítida (${variance.toFixed(0)}).`;
-            setTimeout(() => {
-              if (w.classList.contains("ok")) w.style.display = "none";
-            }, 2500);
-          }
-        } catch (_) {}
-      }
+async function samTap(e){
+  if(!checkClase()) return;
+  if(!samModel || !samEmbeddings){ await ensureSamReady(); if(!samEmbeddings) return; }
+  const p=getPos(e);
+  // Coord en pixeles nativos de la imagen
+  const nx=p.x*(imgNatW/imgDispW), ny=p.y*(imgNatH/imgDispH);
+  samStatus("⏳ Segmentando…");
+  try{
+    const mod=window._tf;
+    const reshaped=samInputs.reshaped_input_sizes[0];
+    // Punto en coords reshaped
+    const rx=nx*(reshaped[1]/imgNatW), ry=ny*(reshaped[0]/imgNatH);
+    const input_points=new mod.Tensor("float32", new Float32Array([rx,ry]), [1,1,1,2]);
+    const input_labels=new mod.Tensor("int64", new BigInt64Array([1n]), [1,1,1]);
+    const outputs=await samModel({...samEmbeddings, input_points, input_labels});
+    const masks=await samProcessor.post_process_masks(outputs.pred_masks, samInputs.original_sizes, samInputs.reshaped_input_sizes);
+    const mask=masks[0]; // Tensor shape [1, num_masks, H, W]
+    // Elegir la máscara con mejor iou_score
+    const iouScores=outputs.iou_scores?.data || [1,1,1];
+    let bestIdx=0, bestScore=-1;
+    for(let i=0;i<iouScores.length;i++){ if(iouScores[i]>bestScore){bestScore=iouScores[i]; bestIdx=i;} }
+    const maskData=mask.data; // Uint8/BigInt64/Bool array
+    const H=mask.dims[mask.dims.length-2], W=mask.dims[mask.dims.length-1];
+    const offset=bestIdx*H*W;
+    // Extraer contorno
+    const poly=maskToPolygon(maskData, offset, W, H);
+    if(!poly || poly.length<3){ samStatus("⚠️ No se detectó pieza clara. Intenta tocar más al centro.",true); return; }
+    // Convertir de coords imagen nativa a coords canvas (display)
+    const scXinv=imgDispW/imgNatW, scYinv=imgDispH/imgNatH;
+    const points=poly.map(pt=>({x:pt.x*scXinv, y:pt.y*scYinv}));
+    const id=Date.now();
+    const color=COLORS[annotations.length%COLORS.length];
+    annotations.push({id,clase:currentClase,type:"polygon",points,color,checked:true,qty:null,fromSam:true});
+    redraw(); renderAnnoList(); updateButtons();
+    if(arrumeMode){ bumpArrume(); samStatus(`🔗 +1 ${currentClase} (${arrumeCount}) · Toca otra pieza`); }
+    else { samStatus(`✅ Pieza segmentada · Toca otra o cambia herramienta`); showQtyPrompt(id); }
+  }catch(err){
+    console.error("SAM tap:",err);
+    samStatus(`❌ Error: ${(err.message||err).toString().slice(0,80)}`);
+  }
+}
 
-      // ── Canvas init ───────────────────────────────────────────────────────────────
-      const canvas = document.getElementById("bbox-canvas");
-      function initCanvas() {
-        const img = document.getElementById("bbox-img");
-        imgDispW = img.offsetWidth;
-        imgDispH = img.offsetHeight;
-        canvas.width = imgDispW;
-        canvas.height = imgDispH;
-        redraw();
+// Extraer contorno de máscara binaria + Douglas-Peucker
+function maskToPolygon(data, offset, W, H){
+  // Encontrar componente conexo (flood fill desde el pixel más "denso" cerca del tap)
+  // Estrategia simple: trazar contorno del blob completo usando Moore neighborhood
+  const bin=new Uint8Array(W*H);
+  for(let i=0;i<W*H;i++){ const v=data[offset+i]; bin[i]=(v && v!==0n)?1:0; }
+  // Encontrar primer pixel activo (top-left del blob más grande — bastante bien para SAM que da una sola máscara)
+  let sx=-1, sy=-1;
+  for(let y=0;y<H && sx<0;y++){
+    for(let x=0;x<W;x++){ if(bin[y*W+x]){ sx=x; sy=y; break; } }
+  }
+  if(sx<0) return null;
+  // Moore-neighbor contour tracing
+  const dirs=[[1,0],[1,1],[0,1],[-1,1],[-1,0],[-1,-1],[0,-1],[1,-1]];
+  const contour=[]; let cx=sx, cy=sy, prevDir=6;
+  const maxSteps=W*H*2; let steps=0;
+  while(steps++<maxSteps){
+    contour.push({x:cx,y:cy});
+    let found=false;
+    for(let i=0;i<8;i++){
+      const d=(prevDir+6+i)%8;
+      const nx=cx+dirs[d][0], ny=cy+dirs[d][1];
+      if(nx>=0 && nx<W && ny>=0 && ny<H && bin[ny*W+nx]){
+        cx=nx; cy=ny; prevDir=(d+4)%8; found=true; break;
       }
-      function getPos(e) {
-        const rect = canvas.getBoundingClientRect();
-        const t = e.touches ? e.touches[0] : e;
-        return {
-          x: Math.max(
-            0,
-            Math.min(
-              canvas.width,
-              (t.clientX - rect.left) * (canvas.width / rect.width),
-            ),
-          ),
-          y: Math.max(
-            0,
-            Math.min(
-              canvas.height,
-              (t.clientY - rect.top) * (canvas.height / rect.height),
-            ),
-          ),
-        };
-      }
-      window.addEventListener("resize", () => {
-        if (selectedFile) initCanvas();
-      });
+    }
+    if(!found) break;
+    if(cx===sx && cy===sy && contour.length>2) break;
+    if(contour.length>4000) break;
+  }
+  if(contour.length<8) return null;
+  // Simplificar con Douglas-Peucker
+  const eps=Math.max(2, Math.min(W,H)*0.005);
+  return douglasPeucker(contour, eps);
+}
+function douglasPeucker(pts, eps){
+  if(pts.length<3) return pts;
+  const first=0, last=pts.length-1;
+  const keep=new Uint8Array(pts.length); keep[first]=1; keep[last]=1;
+  const stack=[[first,last]];
+  while(stack.length){
+    const [a,b]=stack.pop();
+    let maxD=0, idx=-1;
+    const ax=pts[a].x, ay=pts[a].y, bx=pts[b].x, by=pts[b].y;
+    const dx=bx-ax, dy=by-ay, len=Math.hypot(dx,dy)||1;
+    for(let i=a+1;i<b;i++){
+      const d=Math.abs((pts[i].x-ax)*dy - (pts[i].y-ay)*dx)/len;
+      if(d>maxD){ maxD=d; idx=i; }
+    }
+    if(maxD>eps && idx>0){ keep[idx]=1; stack.push([a,idx]); stack.push([idx,b]); }
+  }
+  const out=[];
+  for(let i=0;i<pts.length;i++) if(keep[i]) out.push(pts[i]);
+  // Limitar a máx 80 puntos
+  if(out.length>80){
+    const step=Math.ceil(out.length/80);
+    return out.filter((_,i)=>i%step===0);
+  }
+  return out;
+}
 
-      // ── Zoom / Pan ────────────────────────────────────────────────────────────────
-      function applyZoom() {
-        const w = document.getElementById("bbox-wrap");
-        w.style.transform = `translate(${zoomTx}px,${zoomTy}px) scale(${zoomScale})`;
-        const lbl = document.getElementById("zoom-lbl");
-        if (lbl) lbl.textContent = zoomScale.toFixed(1) + "×";
-      }
-      function zoomReset() {
-        zoomScale = 1;
-        zoomTx = 0;
-        zoomTy = 0;
-        applyZoom();
-      }
-      function zoomBy(factor) {
-        const vp = document.getElementById("zoom-viewport");
-        if (!vp) return;
-        const r = vp.getBoundingClientRect();
-        const cx = r.width / 2,
-          cy = r.height / 2;
-        zoomAt(zoomScale * factor, cx, cy);
-      }
-      function zoomAt(newScale, cx, cy) {
-        newScale = Math.max(1, Math.min(6, newScale));
-        // punto en coords de contenido bajo (cx,cy) antes del zoom
-        const kx = (cx - zoomTx) / zoomScale,
-          ky = (cy - zoomTy) / zoomScale;
-        zoomScale = newScale;
-        zoomTx = cx - kx * zoomScale;
-        zoomTy = cy - ky * zoomScale;
-        clampPan();
-        applyZoom();
-      }
-      function clampPan() {
-        const vp = document.getElementById("zoom-viewport");
-        if (!vp) return;
-        const r = vp.getBoundingClientRect();
-        const cW = r.width * zoomScale,
-          cH = r.height * zoomScale;
-        const minX = r.width - cW,
-          minY = r.height - cH;
-        if (zoomScale <= 1) {
-          zoomTx = 0;
-          zoomTy = 0;
-          return;
-        }
-        zoomTx = Math.min(0, Math.max(minX, zoomTx));
-        zoomTy = Math.min(0, Math.max(minY, zoomTy));
-      }
-      function touchDist(t1, t2) {
-        const dx = t1.clientX - t2.clientX,
-          dy = t1.clientY - t2.clientY;
-        return Math.hypot(dx, dy);
-      }
-      function touchMid(t1, t2, vpRect) {
-        return {
-          x: (t1.clientX + t2.clientX) / 2 - vpRect.left,
-          y: (t1.clientY + t2.clientY) / 2 - vpRect.top,
-        };
-      }
+// ── Verificar clase antes de dibujar ─────────────────────────────────────────
+function checkClase(){
+  if(!currentClase){ showToast("⚠️ Selecciona una clase primero","err"); return false; }
+  return true;
+}
 
-      // ── Eventos canvas (con pinch/pan) ───────────────────────────────────────────
-      function esBboxTool() {
-        return activeTool === "bbox" || activeTool === "pieza";
-      }
-      canvas.addEventListener(
-        "mousedown",
-        (e) => {
-          e.preventDefault();
-          if (activeTool === "esquinero") esqStart_(e);
-          else if (activeTool === "sam") samTapSegment(e);
-          else esBboxTool() ? bboxStart_(e) : polyTap(e);
-        },
-        { passive: false },
-      );
-      canvas.addEventListener(
-        "mousemove",
-        (e) => {
-          e.preventDefault();
-          if (activeTool === "esquinero") esqMove_(e);
-          else if (esBboxTool()) bboxMove_(e);
-          else polyMove_(e);
-        },
-        { passive: false },
-      );
-      canvas.addEventListener(
-        "mouseup",
-        (e) => {
-          e.preventDefault();
-          if (activeTool === "esquinero") esqEnd_(e);
-          else if (esBboxTool()) bboxEnd_(e);
-        },
-        { passive: false },
-      );
-
-      canvas.addEventListener(
-        "touchstart",
-        (e) => {
-          e.preventDefault();
-          if (e.touches.length === 2) {
-            // Iniciar pinch — cancelar dibujos en progreso
-            bboxDrawing = false;
-            bboxCurrent = null;
-            const vp = document
-              .getElementById("zoom-viewport")
-              .getBoundingClientRect();
-            const mid = touchMid(e.touches[0], e.touches[1], vp);
-            pinchState = {
-              d0: touchDist(e.touches[0], e.touches[1]),
-              s0: zoomScale,
-              cx: mid.x,
-              cy: mid.y,
-              tx0: zoomTx,
-              ty0: zoomTy,
-              mx0: mid.x,
-              my0: mid.y,
-            };
-            panState = null;
-            redraw();
-          } else if (activeTool === "esquinero") {
-            esqStart_(e);
-          } else if (activeTool === "sam") {
-            samTapSegment(e);
-          } else if (e.touches.length === 1 && zoomScale > 1.05) {
-            esBboxTool() ? bboxStart_(e) : polyTap(e);
-          } else {
-            esBboxTool() ? bboxStart_(e) : polyTap(e);
-          }
-        },
-        { passive: false },
-      );
-
-      canvas.addEventListener(
-        "touchmove",
-        (e) => {
-          e.preventDefault();
-          if (pinchState && e.touches.length === 2) {
-            const vp = document
-              .getElementById("zoom-viewport")
-              .getBoundingClientRect();
-            const d = touchDist(e.touches[0], e.touches[1]);
-            const mid = touchMid(e.touches[0], e.touches[1], vp);
-            const newScale = Math.max(
-              1,
-              Math.min(6, pinchState.s0 * (d / pinchState.d0)),
-            );
-            // zoom around initial pinch center + pan por diferencia de mid
-            const kx = (pinchState.cx - pinchState.tx0) / pinchState.s0,
-              ky = (pinchState.cy - pinchState.ty0) / pinchState.s0;
-            zoomScale = newScale;
-            zoomTx = pinchState.cx - kx * zoomScale + (mid.x - pinchState.mx0);
-            zoomTy = pinchState.cy - ky * zoomScale + (mid.y - pinchState.my0);
-            clampPan();
-            applyZoom();
-            return;
-          }
-          if (activeTool === "esquinero") esqMove_(e);
-          else if (esBboxTool()) bboxMove_(e);
-          else polyMove_(e);
-        },
-        { passive: false },
-      );
-
-      canvas.addEventListener(
-        "touchend",
-        (e) => {
-          e.preventDefault();
-          if (pinchState && e.touches.length < 2) {
-            pinchState = null;
-            return;
-          }
-          if (activeTool === "esquinero") esqEnd_(e);
-          else if (esBboxTool()) bboxEnd_(e);
-        },
-        { passive: false },
-      );
-
-      canvas.addEventListener("dblclick", (e) => {
-        e.preventDefault();
-        if (activeTool === "polygon") closePolygon();
-      });
-
-      // ── BBox ──────────────────────────────────────────────────────────────────────
-      function bboxStart_(e) {
-        if (!checkClase()) return;
-        const p = getPos(e);
-        bboxDrawing = true;
-        bboxStart = p;
-        bboxCurrent = null;
-      }
-      function bboxMove_(e) {
-        if (!bboxDrawing) return;
-        const p = getPos(e);
-        bboxCurrent = {
-          x: Math.min(bboxStart.x, p.x),
-          y: Math.min(bboxStart.y, p.y),
-          w: Math.abs(p.x - bboxStart.x),
-          h: Math.abs(p.y - bboxStart.y),
-        };
-        redraw();
-      }
-      function bboxEnd_(e) {
-        bboxDrawing = false;
-        if (bboxCurrent && bboxCurrent.w > 10 && bboxCurrent.h > 10) {
-          const id = Date.now();
-          const esPieza = activeTool === "pieza";
-          const color = esPieza
-            ? "#06b6d4"
-            : COLORS[
-                annotations.filter((a) => !a.individual).length % COLORS.length
-              ];
-          annotations.push({
-            id,
-            clase: currentClase,
-            type: "bbox",
-            bbox: { ...bboxCurrent },
-            color,
-            checked: true,
-            qty: null,
-            individual: esPieza,
-          });
-          bboxCurrent = null;
-          redraw();
-          renderAnnoList();
-          updateButtons();
-          if (modoArrume) arrumeTick();
-          else if (esPieza) showToast(`🔲 Pieza: ${currentClase}`, "ok");
-          else showQtyPrompt(id);
-        } else {
-          bboxCurrent = null;
-          redraw();
-        }
-      }
-
-      // ── Esquinero (forma L) ──────────────────────────────────────────────────────
-      function esqStart_(e) {
-        if (!checkClase()) return;
-        const p = getPos(e);
-        esqDrawing = true;
-        esqBox = { x0: p.x, y0: p.y, x: p.x, y: p.y, w: 0, h: 0 };
-      }
-      function esqMove_(e) {
-        if (!esqDrawing) return;
-        const p = getPos(e);
-        esqBox.x = Math.min(esqBox.x0, p.x);
-        esqBox.y = Math.min(esqBox.y0, p.y);
-        esqBox.w = Math.abs(p.x - esqBox.x0);
-        esqBox.h = Math.abs(p.y - esqBox.y0);
-        redraw();
-      }
-      function esqEnd_(e) {
-        esqDrawing = false;
-        if (!esqBox || esqBox.w < 15 || esqBox.h < 15) {
-          esqBox = null;
-          redraw();
-          return;
-        }
-        document.getElementById("esq-overlay").style.display = "flex";
-        esqUpdate();
-      }
-      function esqUpdate() {
-        esqThPct = +document.getElementById("esq-th").value;
-        esqTvPct = +document.getElementById("esq-tv").value;
-        document.getElementById("esq-th-val").textContent = esqThPct + "%";
-        document.getElementById("esq-tv-val").textContent = esqTvPct + "%";
-        redraw();
-      }
-      function esqSetOrient(o) {
-        esqOrient = o;
-        ["tl", "tr", "bl", "br"].forEach((k) =>
-          document
-            .getElementById("esq-o-" + k)
-            .classList.toggle("active", k === o),
-        );
-        redraw();
-      }
-      esqSetOrient("tl");
-      function buildEsqPoints(b, orient, thPct, tvPct) {
-        const th = (b.w * thPct) / 100,
-          tv = (b.h * tvPct) / 100;
-        const x = b.x,
-          y = b.y,
-          w = b.w,
-          h = b.h;
-        if (orient === "tl")
-          return [
-            { x: x, y: y },
-            { x: x + w, y: y },
-            { x: x + w, y: y + tv },
-            { x: x + th, y: y + tv },
-            { x: x + th, y: y + h },
-            { x: x, y: y + h },
-          ];
-        if (orient === "tr")
-          return [
-            { x: x, y: y },
-            { x: x + w, y: y },
-            { x: x + w, y: y + h },
-            { x: x + w - th, y: y + h },
-            { x: x + w - th, y: y + tv },
-            { x: x, y: y + tv },
-          ];
-        if (orient === "bl")
-          return [
-            { x: x, y: y },
-            { x: x + th, y: y },
-            { x: x + th, y: y + h - tv },
-            { x: x + w, y: y + h - tv },
-            { x: x + w, y: y + h },
-            { x: x, y: y + h },
-          ];
-        // br
-        return [
-          { x: x + w - th, y: y },
-          { x: x + w, y: y },
-          { x: x + w, y: y + h },
-          { x: x, y: y + h },
-          { x: x, y: y + h - tv },
-          { x: x + w - th, y: y + h - tv },
-        ];
-      }
-      function esqCancel() {
-        esqDrawing = false;
-        esqBox = null;
-        document.getElementById("esq-overlay").style.display = "none";
-        redraw();
-      }
-      function esqConfirm() {
-        if (!esqBox) return;
-        const pts = buildEsqPoints(esqBox, esqOrient, esqThPct, esqTvPct);
-        const id = Date.now();
-        const color = COLORS[annotations.length % COLORS.length];
-        annotations.push({
-          id,
-          clase: currentClase,
-          type: "polygon",
-          points: pts,
-          color,
-          checked: true,
-          qty: null,
-        });
-        esqCancel();
-        renderAnnoList();
-        updateButtons();
-        if (modoArrume) arrumeTick();
-        else showQtyPrompt(id);
-      }
-
-      // ── Polygon ───────────────────────────────────────────────────────────────────
-      let lastTapTime = 0;
-      function polyTap(e) {
-        if (!checkClase()) return;
-        const now = Date.now();
-        if (now - lastTapTime < 300) {
-          closePolygon();
-          lastTapTime = 0;
-          return;
-        }
-        lastTapTime = now;
-        const p = getPos(e);
-        polyPoints.push(p);
-        polyDrawing = true;
-        document.getElementById("poly-toolbar").style.display = "flex";
-        document.getElementById("poly-pts-count").textContent =
-          polyPoints.length + " punto" + (polyPoints.length !== 1 ? "s" : "");
-        redraw();
-      }
-      function polyMove_(e) {
-        if (!polyDrawing || !polyPoints.length) return;
-        const p = getPos(e);
-        polyPreview = p;
-        redraw();
-      }
-      function closePolygon() {
-        if (polyPoints.length < 3) {
-          showToast("⚠️ Mínimo 3 puntos para cerrar", "err");
-          return;
-        }
-        const id = Date.now();
-        const color = COLORS[annotations.length % COLORS.length];
-        annotations.push({
-          id,
-          clase: currentClase,
-          type: "polygon",
-          points: [...polyPoints],
-          color,
-          checked: true,
-          qty: null,
-        });
-        cancelPolygon();
-        redraw();
-        renderAnnoList();
-        updateButtons();
-        if (modoArrume) arrumeTick();
-        else showQtyPrompt(id);
-      }
-      function cancelPolygon() {
-        polyPoints = [];
-        polyDrawing = false;
-        polyPreview = null;
-        document.getElementById("poly-toolbar").style.display = "none";
-        redraw();
-      }
-
-      // ── Redraw ────────────────────────────────────────────────────────────────────
-      function redraw() {
-        const ctx = canvas.getContext("2d");
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-        // Anotaciones guardadas
-        annotations.forEach((a) => {
-          if (!a.checked) return;
-          ctx.globalAlpha = 1;
-          ctx.setLineDash([]);
-
-          if (a.type === "bbox") {
-            const b = a.bbox;
-            if (a.individual) {
-              // ── Pieza individual: borde cian punteado, relleno translúcido ──
-              ctx.strokeStyle = "#06b6d4";
-              ctx.lineWidth = 2.5;
-              ctx.setLineDash([7, 4]);
-              ctx.fillStyle = "rgba(6,182,212,0.07)";
-              ctx.fillRect(b.x, b.y, b.w, b.h);
-              ctx.strokeRect(b.x, b.y, b.w, b.h);
-              ctx.setLineDash([]);
-              drawCorners(ctx, b.x, b.y, b.w, b.h, "#06b6d4");
-              drawLabel(ctx, "🔲 " + a.clase, b.x, b.y, "#06b6d4");
-            } else {
-              // ── Arrume: sombra + esquinas + badge de cantidad ──
-              ctx.strokeStyle = a.color;
-              ctx.lineWidth = 2.5;
-              ctx.fillStyle = "rgba(0,0,0,0.22)";
-              ctx.fillRect(0, 0, canvas.width, b.y);
-              ctx.fillRect(
-                0,
-                b.y + b.h,
-                canvas.width,
-                canvas.height - b.y - b.h,
-              );
-              ctx.fillRect(0, b.y, b.x, b.h);
-              ctx.fillRect(b.x + b.w, b.y, canvas.width - b.x - b.w, b.h);
-              ctx.strokeRect(b.x, b.y, b.w, b.h);
-              drawCorners(ctx, b.x, b.y, b.w, b.h, a.color);
-              drawLabel(ctx, a.clase, b.x, b.y, a.color);
-              if (a.qty) {
-                drawQtyBadge(ctx, b.x, b.y, b.w, b.h, a.qty);
-              }
-            }
-          } else if (a.type === "polygon") {
-            const pts = a.points;
-            ctx.strokeStyle = a.color;
-            ctx.lineWidth = 2.5;
-            ctx.beginPath();
-            ctx.moveTo(pts[0].x, pts[0].y);
-            pts.forEach((p) => ctx.lineTo(p.x, p.y));
-            ctx.closePath();
-            ctx.fillStyle = a.color + "33";
-            ctx.fill();
-            ctx.stroke();
-            pts.forEach((p) => {
-              ctx.beginPath();
-              ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
-              ctx.fillStyle = a.color;
-              ctx.fill();
-            });
-            drawLabel(ctx, a.clase, pts[0].x, pts[0].y, a.color);
-            if (a.qty) {
-              const xs = pts.map((p) => p.x),
-                ys = pts.map((p) => p.y);
-              drawQtyBadge(
-                ctx,
-                Math.min(...xs),
-                Math.min(...ys),
-                Math.max(...xs) - Math.min(...xs),
-                Math.max(...ys) - Math.min(...ys),
-                a.qty,
-              );
-            }
-          }
-        });
-
-        // BBox en progreso
-        if (bboxCurrent && bboxDrawing) {
-          ctx.strokeStyle = "rgba(255,255,255,.8)";
-          ctx.lineWidth = 2;
-          ctx.setLineDash([6, 3]);
-          ctx.strokeRect(
-            bboxCurrent.x,
-            bboxCurrent.y,
-            bboxCurrent.w,
-            bboxCurrent.h,
-          );
-          ctx.setLineDash([]);
-        }
-
-        // Esquinero en progreso (bbox base mientras arrastra)
-        if (esqDrawing && esqBox) {
-          ctx.strokeStyle = "rgba(255,255,255,.6)";
-          ctx.lineWidth = 1.5;
-          ctx.setLineDash([4, 3]);
-          ctx.strokeRect(esqBox.x, esqBox.y, esqBox.w, esqBox.h);
-          ctx.setLineDash([]);
-        }
-        // Esquinero: preview de la forma L con overlay de ajuste abierto
-        if (
-          !esqDrawing &&
-          esqBox &&
-          document.getElementById("esq-overlay").style.display === "flex"
-        ) {
-          const pts = buildEsqPoints(esqBox, esqOrient, esqThPct, esqTvPct);
-          ctx.strokeStyle = "#f59e0b";
-          ctx.lineWidth = 2.5;
-          ctx.beginPath();
-          ctx.moveTo(pts[0].x, pts[0].y);
-          pts.forEach((p) => ctx.lineTo(p.x, p.y));
-          ctx.closePath();
-          ctx.fillStyle = "rgba(245,158,11,0.22)";
-          ctx.fill();
-          ctx.stroke();
-          pts.forEach((p) => {
-            ctx.beginPath();
-            ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
-            ctx.fillStyle = "#f59e0b";
-            ctx.fill();
-          });
-        }
-
-        // Polígono en progreso
-        if (polyPoints.length) {
-          ctx.strokeStyle = "rgba(255,255,255,.9)";
-          ctx.lineWidth = 2;
-          ctx.setLineDash([5, 3]);
-          ctx.beginPath();
-          ctx.moveTo(polyPoints[0].x, polyPoints[0].y);
-          polyPoints.forEach((p) => ctx.lineTo(p.x, p.y));
-          if (polyPreview) ctx.lineTo(polyPreview.x, polyPreview.y);
-          ctx.stroke();
-          ctx.setLineDash([]);
-          polyPoints.forEach((p, i) => {
-            ctx.beginPath();
-            ctx.arc(p.x, p.y, i === 0 ? 6 : 4, 0, Math.PI * 2);
-            ctx.fillStyle = i === 0 ? "#f59e0b" : "#fff";
-            ctx.fill();
-          });
-        }
-      }
-
-      function drawCorners(ctx, x, y, w, h, color) {
-        const cs = 12;
-        ctx.strokeStyle = color;
-        ctx.lineWidth = 4;
-        [
-          [x, y],
-          [x + w, y],
-          [x, y + h],
-          [x + w, y + h],
-        ].forEach(([cx, cy]) => {
-          const dx = cx === x ? 1 : -1,
-            dy = cy === y ? 1 : -1;
-          ctx.beginPath();
-          ctx.moveTo(cx + dx * cs, cy);
-          ctx.lineTo(cx, cy);
-          ctx.lineTo(cx, cy + dy * cs);
-          ctx.stroke();
-        });
-      }
-      function drawLabel(ctx, text, x, y, color) {
-        ctx.font = "bold 12px -apple-system,sans-serif";
-        const tw = ctx.measureText(text).width;
-        const lx = x,
-          ly = Math.max(20, y - 4);
-        ctx.fillStyle = color;
-        ctx.fillRect(lx, ly - 16, tw + 10, 20);
-        ctx.fillStyle = "#000";
-        ctx.fillText(text, lx + 5, ly - 2);
-      }
-      function drawQtyBadge(ctx, bx, by, bw, bh, qty) {
-        const qw = Math.min(58, Math.max(36, bw * 0.28)),
-          qh = Math.min(30, Math.max(20, bh * 0.2));
-        const rx = bx + 5,
-          ry = by + 5;
-        ctx.fillStyle = "rgba(34,197,94,.88)";
-        ctx.beginPath();
-        if (ctx.roundRect) ctx.roundRect(rx, ry, qw, qh, 5);
-        else ctx.rect(rx, ry, qw, qh);
-        ctx.fill();
-        ctx.fillStyle = "#fff";
-        ctx.font = `bold ${Math.min(Math.floor(qh * 0.65), 16)}px -apple-system,sans-serif`;
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillText(`×${qty}`, rx + qw / 2, ry + qh / 2);
-        ctx.textAlign = "left";
-        ctx.textBaseline = "alphabetic";
-      }
-
-      // ── Verificar clase antes de dibujar ─────────────────────────────────────────
-      function checkClase() {
-        if (!currentClase) {
-          showToast("⚠️ Selecciona una clase primero", "err");
-          return false;
-        }
-        return true;
-      }
-
-      // ── Lista de anotaciones ──────────────────────────────────────────────────────
-      function renderAnnoList() {
-        const list = document.getElementById("anno-list");
-        const card = document.getElementById("annos-card");
-        const title = document.getElementById("annos-title");
-        if (!annotations.length) {
-          card.style.display = "none";
-          return;
-        }
-        card.style.display = "block";
-        title.textContent = `📦 Anotaciones (${annotations.length})`;
-        list.innerHTML = "";
-        annotations.forEach((a) => {
-          const item = document.createElement("div");
-          item.className = "anno-item" + (a.individual ? " individual" : "");
-          const qtyBadge = a.qty
-            ? `<span class="badge-qty">×${a.qty} piezas</span>`
-            : "";
-          const indBadge = a.individual
-            ? `<span class="badge-ind">🔲 Pieza</span>`
-            : "";
-          const typeIcon =
-            a.type === "polygon" ? "🔷" : a.individual ? "🔲" : "⬜";
-          const labelDisplay = a.qty
-            ? `${a.clase} <span style="font-size:9px;color:var(--steel);font-weight:400">(sube como ${a.claseUpload})</span>`
-            : a.clase;
-          item.innerHTML = `
+// ── Lista de anotaciones ──────────────────────────────────────────────────────
+function renderAnnoList(){
+  const list=document.getElementById("anno-list");
+  const card=document.getElementById("annos-card");
+  const title=document.getElementById("annos-title");
+  if(!annotations.length){ card.style.display="none"; return; }
+  card.style.display="block";
+  title.textContent=`📦 Anotaciones (${annotations.length})`;
+  list.innerHTML="";
+  annotations.forEach(a=>{
+    const item=document.createElement("div"); item.className="anno-item";
+    const qtyBadge=a.qty?`<span style="background:rgba(34,197,94,.2);color:var(--ok);border:1px solid rgba(34,197,94,.3);border-radius:6px;padding:2px 7px;font-size:10px;font-weight:700">×${a.qty}</span>`:"";
+    const typeIcon=a.type==="polygon"?"🔷":"⬜";
+    const qtyTag=a.isQty?`<span style="color:var(--ok);font-size:10px">📦</span>`:"";
+    item.innerHTML=`
       <div class="anno-color" style="background:${a.color}"></div>
-      <span class="anno-label" onclick="reassignClass(${a.id})" style="cursor:pointer;text-decoration:underline;text-decoration-style:dotted;text-underline-offset:3px" title="Cambiar clase">${labelDisplay}</span>
-      <span class="anno-type">${typeIcon} ${a.type === "polygon" ? "Polígono" : "BBox"}</span>
-      ${indBadge}${qtyBadge}
-      <span class="anno-check ${a.checked ? "checked" : "unchecked"}" onclick="toggleAnno(${a.id})">${a.checked ? "✅" : "☐"}</span>
+      <span class="anno-label" onclick="reassignClass(${a.id})" style="cursor:pointer;text-decoration:underline;text-decoration-style:dotted;text-underline-offset:3px" title="Cambiar clase">${a.clase}</span>
+      <span class="anno-type">${typeIcon} ${a.type==="polygon"?"Polígono":"BBox"}</span>
+      ${qtyBadge}${qtyTag}
+      <span class="anno-check ${a.checked?"checked":"unchecked"}" onclick="toggleAnno(${a.id})">${a.checked?"✅":"☐"}</span>
       <span class="anno-del" onclick="deleteAnno(${a.id})">🗑️</span>`;
-          list.appendChild(item);
-        });
-      }
-      function toggleAnno(id) {
-        const a = annotations.find((x) => x.id === id);
-        if (a) {
-          a.checked = !a.checked;
-          renderAnnoList();
-          redraw();
-        }
-      }
-      function deleteAnno(id) {
-        annotations = annotations.filter((x) => x.id !== id);
-        renderAnnoList();
-        redraw();
-        updateButtons();
-      }
-      function updateButtons() {
-        const has = annotations.some((a) => a.checked);
-        document.getElementById("btn-review").disabled = !has;
-        document.getElementById("btn-upload").disabled = !has;
-      }
+    list.appendChild(item);
+  });
+}
+function toggleAnno(id){ const a=annotations.find(x=>x.id===id); if(a){a.checked=!a.checked;renderAnnoList();redraw();} }
+function deleteAnno(id){ annotations=annotations.filter(x=>x.id!==id); renderAnnoList(); redraw(); updateButtons(); }
+function updateButtons(){
+  const has=annotations.some(a=>a.checked);
+  document.getElementById("btn-review").disabled=!has;
+  document.getElementById("btn-upload").disabled=!has;
+}
 
-      // ── QTY prompt ────────────────────────────────────────────────────────────────
-      function showQtyPrompt(annoId) {
-        const ex = document.getElementById("qty-prompt");
-        if (ex) ex.remove();
-        const div = document.createElement("div");
-        div.id = "qty-prompt";
-        div.style.cssText =
-          "position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--surface);border:1.5px solid var(--amber);border-radius:14px;padding:14px 16px;z-index:350;width:90%;max-width:360px;box-shadow:0 8px 32px rgba(0,0,0,.5)";
-        div.innerHTML = `
-    <p style="font-size:13px;font-weight:700;color:var(--amber);margin-bottom:10px">¿Cuántas piezas tiene este arrume?</p>
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
-      <input type="number" id="qty-input" placeholder="Cantidad" min="1" max="999"
-        style="flex:1;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-size:16px;outline:none">
-      <span style="font-size:12px;color:var(--steel)">piezas</span>
+// ── QTY prompt ────────────────────────────────────────────────────────────────
+function showQtyPrompt(annoId){
+  const ex=document.getElementById("qty-prompt"); if(ex) ex.remove();
+  const div=document.createElement("div"); div.id="qty-prompt"; div.className="float-panel";
+  div.style.width="280px";
+  div.innerHTML=`
+    <div class="fp-head" id="qty-head">
+      <span style="flex:1">📦 ¿Cuántas piezas?</span>
+      <button class="fp-btn" onclick="document.getElementById('qty-prompt').classList.toggle('min')" title="Minimizar">▁</button>
+      <button class="fp-btn" onclick="skipQty()" title="Cerrar">✕</button>
     </div>
-    <div style="display:flex;gap:8px">
-      <button onclick="skipQty()" style="flex:1;padding:10px;border-radius:10px;border:1.5px solid var(--border);background:var(--surface);color:var(--text2);font-size:13px;font-weight:600;cursor:pointer">Sin cantidad</button>
-      <button onclick="addQty(${annoId})" style="flex:1;padding:10px;border-radius:10px;border:none;background:var(--amber);color:#0a1628;font-size:13px;font-weight:700;cursor:pointer">✅ Agregar</button>
+    <div class="fp-body">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+        <input type="number" id="qty-input" placeholder="Cantidad" min="1" max="999"
+          style="flex:1;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-size:16px;outline:none;margin:0">
+        <span style="font-size:12px;color:var(--steel)">piezas</span>
+      </div>
+      <div style="display:flex;gap:6px">
+        <button onclick="skipQty()" style="flex:1;padding:9px;border-radius:8px;border:1.5px solid var(--border);background:var(--surface);color:var(--text2);font-size:12px;font-weight:600;cursor:pointer">Sin cantidad</button>
+        <button onclick="addQty(${annoId})" style="flex:1;padding:9px;border-radius:8px;border:none;background:var(--amber);color:#0a1628;font-size:12px;font-weight:700;cursor:pointer">✅ Agregar</button>
+      </div>
+      <div style="font-size:10px;color:var(--steel);margin-top:6px;text-align:center">☝️ Arrastra el título para mover</div>
     </div>`;
-        document.body.appendChild(div);
-        setTimeout(() => document.getElementById("qty-input")?.focus(), 100);
-      }
-      function skipQty() {
-        const p = document.getElementById("qty-prompt");
-        if (p) p.remove();
-        showToast(`✅ Anotación añadida`, "ok");
-      }
-      function addQty(annoId) {
-        const qty = parseInt(document.getElementById("qty-input")?.value);
-        const p = document.getElementById("qty-prompt");
-        if (p) p.remove();
-        const anno = annotations.find((a) => a.id === annoId);
-        if (!anno || !qty || qty < 1) {
-          showToast("✅ Añadida sin cantidad", "ok");
-          return;
-        }
-        // Guardar cantidad + clase para subida con sufijo (PM-2400x600_x8)
-        anno.qty = qty;
-        anno.isArrume = true;
-        anno.claseUpload = `${anno.clase}_x${qty}`;
-        redraw();
-        renderAnnoList();
-        updateButtons();
-        showToast(`✅ ${anno.clase} · arrume ×${qty} piezas`, "ok");
-      }
+  document.body.appendChild(div);
+  makeDraggable(div, document.getElementById("qty-head"));
+  setTimeout(()=>document.getElementById("qty-input")?.focus(),100);
+}
+function skipQty(){
+  const p=document.getElementById("qty-prompt"); if(p) p.remove();
+  showToast(`✅ Anotación añadida`,"ok");
+}
+function addQty(annoId){
+  const qty=parseInt(document.getElementById("qty-input")?.value);
+  const p=document.getElementById("qty-prompt"); if(p) p.remove();
+  const anno=annotations.find(a=>a.id===annoId);
+  if(!anno||!qty||qty<1){ showToast("✅ Añadida sin cantidad","ok"); return; }
+  anno.qty=qty; anno.isArrume=true;
+  // Crear anotación QTY automática
+  const qtyId=Date.now()+1;
+  let qtyBbox;
+  if(anno.type==="bbox"){
+    const b=anno.bbox;
+    qtyBbox={x:b.x+4,y:b.y+4,w:Math.min(60,b.w*.25),h:Math.min(30,b.h*.2)};
+  } else {
+    const xs=anno.points.map(p=>p.x), ys=anno.points.map(p=>p.y);
+    qtyBbox={x:Math.min(...xs)+4,y:Math.min(...ys)+4,w:60,h:30};
+  }
+  annotations.push({id:qtyId,clase:`QTY-${qty}`,type:"bbox",bbox:qtyBbox,color:"#22c55e",checked:true,isQty:true,parentId:annoId});
+  redraw(); renderAnnoList(); updateButtons();
+  showToast(`✅ ${anno.clase} × ${qty} piezas`,"ok");
+}
 
-      // ── Review modal ──────────────────────────────────────────────────────────────
-      function openReview() {
-        const img = document.getElementById("bbox-img");
-        const rImg = document.getElementById("review-img");
-        rImg.src = img.src;
-        rImg.onload = () => drawReviewCanvas();
-        if (rImg.complete) drawReviewCanvas();
-        const annos = document.getElementById("review-annos");
-        annos.innerHTML = "";
-        annotations.forEach((a) => {
-          const div = document.createElement("div");
-          div.className =
-            "review-anno " + (a.checked ? "approved" : "rejected");
-          div.id = "rev-" + a.id;
-          const typeIcon = a.type === "polygon" ? "🔷" : "⬜";
-          div.innerHTML = `
-      <span class="review-check" onclick="toggleReviewAnno(${a.id})">${a.checked ? "✅" : "❌"}</span>
+// ── Review modal ──────────────────────────────────────────────────────────────
+function openReview(){
+  const img=document.getElementById("bbox-img");
+  const rImg=document.getElementById("review-img");
+  rImg.src=img.src;
+  rImg.onload=()=>drawReviewCanvas();
+  if(rImg.complete) drawReviewCanvas();
+  const annos=document.getElementById("review-annos"); annos.innerHTML="";
+  annotations.forEach(a=>{
+    const div=document.createElement("div");
+    div.className="review-anno "+(a.checked?"approved":"rejected");
+    div.id="rev-"+a.id;
+    const typeIcon=a.type==="polygon"?"🔷":"⬜";
+    div.innerHTML=`
+      <span class="review-check" onclick="toggleReviewAnno(${a.id})">${a.checked?"✅":"❌"}</span>
       <div style="flex:1">
         <div style="font-family:monospace;font-weight:700;font-size:14px;color:${a.color}">${a.clase}</div>
-        <div style="font-size:11px;color:var(--steel)">${typeIcon} ${a.type === "polygon" ? "Polígono (" + a.points?.length + " pts)" : "BBox"} ${a.qty ? "· ×" + a.qty + " piezas" : ""}</div>
+        <div style="font-size:11px;color:var(--steel)">${typeIcon} ${a.type==="polygon"?"Polígono ("+a.points?.length+" pts)":"BBox"} ${a.qty?"· ×"+a.qty+" piezas":""}</div>
       </div>`;
-          annos.appendChild(div);
-        });
-        document.getElementById("review-modal-bg").classList.add("show");
-      }
-      function toggleReviewAnno(id) {
-        const a = annotations.find((x) => x.id === id);
-        if (!a) return;
-        a.checked = !a.checked;
-        const div = document.getElementById("rev-" + id);
-        div.className = "review-anno " + (a.checked ? "approved" : "rejected");
-        div.querySelector(".review-check").textContent = a.checked
-          ? "✅"
-          : "❌";
-        renderAnnoList();
-        redraw();
-        drawReviewCanvas();
-        updateButtons();
-      }
-      function drawReviewCanvas() {
-        const rImg = document.getElementById("review-img");
-        const rc = document.getElementById("review-canvas");
-        rc.width = rImg.offsetWidth;
-        rc.height = rImg.offsetHeight;
-        const scX = rImg.offsetWidth / imgDispW,
-          scY = rImg.offsetHeight / imgDispH;
-        const ctx = rc.getContext("2d");
-        ctx.clearRect(0, 0, rc.width, rc.height);
-        annotations
-          .filter((a) => a.checked)
-          .forEach((a) => {
-            ctx.strokeStyle = a.color;
-            ctx.lineWidth = 2.5;
-            if (a.type === "bbox") {
-              const b = {
-                x: a.bbox.x * scX,
-                y: a.bbox.y * scY,
-                w: a.bbox.w * scX,
-                h: a.bbox.h * scY,
-              };
-              ctx.strokeRect(b.x, b.y, b.w, b.h);
-              drawLabel(ctx, a.clase, b.x, b.y, a.color);
-            } else if (a.type === "polygon") {
-              const pts = a.points.map((p) => ({ x: p.x * scX, y: p.y * scY }));
-              ctx.beginPath();
-              ctx.moveTo(pts[0].x, pts[0].y);
-              pts.forEach((p) => ctx.lineTo(p.x, p.y));
-              ctx.closePath();
-              ctx.fillStyle = a.color + "33";
-              ctx.fill();
-              ctx.stroke();
-              drawLabel(ctx, a.clase, pts[0].x, pts[0].y, a.color);
-            }
-          });
-      }
-      function closeReviewModal(e) {
-        if (e.target === document.getElementById("review-modal-bg"))
-          closeReviewModalDirect();
-      }
-      function closeReviewModalDirect() {
-        document.getElementById("review-modal-bg").classList.remove("show");
-      }
-      function confirmAndUpload() {
-        closeReviewModalDirect();
-        uploadAll();
-      }
+    annos.appendChild(div);
+  });
+  document.getElementById("review-modal-bg").classList.add("show");
+}
+function toggleReviewAnno(id){
+  const a=annotations.find(x=>x.id===id); if(!a) return;
+  a.checked=!a.checked;
+  const div=document.getElementById("rev-"+id);
+  div.className="review-anno "+(a.checked?"approved":"rejected");
+  div.querySelector(".review-check").textContent=a.checked?"✅":"❌";
+  renderAnnoList(); redraw(); drawReviewCanvas(); updateButtons();
+}
+function drawReviewCanvas(){
+  const rImg=document.getElementById("review-img");
+  const rc=document.getElementById("review-canvas");
+  rc.width=rImg.offsetWidth; rc.height=rImg.offsetHeight;
+  const scX=rImg.offsetWidth/imgDispW, scY=rImg.offsetHeight/imgDispH;
+  const ctx=rc.getContext("2d"); ctx.clearRect(0,0,rc.width,rc.height);
+  annotations.filter(a=>a.checked).forEach(a=>{
+    ctx.strokeStyle=a.color; ctx.lineWidth=2.5;
+    if(a.type==="bbox"){
+      const b={x:a.bbox.x*scX,y:a.bbox.y*scY,w:a.bbox.w*scX,h:a.bbox.h*scY};
+      ctx.strokeRect(b.x,b.y,b.w,b.h);
+      drawLabel(ctx,a.clase,b.x,b.y,a.color);
+    } else if(a.type==="polygon"){
+      const pts=a.points.map(p=>({x:p.x*scX,y:p.y*scY}));
+      ctx.beginPath(); ctx.moveTo(pts[0].x,pts[0].y);
+      pts.forEach(p=>ctx.lineTo(p.x,p.y)); ctx.closePath();
+      ctx.fillStyle=a.color+"33"; ctx.fill(); ctx.stroke();
+      drawLabel(ctx,a.clase,pts[0].x,pts[0].y,a.color);
+    }
+  });
+}
+function closeReviewModal(e){ if(e.target===document.getElementById("review-modal-bg")) closeReviewModalDirect(); }
+function closeReviewModalDirect(){ document.getElementById("review-modal-bg").classList.remove("show"); }
+function confirmAndUpload(){ closeReviewModalDirect(); uploadAll(); }
 
-      // ── Catálogo modal ────────────────────────────────────────────────────────────
-      function openCatModal() {
-        catModalFam = "ALL";
-        document.getElementById("cat-modal-bg").classList.add("show");
-        document.getElementById("cat-modal-search").value = "";
-        renderCatModalFams();
-        renderCatModal("");
-        setTimeout(
-          () => document.getElementById("cat-modal-search").focus(),
-          100,
-        );
-      }
-      function closeCatModal(e) {
-        if (e.target === document.getElementById("cat-modal-bg"))
-          closeCatModalDirect();
-      }
-      function closeCatModalDirect() {
-        document.getElementById("cat-modal-bg").classList.remove("show");
-      }
-      function renderCatModalFams() {
-        const w = document.getElementById("cat-modal-families");
-        w.innerHTML = "";
-        ["ALL", "PM", "PB", "EI"].forEach((f) => {
-          const b = document.createElement("div");
-          b.className = "fam-btn" + (f === catModalFam ? " active" : "");
-          b.textContent = f === "ALL" ? "Todas" : f;
-          b.onclick = () => {
-            catModalFam = f;
-            renderCatModalFams();
-            renderCatModal(document.getElementById("cat-modal-search").value);
-          };
-          w.appendChild(b);
-        });
-      }
-      function renderCatModal(q) {
-        const list = document.getElementById("cat-modal-list");
-        list.innerHTML = "";
-        CATALOG.filter(
-          (c) =>
-            (catModalFam === "ALL" || c.family === catModalFam) &&
-            (!q || c.code.toLowerCase().includes(q.toLowerCase())),
-        )
-          .slice(0, 60)
-          .forEach((c) => {
-            const item = document.createElement("div");
-            item.className = "cat-item";
-            item.innerHTML = `<div onclick="setClase('${c.code}')"><div class="ci-code">${c.code}</div><div class="ci-spec">${c.spec}</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('${c.code}')">📋</span>`;
-            list.appendChild(item);
-          });
-      }
-      renderCatModalFams();
-      renderCatModal("");
-      function renderCatalogPage(q) {
-        const fw = document.getElementById("cat-main-families");
-        fw.innerHTML = "";
-        ["ALL", "PM", "PB", "EI"].forEach((f) => {
-          const b = document.createElement("div");
-          b.className = "fam-btn" + (f === catPageFam ? " active" : "");
-          b.textContent = f === "ALL" ? "Todas" : f;
-          b.onclick = () => {
-            catPageFam = f;
-            renderCatalogPage(document.getElementById("cat-main-search").value);
-          };
-          fw.appendChild(b);
-        });
-        const g = document.getElementById("cat-main-grid");
-        g.innerHTML = "";
-        CATALOG.filter(
-          (c) =>
-            (catPageFam === "ALL" || c.family === catPageFam) &&
-            (!q || c.code.toLowerCase().includes(q.toLowerCase())),
-        )
-          .slice(0, 80)
-          .forEach((c) => {
-            const card = document.createElement("div");
-            card.className = "ref-card";
-            card.innerHTML = `<div class="ref-fam ${c.family}">${c.family}</div><div class="ref-info"><div class="ref-code">${c.code}</div><div class="ref-spec">${c.spec}</div></div><span class="ref-copy" onclick="copyCode('${c.code}')">📋</span>`;
-            g.appendChild(card);
-          });
-      }
-      function copyCode(code) {
-        navigator.clipboard
-          ?.writeText(code)
-          .then(() => showToast(`📋 ${code} copiado`, "ok"))
-          .catch(() => {
-            const t = document.createElement("textarea");
-            t.value = code;
-            document.body.appendChild(t);
-            t.select();
-            document.execCommand("copy");
-            document.body.removeChild(t);
-            showToast(`📋 ${code} copiado`, "ok");
-          });
-      }
+// ── Catálogo modal ────────────────────────────────────────────────────────────
+function openCatModal(){
+  catModalFam="ALL"; document.getElementById("cat-modal-bg").classList.add("show");
+  document.getElementById("cat-modal-search").value="";
+  renderCatModalFams(); renderCatModal("");
+  setTimeout(()=>document.getElementById("cat-modal-search").focus(),100);
+}
+function closeCatModal(e){ if(e.target===document.getElementById("cat-modal-bg")) closeCatModalDirect(); }
+function closeCatModalDirect(){ document.getElementById("cat-modal-bg").classList.remove("show"); }
+function renderCatModalFams(){
+  const w=document.getElementById("cat-modal-families"); w.innerHTML="";
+  ["ALL","PM","PB","EI"].forEach(f=>{const b=document.createElement("div");b.className="fam-btn"+(f===catModalFam?" active":"");b.textContent=f==="ALL"?"Todas":f;b.onclick=()=>{catModalFam=f;renderCatModalFams();renderCatModal(document.getElementById("cat-modal-search").value);};w.appendChild(b);});
+}
+function renderCatModal(q){
+  const list=document.getElementById("cat-modal-list"); list.innerHTML="";
+  CATALOG.filter(c=>(catModalFam==="ALL"||c.family===catModalFam)&&(!q||c.code.toLowerCase().includes(q.toLowerCase()))).slice(0,60).forEach(c=>{
+    const item=document.createElement("div"); item.className="cat-item";
+    item.innerHTML=`<div onclick="setClase('${c.code}')"><div class="ci-code">${c.code}</div><div class="ci-spec">${c.spec}</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('${c.code}')">📋</span>`;
+    list.appendChild(item);
+  });
+}
+renderCatModalFams(); renderCatModal("");
+function renderCatalogPage(q){
+  const fw=document.getElementById("cat-main-families"); fw.innerHTML="";
+  ["ALL","PM","PB","EI"].forEach(f=>{const b=document.createElement("div");b.className="fam-btn"+(f===catPageFam?" active":"");b.textContent=f==="ALL"?"Todas":f;b.onclick=()=>{catPageFam=f;renderCatalogPage(document.getElementById("cat-main-search").value);};fw.appendChild(b);});
+  const g=document.getElementById("cat-main-grid"); g.innerHTML="";
+  CATALOG.filter(c=>(catPageFam==="ALL"||c.family===catPageFam)&&(!q||c.code.toLowerCase().includes(q.toLowerCase()))).slice(0,80).forEach(c=>{
+    const card=document.createElement("div"); card.className="ref-card";
+    card.innerHTML=`<div class="ref-fam ${c.family}">${c.family}</div><div class="ref-info"><div class="ref-code">${c.code}</div><div class="ref-spec">${c.spec}</div></div><span class="ref-copy" onclick="copyCode('${c.code}')">📋</span>`;
+    g.appendChild(card);
+  });
+}
+function copyCode(code){ navigator.clipboard?.writeText(code).then(()=>showToast(`📋 ${code} copiado`,"ok")).catch(()=>{const t=document.createElement("textarea");t.value=code;document.body.appendChild(t);t.select();document.execCommand("copy");document.body.removeChild(t);showToast(`📋 ${code} copiado`,"ok");}); }
 
-      // ── Upload ────────────────────────────────────────────────────────────────────
-      async function uploadAll() {
-        const apiKey = document.getElementById("api-key").value.trim();
-        const split = document.getElementById("split").value;
-        const checked = annotations.filter((a) => a.checked);
-        if (!apiKey) {
-          showToast("⚠️ Ingresa tu API Key", "err");
-          return;
+// ── Upload ────────────────────────────────────────────────────────────────────
+async function uploadAll(){
+  const apiKey=document.getElementById("api-key").value.trim();
+  const split=document.getElementById("split").value;
+  const checked=annotations.filter(a=>a.checked);
+  if(!apiKey){showToast("⚠️ Ingresa tu API Key","err");return;}
+  if(!selectedFile){showToast("⚠️ Selecciona imagen","err");return;}
+  if(!checked.length){showToast("⚠️ Marca al menos una anotación","err");return;}
+
+  const btn=document.getElementById("btn-upload"), btnR=document.getElementById("btn-review");
+  btn.disabled=true; btnR.disabled=true; btn.innerHTML="⏳ Subiendo…"; btn.classList.add("loading");
+  const pw=document.getElementById("prog-wrap"), pb=document.getElementById("prog-bar");
+  pw.classList.add("show"); pb.style.width="15%";
+
+  const logId=Date.now();
+  const ext=selectedFile.name.split(".").pop()||"jpg";
+  const baseName=checked.filter(a=>!a.isQty).map(a=>a.clase).join("_")+"_"+logId+"."+ext;
+  const previewUrl=URL.createObjectURL(selectedFile);
+
+  try{
+    const b64=await fileToB64(selectedFile);
+    pb.style.width="40%";
+
+    // Subir imagen
+    const upRes=await fetch(`https://api.roboflow.com/dataset/${PROJECT}/upload?api_key=${apiKey}&name=${encodeURIComponent(baseName)}&split=${split}`,
+      {method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:b64.split(",")[1]});
+    const upData=await upRes.json();
+    if(!upRes.ok||upData.error) throw new Error(upData.error||`HTTP ${upRes.status}`);
+    pb.style.width="65%";
+    const imageId=upData.id||"";
+
+    // Construir anotaciones para Roboflow
+    if(imageId){
+      const scX=imgNatW/imgDispW, scY=imgNatH/imgDispH;
+      const annoPayload={width:imgNatW,height:imgNatH,boxes:[]};
+
+      checked.forEach(a=>{
+        if(a.type==="bbox"){
+          const b=a.bbox;
+          annoPayload.boxes.push({
+            label:a.clase,
+            x:(b.x+b.w/2)*scX/imgNatW,
+            y:(b.y+b.h/2)*scY/imgNatH,
+            w:b.w*scX/imgNatW,
+            h:b.h*scY/imgNatH,
+          });
+        } else if(a.type==="polygon"){
+          // Roboflow acepta polígonos como puntos normalizados
+          annoPayload.boxes.push({
+            label:a.clase,
+            points:a.points.map(p=>({x:p.x*scX/imgNatW,y:p.y*scY/imgNatH})),
+          });
         }
-        if (!selectedFile) {
-          showToast("⚠️ Selecciona imagen", "err");
-          return;
-        }
-        if (!checked.length) {
-          showToast("⚠️ Marca al menos una anotación", "err");
-          return;
-        }
+      });
 
-        const btn = document.getElementById("btn-upload"),
-          btnR = document.getElementById("btn-review");
-        btn.disabled = true;
-        btnR.disabled = true;
-        btn.innerHTML = "⏳ Subiendo…";
-        btn.classList.add("loading");
-        const pw = document.getElementById("prog-wrap"),
-          pb = document.getElementById("prog-bar");
-        pw.classList.add("show");
-        pb.style.width = "15%";
+      const annoRes=await fetch(`https://api.roboflow.com/dataset/${PROJECT}/annotate/${imageId}?api_key=${apiKey}&name=${encodeURIComponent(baseName)}`,
+        {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(annoPayload)});
+      const annoData=await annoRes.json();
+      if(annoData.error) console.warn("Anotación:",annoData.error);
+    }
 
-        const logId = Date.now();
-        const ext = selectedFile.name.split(".").pop() || "jpg";
-        const baseName =
-          checked
-            .filter((a) => !a.isQty)
-            .map((a) => a.clase)
-            .join("_") +
-          "_" +
-          logId +
-          "." +
-          ext;
-        const previewUrl = URL.createObjectURL(selectedFile);
+    pb.style.width="100%";
+    sessionCount++; totalCount++; okCount++;
+    localStorage.setItem("rf_total",totalCount); localStorage.setItem("rf_ok",okCount);
+    document.getElementById("cnt-session").textContent=sessionCount;
+    document.getElementById("cnt-total").textContent=totalCount;
+    document.getElementById("cnt-ok").textContent=okCount;
 
-        try {
-          const b64 = await fileToB64(selectedFile);
-          pb.style.width = "40%";
+    const entry={id:logId,url:previewUrl,annos:checked.map(a=>({clase:a.clase,color:a.color,type:a.type})),split,ok:true,file:selectedFile,imageId};
+    uploadLog.unshift(entry); addLogItem(entry);
+    checked.filter(a=>!a.isQty).forEach(a=>addReciente(a.clase));
+    // Actualizar contador por clase (cuenta 1 imagen por clase única, no por bbox)
+    const uniqueClasses=[...new Set(checked.filter(a=>!a.isQty).map(a=>a.clase))];
+    uniqueClasses.forEach(c=>{ classCounts[c]=(classCounts[c]||0)+1; });
+    localStorage.setItem("rf_class_counts",JSON.stringify(classCounts));
+    renderClassStats();
+    showToast(`✅ ${checked.length} anotación(es) → Dataset`,"ok");
+    resetAll();
 
-          // Subir imagen
-          const upRes = await fetch(
-            `https://api.roboflow.com/dataset/${PROJECT}/upload?api_key=${apiKey}&name=${encodeURIComponent(baseName)}&split=${split}`,
-            {
-              method: "POST",
-              headers: { "Content-Type": "application/x-www-form-urlencoded" },
-              body: b64.split(",")[1],
-            },
-          );
-          const upData = await upRes.json();
-          if (!upRes.ok || upData.error)
-            throw new Error(upData.error || `HTTP ${upRes.status}`);
-          pb.style.width = "65%";
-          const imageId = upData.id || "";
+  }catch(err){
+    pb.style.background="var(--danger)";
+    uploadLog.unshift({id:logId,url:previewUrl,annos:checked.map(a=>({clase:a.clase,color:a.color})),split,ok:false,error:err.message,file:selectedFile});
+    addLogItem(uploadLog[0]);
+    showToast(`❌ ${err.message.slice(0,50)}`,"err");
+    setTimeout(()=>{pb.style.background="var(--amber)";pb.style.width="0%";pw.classList.remove("show");},2000);
+  }finally{
+    setTimeout(()=>{pb.style.width="0%";pw.classList.remove("show");},1500);
+    btn.disabled=false; btnR.disabled=false; btn.innerHTML="⬆️ Subir"; btn.classList.remove("loading");
+    updateButtons();
+  }
+}
 
-          // Construir anotaciones para Roboflow
-          if (imageId) {
-            const scX = imgNatW / imgDispW,
-              scY = imgNatH / imgDispH;
-            const annoPayload = { width: imgNatW, height: imgNatH, boxes: [] };
+function fileToB64(f){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=()=>rej(new Error("Error"));r.readAsDataURL(f);});}
 
-            checked.forEach((a) => {
-              if (a.isQty) return; // ya no se suben bboxes QTY flotantes
-              // Arrumes usan clase con sufijo _xN; piezas individuales usan la clase base
-              const label = a.claseUpload || a.clase;
-              if (a.type === "bbox") {
-                const b = a.bbox;
-                annoPayload.boxes.push({
-                  label,
-                  x: ((b.x + b.w / 2) * scX) / imgNatW,
-                  y: ((b.y + b.h / 2) * scY) / imgNatH,
-                  w: (b.w * scX) / imgNatW,
-                  h: (b.h * scY) / imgNatH,
-                });
-              } else if (a.type === "polygon") {
-                annoPayload.boxes.push({
-                  label,
-                  points: a.points.map((p) => ({
-                    x: (p.x * scX) / imgNatW,
-                    y: (p.y * scY) / imgNatH,
-                  })),
-                });
-              }
-            });
+function resetAll(){
+  selectedFile=null; annotations=[]; bboxCurrent=null; bboxDrawing=false;
+  cancelPolygon();
+  document.getElementById("capture-zone").classList.remove("has-img");
+  document.getElementById("bbox-section").style.display="none";
+  document.getElementById("annos-card").style.display="none";
+  document.getElementById("file-input-cam").value=""; document.getElementById("file-input-gal").value="";
+  const ctx=canvas.getContext("2d"); ctx.clearRect(0,0,canvas.width,canvas.height);
+  // SAM: limpiar embeddings (pero conservar modelo cargado)
+  samInputs=null; samEmbeddings=null;
+  samStatus("",false);
+  // Arrume: reset contador (pero conservar modo activo)
+  arrumeCount=0;
+  const ac=document.getElementById("arrume-counter"); if(ac) ac.textContent="×0";
+  updateButtons();
+}
 
-            const annoRes = await fetch(
-              `https://api.roboflow.com/dataset/${PROJECT}/annotate/${imageId}?api_key=${apiKey}&name=${encodeURIComponent(baseName)}`,
-              {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(annoPayload),
-              },
-            );
-            const annoData = await annoRes.json();
-            if (annoData.error) console.warn("Anotación:", annoData.error);
-          }
-
-          pb.style.width = "100%";
-          sessionCount++;
-          totalCount++;
-          okCount++;
-          localStorage.setItem("rf_total", totalCount);
-          localStorage.setItem("rf_ok", okCount);
-          document.getElementById("cnt-session").textContent = sessionCount;
-          document.getElementById("cnt-total").textContent = totalCount;
-          document.getElementById("cnt-ok").textContent = okCount;
-
-          const entry = {
-            id: logId,
-            url: previewUrl,
-            annos: checked.map((a) => ({
-              clase: a.clase,
-              color: a.color,
-              type: a.type,
-            })),
-            split,
-            ok: true,
-            file: selectedFile,
-            imageId,
-          };
-          uploadLog.unshift(entry);
-          addLogItem(entry);
-          checked.filter((a) => !a.isQty).forEach((a) => addReciente(a.clase));
-          // Actualizar contador por clase (cuenta 1 imagen por clase única, no por bbox)
-          const uniqueClasses = [
-            ...new Set(checked.filter((a) => !a.isQty).map((a) => a.clase)),
-          ];
-          uniqueClasses.forEach((c) => {
-            classCounts[c] = (classCounts[c] || 0) + 1;
-          });
-          localStorage.setItem("rf_class_counts", JSON.stringify(classCounts));
-          renderClassStats();
-          showToast(`✅ ${checked.length} anotación(es) → Dataset`, "ok");
-          resetAll();
-        } catch (err) {
-          pb.style.background = "var(--danger)";
-          uploadLog.unshift({
-            id: logId,
-            url: previewUrl,
-            annos: checked.map((a) => ({ clase: a.clase, color: a.color })),
-            split,
-            ok: false,
-            error: err.message,
-            file: selectedFile,
-          });
-          addLogItem(uploadLog[0]);
-          showToast(`❌ ${err.message.slice(0, 50)}`, "err");
-          setTimeout(() => {
-            pb.style.background = "var(--amber)";
-            pb.style.width = "0%";
-            pw.classList.remove("show");
-          }, 2000);
-        } finally {
-          setTimeout(() => {
-            pb.style.width = "0%";
-            pw.classList.remove("show");
-          }, 1500);
-          btn.disabled = false;
-          btnR.disabled = false;
-          btn.innerHTML = "⬆️ Subir";
-          btn.classList.remove("loading");
-          updateButtons();
-        }
-      }
-
-      function fileToB64(f) {
-        return new Promise((res, rej) => {
-          const r = new FileReader();
-          r.onload = () => res(r.result);
-          r.onerror = () => rej(new Error("Error"));
-          r.readAsDataURL(f);
-        });
-      }
-
-      function resetAll() {
-        selectedFile = null;
-        annotations = [];
-        bboxCurrent = null;
-        bboxDrawing = false;
-        cancelPolygon();
-        document.getElementById("capture-zone").classList.remove("has-img");
-        document.getElementById("bbox-section").style.display = "none";
-        document.getElementById("annos-card").style.display = "none";
-        document.getElementById("file-input").value = "";
-        const ctx = canvas.getContext("2d");
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        updateButtons();
-      }
-
-      // ── Log ───────────────────────────────────────────────────────────────────────
-      function addLogItem(entry) {
-        const list = document.getElementById("log-list");
-        if (list.querySelector("p")) list.innerHTML = "";
-        const item = document.createElement("div");
-        item.className = "log-item" + (entry.ok ? "" : " error");
-        item.id = "log-" + entry.id;
-        const tags = (entry.annos || [])
-          .map(
-            (a) =>
-              `<span class="log-anno-tag" style="background:${a.color}22;color:${a.color};border:1px solid ${a.color}44">${a.type === "polygon" ? "🔷" : "⬜"} ${a.clase}</span>`,
-          )
-          .join("");
-        item.innerHTML = `
+// ── Log ───────────────────────────────────────────────────────────────────────
+function addLogItem(entry){
+  const list=document.getElementById("log-list");
+  if(list.querySelector("p")) list.innerHTML="";
+  const item=document.createElement("div");
+  item.className="log-item"+(entry.ok?"":" error"); item.id="log-"+entry.id;
+  const tags=(entry.annos||[]).map(a=>`<span class="log-anno-tag" style="background:${a.color}22;color:${a.color};border:1px solid ${a.color}44">${a.type==="polygon"?"🔷":"⬜"} ${a.clase}</span>`).join("");
+  item.innerHTML=`
     <div class="log-header">
       <img class="log-thumb" src="${entry.url}" alt="">
       <div class="log-info">
-        <div class="log-name">${(entry.annos || []).length} anotación(es)</div>
-        <div class="log-meta">${entry.ok ? "✓ " + entry.split + " · con anotación" : "✗ " + (entry.error || "")}</div>
+        <div class="log-name">${(entry.annos||[]).length} anotación(es)</div>
+        <div class="log-meta">${entry.ok?"✓ "+entry.split+" · con anotación":"✗ "+(entry.error||"")}</div>
         <div class="log-annos">${tags}</div>
       </div>
       <div class="log-actions">
         <span style="cursor:pointer;font-size:18px" onclick="retryEntry(${entry.id})" title="Reintentar">🔄</span>
         <span style="cursor:pointer;font-size:18px" onclick="deleteEntry(${entry.id})" title="Eliminar">🗑️</span>
-        <span>${entry.ok ? "✅" : "❌"}</span>
+        <span>${entry.ok?"✅":"❌"}</span>
       </div>
     </div>`;
-        list.insertBefore(item, list.firstChild);
-      }
+  list.insertBefore(item,list.firstChild);
+}
 
-      async function retryEntry(id) {
-        const apiKey = document.getElementById("api-key").value.trim();
-        const entry = uploadLog.find((e) => e.id === id);
-        if (!entry || !apiKey) {
-          showToast("⚠️ Falta API Key", "err");
-          return;
-        }
-        showToast("🔄 Reintentando…", "");
-        try {
-          const b64 = await fileToB64(entry.file);
-          const name =
-            (entry.annos || []).map((a) => a.clase).join("_") +
-            "_retry_" +
-            Date.now() +
-            ".jpg";
-          const res = await fetch(
-            `https://api.roboflow.com/dataset/${PROJECT}/upload?api_key=${apiKey}&name=${encodeURIComponent(name)}&split=${entry.split}`,
-            {
-              method: "POST",
-              headers: { "Content-Type": "application/x-www-form-urlencoded" },
-              body: b64.split(",")[1],
-            },
-          );
-          const data = await res.json();
-          if (!res.ok || data.error)
-            throw new Error(data.error || `HTTP ${res.status}`);
-          entry.ok = true;
-          entry.imageId = data.id || "";
-          const item = document.getElementById("log-" + id);
-          item.classList.remove("error");
-          item.querySelector(".log-meta").textContent =
-            "✓ " + entry.split + " (reintento ✔)";
-          item.querySelector(".log-actions span:last-child").textContent = "✅";
-          showToast("✅ Reintento exitoso", "ok");
-        } catch (err) {
-          showToast(`❌ ${err.message.slice(0, 50)}`, "err");
-        }
-      }
+async function retryEntry(id){
+  const apiKey=document.getElementById("api-key").value.trim();
+  const entry=uploadLog.find(e=>e.id===id);
+  if(!entry||!apiKey){showToast("⚠️ Falta API Key","err");return;}
+  showToast("🔄 Reintentando…","");
+  try{
+    const b64=await fileToB64(entry.file);
+    const name=(entry.annos||[]).map(a=>a.clase).join("_")+"_retry_"+Date.now()+".jpg";
+    const res=await fetch(`https://api.roboflow.com/dataset/${PROJECT}/upload?api_key=${apiKey}&name=${encodeURIComponent(name)}&split=${entry.split}`,
+      {method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:b64.split(",")[1]});
+    const data=await res.json();
+    if(!res.ok||data.error) throw new Error(data.error||`HTTP ${res.status}`);
+    entry.ok=true; entry.imageId=data.id||"";
+    const item=document.getElementById("log-"+id);
+    item.classList.remove("error");
+    item.querySelector(".log-meta").textContent="✓ "+entry.split+" (reintento ✔)";
+    item.querySelector(".log-actions span:last-child").textContent="✅";
+    showToast("✅ Reintento exitoso","ok");
+  }catch(err){showToast(`❌ ${err.message.slice(0,50)}`,"err");}
+}
 
-      async function deleteEntry(id) {
-        const apiKey = document.getElementById("api-key").value.trim();
-        const entry = uploadLog.find((e) => e.id === id);
-        if (!entry) return;
-        if (!confirm(`¿Eliminar imagen de Roboflow?`)) return;
-        if (entry.imageId && apiKey) {
-          try {
-            await fetch(
-              `https://api.roboflow.com/dataset/${PROJECT}/images/${entry.imageId}?api_key=${apiKey}`,
-              { method: "DELETE" },
-            );
-          } catch (e) {}
-        }
-        document.getElementById("log-" + id)?.remove();
-        uploadLog = uploadLog.filter((e) => e.id !== id);
-        const list = document.getElementById("log-list");
-        if (!list.children.length)
-          list.innerHTML =
-            '<p style="color:var(--steel);font-size:13px;text-align:center;padding:20px">Las subidas aparecerán aquí</p>';
-        showToast("🗑️ Eliminada", "ok");
-      }
+async function deleteEntry(id){
+  const apiKey=document.getElementById("api-key").value.trim();
+  const entry=uploadLog.find(e=>e.id===id);
+  if(!entry) return;
+  if(!confirm(`¿Eliminar imagen de Roboflow?`)) return;
+  if(entry.imageId&&apiKey){ try{await fetch(`https://api.roboflow.com/dataset/${PROJECT}/images/${entry.imageId}?api_key=${apiKey}`,{method:"DELETE"});}catch(e){} }
+  document.getElementById("log-"+id)?.remove();
+  uploadLog=uploadLog.filter(e=>e.id!==id);
+  const list=document.getElementById("log-list");
+  if(!list.children.length) list.innerHTML='<p style="color:var(--steel);font-size:13px;text-align:center;padding:20px">Las subidas aparecerán aquí</p>';
+  showToast("🗑️ Eliminada","ok");
+}
 
-      function showToast(msg, type) {
-        const t = document.getElementById("toast");
-        t.textContent = msg;
-        t.className = `toast ${type} show`;
-        setTimeout(() => t.classList.remove("show"), 2800);
-      }
+function showToast(msg,type){const t=document.getElementById("toast");t.textContent=msg;t.className=`toast ${type} show`;setTimeout(()=>t.classList.remove("show"),2800);}
 
-      // ── Estadísticas por clase ────────────────────────────────────────────────────
-      function toggleStats() {
-        const b = document.getElementById("stats-body");
-        const c = document.getElementById("stats-caret");
-        const open = b.style.display === "none";
-        b.style.display = open ? "block" : "none";
-        c.textContent = open ? "▲" : "▼";
-        if (open) renderClassStats();
-      }
-      function renderClassStats() {
-        const list = document.getElementById("stats-list");
-        const total = Object.values(classCounts).reduce((a, b) => a + b, 0);
-        document.getElementById("stats-total").textContent =
-          `(${total} img · ${Object.keys(classCounts).length} clases)`;
-        if (!list) return;
-        const entries = Object.entries(classCounts).sort((a, b) => b[1] - a[1]);
-        if (!entries.length) {
-          list.innerHTML =
-            '<div style="color:var(--steel);font-size:12px;text-align:center;padding:14px">Sin datos aún. Sube imágenes para ver el balance.</div>';
-          return;
-        }
-        list.innerHTML = entries
-          .map(([code, n]) => {
-            const pct = Math.min(100, Math.round((n / CLASS_GOAL) * 100));
-            const cls = n >= CLASS_GOAL ? "ok" : n < 10 ? "low" : "";
-            const flag = n >= CLASS_GOAL ? "✅" : n < 10 ? "⚠️" : "";
-            return `<div class="stat-row" style="flex-direction:column;align-items:stretch;gap:4px">
+// ── Estadísticas por clase ────────────────────────────────────────────────────
+function toggleStats(){
+  const b=document.getElementById("stats-body");
+  const c=document.getElementById("stats-caret");
+  const open=b.style.display==="none";
+  b.style.display=open?"block":"none";
+  c.textContent=open?"▲":"▼";
+  if(open) renderClassStats();
+}
+function renderClassStats(){
+  const list=document.getElementById("stats-list");
+  const total=Object.values(classCounts).reduce((a,b)=>a+b,0);
+  document.getElementById("stats-total").textContent=`(${total} img · ${Object.keys(classCounts).length} clases)`;
+  if(!list) return;
+  const entries=Object.entries(classCounts).sort((a,b)=>b[1]-a[1]);
+  if(!entries.length){ list.innerHTML='<div style="color:var(--steel);font-size:12px;text-align:center;padding:14px">Sin datos aún. Sube imágenes para ver el balance.</div>'; return; }
+  list.innerHTML=entries.map(([code,n])=>{
+    const pct=Math.min(100,Math.round(n/CLASS_GOAL*100));
+    const cls=n>=CLASS_GOAL?"ok":n<10?"low":"";
+    const flag=n>=CLASS_GOAL?"✅":n<10?"⚠️":"";
+    return `<div class="stat-row" style="flex-direction:column;align-items:stretch;gap:4px">
       <div style="display:flex;justify-content:space-between;align-items:center">
         <span class="stat-code">${flag} ${code}</span>
         <span class="stat-count ${cls}">${n}/${CLASS_GOAL}</span>
       </div>
-      <div class="stat-bar"><div class="stat-bar-fill" style="width:${pct}%;background:${cls === "ok" ? "var(--ok)" : cls === "low" ? "var(--danger)" : "var(--amber)"}"></div></div>
+      <div class="stat-bar"><div class="stat-bar-fill" style="width:${pct}%;background:${cls==="ok"?"var(--ok)":cls==="low"?"var(--danger)":"var(--amber)"}"></div></div>
     </div>`;
-          })
-          .join("");
-      }
-      function resetStats() {
-        if (
-          !confirm(
-            "¿Reiniciar el contador local de imágenes por clase? (No borra nada en Roboflow)",
-          )
-        )
-          return;
-        classCounts = {};
-        localStorage.setItem("rf_class_counts", "{}");
-        renderClassStats();
-      }
-      renderClassStats();
+  }).join("");
+}
+function resetStats(){
+  if(!confirm("¿Reiniciar el contador local de imágenes por clase? (No borra nada en Roboflow)")) return;
+  classCounts={}; localStorage.setItem("rf_class_counts","{}"); renderClassStats();
+}
+renderClassStats();
 
-      // ── Agente Experto: base de conocimiento offline ─────────────────────────────
-      const KB = [
-        { id: "lamina", tema: "Lámina", chip: "🪵 Lámina", kw: ["lamina","cara de contacto","espesor","acero"],
-          texto: "**Lámina (cara de contacto)**\nEs la superficie plana de acero que queda en contacto directo con el concreto fresco. Su espesor típico va de 3 a 4.5 mm según la referencia. Debe estar lisa, sin abolladuras profundas ni óxido excesivo — esos defectos afectan el acabado del concreto y la detección visual del modelo.",
-          rel: ["bridas", "refuerzo-gen"] },
-        { id: "bridas", tema: "Bridas / marco", chip: "🔲 Bridas", kw: ["brida","bridas","marco perimetral","marco"],
-          texto: "**Bridas / marco perimetral**\nEs el borde metálico doblado en los 4 lados de la formaleta, perpendicular a la lámina. Contiene las perforaciones frontales (en las bridas cortas, extremos) y laterales (en las bridas largas, a lo ancho). El ancho de la brida ronda 60-65 mm — ahí se ubican los orificios de conexión con otras piezas.",
-          rel: ["perf-frontal", "perf-lateral"] },
-        { id: "platinas", tema: "Platinas", chip: "🔩 Platinas", kw: ["platina","platinas","union","unión"],
-          texto: "**Platinas de unión**\nPiezas rectangulares reforzadas soldadas en la brida donde se concentra más esfuerzo (esquinas y puntos de anclaje con pines). Se identifican por ser más gruesas que el resto de la brida y suelen tener 1-2 perforaciones adicionales de mayor diámetro.",
-          rel: ["refuerzo-gen"] },
-        { id: "refuerzo-gen", tema: "Refuerzos (general)", chip: "🛠️ Refuerzos", kw: ["refuerzo","refuerzos","rigidizador"],
-          texto: "**Refuerzos — tipos generales**\nBarras o perfiles metálicos soldados a la parte posterior de la lámina para evitar deformación bajo la presión del concreto. Se clasifican en transversales (perpendiculares al lado largo) y estructurales (a lo largo, en piezas grandes). A mayor tamaño de formaleta, más refuerzos.",
-          rel: ["refuerzo-trans", "refuerzo-estruct"] },
-        { id: "refuerzo-trans", tema: "Refuerzo transversal", chip: "↔️ Ref. transversal", kw: ["transversal"],
-          texto: "**Refuerzo transversal**\nPerfil metálico (usualmente tubular o en C) soldado en sentido perpendicular al largo de la pieza. En formaletas de 2400mm suele haber 2-3 refuerzos transversales espaciados uniformemente. Ayuda a distinguir piezas del mismo ancho pero distinto largo.",
-          rel: ["refuerzo-gen"] },
-        { id: "refuerzo-estruct", tema: "Refuerzo estructural", chip: "🏗️ Ref. estructural", kw: ["estructural"],
-          texto: "**Refuerzo estructural**\nPerfil de mayor sección soldado a lo largo de la pieza (paralelo a la brida larga), presente sobre todo en formaletas de gran tamaño (2400x600 mm o más) para evitar pandeo. Es el rasgo visual más fácil de detectar a distancia — una franja continua central.",
-          rel: ["refuerzo-gen"] },
-        { id: "angulos", tema: "Ángulos EI/EE", chip: "📐 Ángulos EI/EE", kw: ["angulo","ángulo","ei","ee","esquinero","esquineros"],
-          texto: "**Ángulos EI / EE (esquineros)**\nPiezas en forma de L usadas en las esquinas internas (EI) o externas (EE) de los muros. Se identifican por sus dos caras en ángulo recto y dimensiones estándar (ej. 150x150 mm de lado). Usa la herramienta 📐 Esquinero de la app para anotarlas — genera el polígono en L automáticamente.",
-          rel: ["perf-frontal"] },
-        { id: "perf-rect", tema: "Perforaciones rectangulares", chip: "▭ Ranuras", kw: ["ranura","ranuras","rectangular","rectangulares"],
-          texto: "**Perforaciones rectangulares (ranuras)**\nAlgunas piezas tienen ranuras alargadas en vez de orificios circulares — se usan para pines de ajuste variable. Aparecen normalmente cerca de las esquinas de la brida. No se cuentan igual que las perforaciones circulares en la fórmula de 50 mm.",
-          rel: ["perf-anom"] },
-        { id: "perf-anom", tema: "Perforaciones anómalas", chip: "⚠️ Perf. anómalas", kw: ["anomala","anómala","tie-rod","tierod","tie rod"],
-          texto: "**Perforaciones en la lámina (anómalas / tie-rods)**\nOrificios circulares que atraviesan la lámina misma (no la brida), usados para pasar tie-rods (varillas de amarre). No siguen el patrón de 50 mm de las bridas — su posición depende del diseño estructural de cada referencia. No confundir con perforaciones de brida al contar.",
-          rel: ["perf-frontal", "perf-lateral"] },
-        { id: "perf-frontal", tema: "Identificar por perforaciones frontales", chip: "🔢 Perf. frontales", kw: ["perforacion frontal","perforaciones frontales","frontal","frontales"],
-          texto: "**Identificación por perforaciones frontales**\nCuenta los orificios en las bridas cortas (extremos). Con inicio a 25 mm del borde y paso de 50 mm entre centros: número de perforaciones = ancho de la pieza (mm) ÷ 50.\nEj: 12 perforaciones frontales → ancho = 12×50 = 600 mm.",
-          rel: ["inicio-perf", "distancia-centros"] },
-        { id: "perf-lateral", tema: "Identificar por perforaciones laterales", chip: "🔢 Perf. laterales", kw: ["perforacion lateral","perforaciones laterales","lateral","laterales","canto"],
-          texto: "**Identificación por perforaciones laterales (canto)**\nCuenta los orificios en las bridas largas (a lo largo del canto). Misma regla: longitud (mm) ÷ 50.\nEj: 48 perforaciones laterales → longitud = 48×50 = 2400 mm.",
-          rel: ["inicio-perf", "distancia-centros"] },
-        { id: "inicio-perf", tema: "Inicio de perforaciones", chip: "📏 Inicio 25mm", kw: ["inicio","25 mm","25mm","borde"],
-          texto: "**Inicio de perforaciones (25 mm estándar UNISPAN)**\nTodas las bridas UNISPAN inician la primera perforación a 25 mm (2.5 cm) del borde exterior, en ambos extremos, de forma simétrica. Esta constante es clave para calcular medidas a partir del conteo de orificios.",
-          rel: ["distancia-centros"] },
-        { id: "distancia-centros", tema: "Distancia entre centros", chip: "📏 Paso 50mm", kw: ["distancia entre centros","50 mm","50mm","paso","centro a centro"],
-          texto: "**Distancia entre centros (100→50 mm, fórmula de conteo)**\nEl paso entre centros de perforación es constante: 50 mm. Fórmula general: n = medida_mm ÷ 50 (funciona igual en frontal y lateral, dado el inicio simétrico a 25 mm de cada lado). Usa la calculadora de esta pestaña para no hacerlo a mano.",
-          rel: ["perf-frontal", "perf-lateral", "tabla-perf"] },
-        { id: "tabla-perf", tema: "Tabla de perforaciones por referencia", chip: "📊 Tabla referencia", kw: ["tabla","referencia","referencias"],
-          texto: "**Tabla de perforaciones por referencia**\nAnchos (familia PM 300-600mm): 600→12 · 500→10 · 400→8 · 300→6 · 200→4 · 100→2 frontales.\nLargos: 2400→48 · 1200→24 · 900→18 · 800→16 · 600→12 · 300→6 laterales.\nFamilia PB (paneles bajos): anchos 80-270 mm, mismo paso de 50 mm.",
-          rel: ["calc"] },
-        { id: "procedimiento", tema: "Procedimiento paso a paso", chip: "✅ Cómo identificar", kw: ["procedimiento","paso a paso","como identificar","cómo identifico"],
-          texto: "**Procedimiento para identificar una pieza**\n1. Ubica la brida y cuenta perforaciones frontales → obtienes el ancho.\n2. Cuenta perforaciones laterales → obtienes el largo.\n3. Usa la calculadora de esta pestaña para confirmar y ver el código sugerido (ej. PM-2400x600).\n4. Revisa refuerzos y bridas para descartar variantes similares.\n5. Anota la foto en la app con la clase confirmada.",
-          rel: ["perf-frontal", "perf-lateral", "calc"] },
-        { id: "guia-fotos", tema: "Guía de fotos (30 img/clase)", chip: "📸 Guía de fotos", kw: ["guia de fotos","guía de fotos","30 imagenes","fotos"],
-          texto: "**Guía de fotos para llenar las 30 imágenes por clase**\nMeta inicial: 30 fotos por clase, variando:\n• Ángulo: frontal, 45°, cenital\n• Luz: sol directo, sombra, interior\n• Contexto: pieza sola, en arrume, con oclusión parcial\nCon el Modo Arrume activo puedes anotar varias piezas de una sola foto de arrume, acelerando el conteo.",
-          rel: ["procedimiento"] },
-      ];
-      function initExperto() {
-        expertoInit = true;
-        const chipsEl = document.getElementById("exp-chips");
-        chipsEl.innerHTML = KB.map(
-          (a) => `<span class="exp-chip" onclick="expAskTopic('${a.id}')">${a.chip}</span>`,
-        ).join("");
-        expBotSay(
-          "👋 Hola, soy el agente experto de UNISPAN. Pregúntame sobre láminas, bridas, refuerzos, perforaciones o toca un tema rápido arriba.",
-        );
-      }
-      function normalizar(s) {
-        return s
-          .toLowerCase()
-          .normalize("NFD")
-          .replace(/[\u0300-\u036f]/g, "");
-      }
-      function expBotSay(html, related) {
-        const chat = document.getElementById("exp-chat");
-        const div = document.createElement("div");
-        div.className = "exp-msg bot";
-        div.innerHTML = html.replace(/\*\*(.+?)\*\*/g, "<b>$1</b>");
-        if (related && related.length) {
-          const rel = document.createElement("div");
-          rel.className = "exp-related";
-          rel.innerHTML = related
-            .map((id) => {
-              const art = KB.find((a) => a.id === id);
-              return art
-                ? `<span onclick="expAskTopic('${id}')">${art.tema}</span>`
-                : "";
-            })
-            .join("");
-          div.appendChild(rel);
-        }
-        chat.appendChild(div);
-        chat.scrollTop = chat.scrollHeight;
-      }
-      function expUserSay(text) {
-        const chat = document.getElementById("exp-chat");
-        const div = document.createElement("div");
-        div.className = "exp-msg user";
-        div.textContent = text;
-        chat.appendChild(div);
-        chat.scrollTop = chat.scrollHeight;
-      }
-      function expAskTopic(id) {
-        const art = KB.find((a) => a.id === id);
-        if (!art) return;
-        expUserSay(art.tema);
-        expBotSay(art.texto, art.rel);
-      }
-      function expAsk() {
-        const input = document.getElementById("exp-input");
-        const q = input.value.trim();
-        if (!q) return;
-        expUserSay(q);
-        input.value = "";
-        const nq = normalizar(q);
-        let best = null,
-          bestScore = 0;
-        KB.forEach((a) => {
-          let score = 0;
-          a.kw.forEach((k) => {
-            if (nq.includes(normalizar(k))) score += k.length;
-          });
-          if (score > bestScore) {
-            bestScore = score;
-            best = a;
-          }
-        });
-        if (best) expBotSay(best.texto, best.rel);
-        else
-          expBotSay(
-            "No encontré un artículo exacto sobre eso. Prueba con: lámina, brida, refuerzo, ángulo, perforaciones frontales/laterales, o toca un tema rápido arriba.",
-          );
-      }
+// ══════════════════════════════════════════════════════════════════════════════
+// AGENTE EXPERTO — Base de conocimiento local sobre paneles formaleta UNISPAN
+// ══════════════════════════════════════════════════════════════════════════════
+const EXPERT_KB=[
+ {t:"Lámina (cara de contacto)",k:["lamina","lámina","cara","contacto","superficie","acero","espesor","chapa"],
+  a:"La <b>lámina</b> es la cara de contacto con el concreto. En paneles UNISPAN es de acero de 3–5 mm (típ. 3 mm en PM/PB, 4–5 mm en refuerzos pesados). Se identifica por su superficie lisa continua, bordes soldados al marco perimetral y por la ausencia de perforaciones en su cara frontal (las perforaciones van en las <i>bridas laterales</i>, no en la lámina). Un panel visto de frente muestra: lámina central + marco perimetral con perforaciones."},
+ {t:"Bridas / marco perimetral",k:["brida","bridas","marco","perimetral","canto","borde","perfil"],
+  a:"Las <b>bridas</b> son los perfiles laterales que forman el marco perimetral del panel. Sostienen la lámina y contienen las <b>perforaciones para pasadores y grapas</b> de unión entre paneles. Se identifican como una franja perimetral de ~55–65 mm de ancho con agujeros equidistantes. Familias:<br>• PM/PB: brida plana con perforaciones circulares y ranuras.<br>• EI (esquina interior): dos bridas a 90°.<br>• EE (esquina exterior): dos bridas a 90° hacia afuera."},
+ {t:"Platinas de unión",k:["platina","platinas","union","unión","placa","enlace"],
+  a:"Las <b>platinas</b> son placas metálicas planas soldadas o atornilladas que refuerzan uniones entre bridas o entre panel y refuerzo estructural. Suelen ser de acero 4–6 mm con 2 a 4 perforaciones. Se distinguen de una brida porque son <b>piezas puntuales</b> (no corren todo el borde) y suelen estar en esquinas o en cruces de refuerzos transversales."},
+ {t:"Refuerzos: tipos generales",k:["refuerzo","refuerzos","costilla","nervio","tipos"],
+  a:"Un panel formaleta tiene tres tipos de refuerzos:<br>1) <b>Refuerzo transversal</b> — perfiles horizontales/verticales soldados por detrás de la lámina cada 200–300 mm. Mantienen la planitud bajo presión de concreto.<br>2) <b>Refuerzo estructural (principal)</b> — perfiles más pesados (tubulares o C) que dan rigidez global; suelen ir en pares por la cara posterior.<br>3) <b>Refuerzo de brida</b> — pequeñas cartelas triangulares que unen brida con refuerzo transversal."},
+ {t:"Refuerzo transversal",k:["transversal","costilla","horizontal","nervio","separacion","separación"],
+  a:"El <b>refuerzo transversal</b> son perfiles (típicamente tubulares 40×20 mm o omega) soldados perpendicularmente a la lámina en la cara posterior. Se cuentan <b>de 3 a 6 refuerzos</b> según el ancho del panel. Regla práctica: separación entre ejes 200–300 mm. Su presencia y cantidad permiten distinguir un PM-2400×600 (más refuerzos) de un PB-2400×150 (uno o dos)."},
+ {t:"Refuerzo estructural",k:["estructural","principal","tubular","viga","rigidez"],
+  a:"El <b>refuerzo estructural</b> es el par de perfiles principales (tubo rectangular 60×40 o similar) que corren longitudinalmente por la cara posterior. Sostienen los refuerzos transversales y transmiten la carga a los pasadores. Un panel PM completo se identifica por: 2 refuerzos estructurales longitudinales + 4–6 transversales."},
+ {t:"Ángulos y esquineros",k:["angulo","ángulo","esquina","esquinero","EI","EE","interior","exterior"],
+  a:"Los <b>ángulos</b> son piezas conformadas a 90° para esquinas de muro:<br>• <b>EI (Esquina Interior)</b> — dos bridas hacia adentro, forman rincón interior.<br>• <b>EE (Esquina Exterior)</b> — dos bridas hacia afuera, forman canto de muro.<br>Se identifican por la <b>línea de doblez central</b> visible en la lámina y por tener perforaciones simétricas en ambas alas. Los códigos incluyen el ancho de cada ala (ej. EI-2400×150×150)."},
+ {t:"Perforaciones rectangulares",k:["rectangular","rectangulares","ranura","ranuras","oblonga","oblongas","slot"],
+  a:"Las <b>perforaciones rectangulares (ranuras)</b> permiten ajuste dimensional en obra. Aparecen en las bridas alternadas con las circulares. Dimensiones típicas: 15×30 mm. Su presencia indica que la pieza es un <b>panel principal</b>; los accesorios (platinas cortas, tapas) usualmente solo tienen circulares."},
+ {t:"Perforaciones en la lámina",k:["perforacion lamina","perforación lámina","agujero lamina","cara","frontal lamina"],
+  a:"Las <b>perforaciones frontales en la lámina</b> son <b>anómalas</b> en paneles estándar: la cara de contacto debe ser continua. Si aparecen, indican:<br>• Panel para <b>anclajes pasantes</b> (tie-rods) — agujeros de ~22 mm alineados verticalmente.<br>• Panel <b>reparado</b> o modificado (evitar en dataset limpio).<br>Marca estos casos con una clase separada para que el modelo no los confunda con paneles estándar."},
+ {t:"Perforaciones frontales (identificación)",k:["frontal","frontales","cara frontal","vista frontal","brida corta","ancho"],
+  a:"<b>Perforaciones frontales</b> = las de las <b>bridas cortas (extremos)</b> del panel, sobre el lado del ancho. Con paso de 50 mm y inicio a 25 mm:<br>• Ancho 600 mm ⇒ <b>12 perforaciones frontales</b>.<br>• Ancho 500 mm ⇒ <b>10 perforaciones frontales</b>.<br>• Ancho 400 mm ⇒ 8 · 300 mm ⇒ 6 · 200 mm ⇒ 4.<br>Fórmula: <code>n = (ancho − 2×25)/50 + 1 = ancho/50</code>. Contar las frontales es el camino más rápido para conocer el <b>ancho</b> del panel."},
+ {t:"Perforaciones laterales (identificación)",k:["lateral","laterales","canto","vista lateral","perfil lateral","brida larga","longitud"],
+  a:"<b>Perforaciones laterales</b> = las de las <b>bridas largas</b>, a lo largo de la longitud del panel. Con paso de 50 mm e inicio a 25 mm:<br>• Longitud 2400 mm ⇒ <b>48 perforaciones laterales</b>.<br>• 1200 ⇒ 24 · 900 ⇒ 18 · 800 ⇒ 16 · 600 ⇒ 12.<br>Fórmula: <code>n = longitud/50</code>. Contar las laterales revela la <b>longitud</b>."},
+ {t:"Inicio de las perforaciones",k:["inicio","comienzo","primera perforacion","primera perforación","borde perforacion","distancia borde","25 mm","2.5 cm"],
+  a:"El <b>inicio de las perforaciones</b> UNISPAN: <b>25 mm (2.5 cm)</b> desde el borde del panel al centro de la primera perforación, tanto en bridas frontales (cortas) como laterales (largas). Este valor es constante y sirve para verificar que la pieza es UNISPAN estándar."},
+ {t:"Medidas entre centros de perforaciones",k:["centro","centros","distancia","paso","pitch","separacion","separación","entre perforaciones","50 mm","5 cm"],
+  a:"<b>Paso entre centros UNISPAN: 50 mm (5 cm)</b>, constante en bridas frontales y laterales.<br>Regla: <code>n = (medida − 2×25)/50 + 1 = medida/50</code>.<br>Ej: 2400 mm ⇒ 48 · 600 mm ⇒ 12 · 500 mm ⇒ 10 · 400 mm ⇒ 8.<br>Este par (25 mm inicio + 50 mm paso) es la <b>firma dimensional</b> del sistema."},
+ {t:"Tabla de perforaciones por referencia",k:["tabla","referencia","lookup","matriz","cuantas perforaciones","cuántas perforaciones","cuenta"],
+  a:"<b>Frontales (por ancho) × Laterales (por longitud):</b><br><table style='width:100%;border-collapse:collapse;font-size:11px;margin-top:6px'><tr style='background:#0b1220;color:var(--amber)'><th style='padding:4px;border:1px solid #334'>Ancho</th><th style='padding:4px;border:1px solid #334'>Frontales</th><th style='padding:4px;border:1px solid #334'>Longitud</th><th style='padding:4px;border:1px solid #334'>Laterales</th></tr><tr><td style='padding:4px;border:1px solid #334'>600</td><td style='padding:4px;border:1px solid #334'>12</td><td style='padding:4px;border:1px solid #334'>2400</td><td style='padding:4px;border:1px solid #334'>48</td></tr><tr><td style='padding:4px;border:1px solid #334'>500</td><td style='padding:4px;border:1px solid #334'>10</td><td style='padding:4px;border:1px solid #334'>1200</td><td style='padding:4px;border:1px solid #334'>24</td></tr><tr><td style='padding:4px;border:1px solid #334'>450</td><td style='padding:4px;border:1px solid #334'>9</td><td style='padding:4px;border:1px solid #334'>900</td><td style='padding:4px;border:1px solid #334'>18</td></tr><tr><td style='padding:4px;border:1px solid #334'>400</td><td style='padding:4px;border:1px solid #334'>8</td><td style='padding:4px;border:1px solid #334'>800</td><td style='padding:4px;border:1px solid #334'>16</td></tr><tr><td style='padding:4px;border:1px solid #334'>350</td><td style='padding:4px;border:1px solid #334'>7</td><td style='padding:4px;border:1px solid #334'>750</td><td style='padding:4px;border:1px solid #334'>15</td></tr><tr><td style='padding:4px;border:1px solid #334'>300</td><td style='padding:4px;border:1px solid #334'>6</td><td style='padding:4px;border:1px solid #334'>600</td><td style='padding:4px;border:1px solid #334'>12</td></tr><tr><td style='padding:4px;border:1px solid #334'>250</td><td style='padding:4px;border:1px solid #334'>5</td><td style='padding:4px;border:1px solid #334'>500</td><td style='padding:4px;border:1px solid #334'>10</td></tr><tr><td style='padding:4px;border:1px solid #334'>200</td><td style='padding:4px;border:1px solid #334'>4</td><td style='padding:4px;border:1px solid #334'>400</td><td style='padding:4px;border:1px solid #334'>8</td></tr><tr><td style='padding:4px;border:1px solid #334'>150</td><td style='padding:4px;border:1px solid #334'>3</td><td style='padding:4px;border:1px solid #334'>300</td><td style='padding:4px;border:1px solid #334'>6</td></tr><tr><td style='padding:4px;border:1px solid #334'>100</td><td style='padding:4px;border:1px solid #334'>2</td><td style='padding:4px;border:1px solid #334'>200</td><td style='padding:4px;border:1px solid #334'>4</td></tr></table><br>Usa la calculadora arriba para cualquier medida."},
+ {t:"Cómo identificar un panel paso a paso",k:["identificar","como identificar","cómo identificar","paso a paso","procedimiento","reconocer"],
+  a:"<b>Procedimiento de identificación:</b><br>1) ¿Recto o esquinero? Doblez central ⇒ EI/EE.<br>2) Cuenta <b>perforaciones frontales</b> (bridas cortas) → ancho = frontales × 50 mm.<br>3) Cuenta <b>perforaciones laterales</b> (bridas largas) → longitud = laterales × 50 mm.<br>4) Ejemplo: 12 frontales + 48 laterales ⇒ <b>2400 × 600 mm</b>.<br>5) Verifica familia por ancho: PM (300–600), PB (80–270).<br>6) Confirma inicio 25 mm y paso 50 mm.<br>7) Cuenta refuerzos transversales por atrás como validación cruzada."},
+ {t:"Buenas fotos para el dataset",k:["foto","fotos","dataset","imagenes","imágenes","calidad","angulo","ángulo","varios"],
+  a:"Para <b>30 imágenes por clase</b> (meta inicial v7), cubre estos ángulos:<br>• 6 frontales (cara de contacto, distinta iluminación).<br>• 6 posteriores (mostrando refuerzos).<br>• 6 laterales / canto.<br>• 6 en arrume (varias piezas juntas — anota todas).<br>• 6 en obra / instaladas.<br>Evita fotos borrosas (v5 detector), asegura que las perforaciones se vean nítidas — son la firma identificatoria del panel."},
+];
 
-      // ── Calculadora bidireccional de perforaciones ───────────────────────────────
-      function familiaPorAncho(ancho) {
-        if (ancho >= 300 && ancho <= 600) return "PM";
-        if (ancho >= 80 && ancho <= 270) return "PB";
-        return null;
-      }
-      function calcPerf(origen) {
-        const $ = (id) => document.getElementById(id);
-        let ancho = parseFloat($("calc-ancho").value) || null;
-        let largo = parseFloat($("calc-largo").value) || null;
-        let frontal = parseInt($("calc-frontal").value) || null;
-        let lateral = parseInt($("calc-lateral").value) || null;
+let expertInited=false;
+function expertInit(){
+  if(expertInited) return; expertInited=true;
+  const chips=document.getElementById("expert-chips");
+  const topics=["Lámina","Bridas","Platinas","Refuerzos","Transversal","Estructural","Ángulos EI/EE","Rectangulares","Perforaciones frontales","Perforaciones laterales","Inicio de perforación","Distancia entre centros","Tabla de perforaciones","Identificar paso a paso","Buenas fotos"];
+  chips.innerHTML=topics.map(t=>`<span onclick="expertSay('${t}')" style="background:#1a2130;color:#f59e0b;padding:6px 10px;border-radius:14px;font-size:11px;cursor:pointer;border:1px solid #334">${t}</span>`).join("");
+  expertBot("¡Hola! Soy el <b>agente experto UNISPAN</b>. Pregúntame sobre láminas, bridas, refuerzos, perforaciones o cómo identificar una pieza. También puedes tocar un tema arriba.");
+}
+function expertBot(html){
+  const c=document.getElementById("expert-chat");
+  c.insertAdjacentHTML("beforeend",`<div style="margin:6px 0;padding:10px;background:#1a2130;border-radius:8px;border-left:3px solid var(--amber)"><b style="color:var(--amber)">🎓 Experto:</b><br>${html}</div>`);
+  c.scrollTop=c.scrollHeight;
+}
+function expertUser(txt){
+  const c=document.getElementById("expert-chat");
+  c.insertAdjacentHTML("beforeend",`<div style="margin:6px 0;padding:8px 10px;background:#0b1220;border-radius:8px;text-align:right;color:#cbd5e1"><b>Tú:</b> ${txt}</div>`);
+  c.scrollTop=c.scrollHeight;
+}
+function expertSay(topic){ document.getElementById("expert-input").value=topic; expertAsk(); }
+function normTxt(s){ return s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,""); }
+function expertAsk(){
+  const inp=document.getElementById("expert-input");
+  const q=inp.value.trim(); if(!q) return;
+  inp.value=""; expertUser(q);
+  const qn=normTxt(q);
+  const scored=EXPERT_KB.map(e=>{
+    const hay=normTxt(e.t+" "+e.k.join(" "));
+    let s=0;
+    qn.split(/\s+/).filter(w=>w.length>2).forEach(w=>{ if(hay.includes(w)) s+=w.length; });
+    e.k.forEach(k=>{ if(qn.includes(normTxt(k))) s+=6; });
+    return {e,s};
+  }).sort((a,b)=>b.s-a.s);
+  if(scored[0].s===0){
+    expertBot("No encontré una coincidencia clara. Intenta con: <i>lámina, brida, platina, refuerzo transversal, ángulo EI, perforación frontal, distancia entre centros, inicio de perforación</i>.");
+    return;
+  }
+  const top=scored[0].e;
+  let out=`<b>${top.t}</b><br>${top.a}`;
+  const rel=scored.slice(1,4).filter(x=>x.s>0);
+  if(rel.length){
+    out+=`<div style="margin-top:8px;font-size:11px;color:var(--steel)">También relacionado: ${rel.map(x=>`<span onclick="expertSay('${x.e.t}')" style="color:var(--amber);cursor:pointer;text-decoration:underline">${x.e.t}</span>`).join(" · ")}</div>`;
+  }
+  expertBot(out);
+}
 
-        if (origen === "frontal" && frontal) {
-          ancho = frontal * 50;
-          $("calc-ancho").value = ancho;
-        } else if (origen === "ancho" && ancho) {
-          frontal = Math.round(ancho / 50);
-          $("calc-frontal").value = frontal;
-        }
-        if (origen === "lateral" && lateral) {
-          largo = lateral * 50;
-          $("calc-largo").value = largo;
-        } else if (origen === "largo" && largo) {
-          lateral = Math.round(largo / 50);
-          $("calc-lateral").value = lateral;
-        }
+// ── Calculadora perforaciones ⇄ medidas ──────────────────────────────────────
+// Regla UNISPAN: inicio 25 mm, paso 50 mm ⇒ n = medida / 50
+const PITCH=50, START=25;
+const STD_W=[600,500,450,400,350,300,270,250,230,200,150,120,100,90,80];
+const STD_L=[2400,1200,900,800,750,600];
+function nearest(v,arr){ return arr.reduce((a,b)=>Math.abs(b-v)<Math.abs(a-v)?b:a); }
+function familyFor(w){ if(w>=300&&w<=600) return "PM"; if(w>=80&&w<=270) return "PB"; return "?"; }
+function calcOut(html){ document.getElementById("calc-out").innerHTML=html; }
+function calcFromDims(){
+  const w=+document.getElementById("calc-w").value, l=+document.getElementById("calc-l").value;
+  if(!w && !l){ calcOut("Ingresa medidas o conteos · inicio 25 mm · paso 50 mm"); return; }
+  let out=[];
+  if(w>0){ const nf=Math.round(w/PITCH); document.getElementById("calc-nf").value=nf; out.push(`Ancho ${w} mm ⇒ <b>${nf} frontales</b>`); }
+  if(l>0){ const nl=Math.round(l/PITCH); document.getElementById("calc-nl").value=nl; out.push(`Longitud ${l} mm ⇒ <b>${nl} laterales</b>`); }
+  if(w>0 && l>0){
+    const fam=familyFor(w), sw=nearest(w,STD_W), sl=nearest(l,STD_L);
+    out.push(`<span style="color:var(--amber)">Referencia sugerida: <b>${fam}-${sl}x${sw}</b></span>`);
+  }
+  calcOut(out.join("<br>"));
+}
+function calcFromCounts(){
+  const nf=+document.getElementById("calc-nf").value, nl=+document.getElementById("calc-nl").value;
+  if(!nf && !nl){ calcOut("Ingresa medidas o conteos · inicio 25 mm · paso 50 mm"); return; }
+  let out=[];
+  if(nf>0){ const w=nf*PITCH; document.getElementById("calc-w").value=w; out.push(`${nf} frontales ⇒ ancho <b>${w} mm</b>`); }
+  if(nl>0){ const l=nl*PITCH; document.getElementById("calc-l").value=l; out.push(`${nl} laterales ⇒ longitud <b>${l} mm</b>`); }
+  if(nf>0 && nl>0){
+    const w=nf*PITCH, l=nl*PITCH, fam=familyFor(w), sw=nearest(w,STD_W), sl=nearest(l,STD_L);
+    out.push(`<span style="color:var(--amber)">Referencia sugerida: <b>${fam}-${sl}x${sw}</b></span>`);
+  }
+  calcOut(out.join("<br>"));
+}
 
-        const res = $("calc-result");
-        if (!ancho && !largo) {
-          res.style.display = "none";
-          return;
-        }
-        const fam = ancho ? familiaPorAncho(ancho) : null;
-        let sugerido = "—";
-        if (fam && ancho && largo) sugerido = `${fam}-${largo}x${ancho}`;
-        res.style.display = "block";
-        res.innerHTML = `
-          ${ancho ? `Ancho: <b>${ancho} mm</b> · Frontales: <b>${frontal ?? "—"}</b><br/>` : ""}
-          ${largo ? `Longitud: <b>${largo} mm</b> · Laterales: <b>${lateral ?? "—"}</b><br/>` : ""}
-          ${fam ? `Familia detectada: <b>${fam}</b> · ` : ""}Código sugerido: <b>${sugerido}</b>
-        `;
-      }
+// ══════════════════════════════════════════════════════════════════════════════
+// MEMORIA + ANÁLISIS IA — Aprende de cada imagen y observa estructura
+// ══════════════════════════════════════════════════════════════════════════════
+const savedOpenAIKey=localStorage.getItem("openai_key");
+if(savedOpenAIKey) { const el=document.getElementById("openai-key"); if(el) el.value=savedOpenAIKey; }
+document.addEventListener("blur",e=>{ if(e.target?.id==="openai-key") localStorage.setItem("openai_key",e.target.value.trim()); },true);
 
-      // ── SAM tap-to-segment (SlimSAM vía @huggingface/transformers) ───────────────
-      const SAM_CDN = "https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.0.2";
-      function samSetStatus(txt) {
-        const el = document.getElementById("sam-status");
-        if (el) el.textContent = txt || "";
-      }
-      async function initSAM() {
-        if (samReady || samLoading) {
-          if (samReady && selectedFile) samEncodeCurrentImage();
-          return;
-        }
-        samLoading = true;
-        samSetStatus("⏳ Cargando…");
-        try {
-          const mod = await import(SAM_CDN);
-          const { SamModel, AutoProcessor, env } = mod;
-          env.allowLocalModels = false;
-          samModel = await SamModel.from_pretrained("Xenova/slimsam-77-uniform", {
-            dtype: "fp32",
-          });
-          samProcessor = await AutoProcessor.from_pretrained(
-            "Xenova/slimsam-77-uniform",
-          );
-          samReady = true;
-          samSetStatus("✅ Listo");
-          showToast("✅ SAM listo", "ok");
-          if (selectedFile) await samEncodeCurrentImage();
-        } catch (err) {
-          console.error("SAM load error:", err);
-          samSetStatus("⚠️ No disponible en este navegador");
-          showToast(
-            "⚠️ SAM no pudo cargar — usa Arrume/Pieza/Polígono/Esquinero",
-            "err",
-          );
-        }
-        samLoading = false;
-      }
-      async function samEncodeCurrentImage() {
-        if (!samReady || !selectedFile || samEncoding) return;
-        if (samEncodedForFile === selectedFile) return; // ya codificada
-        samEncoding = true;
-        samSetStatus("⏳ Analizando imagen…");
-        try {
-          const mod = await import(SAM_CDN);
-          const { RawImage } = mod;
-          const img = document.getElementById("bbox-img");
-          const raw = await RawImage.fromURL(img.src);
-          samImageInputs = await samProcessor(raw);
-          samImageEmbeddings = await samModel.get_image_embeddings(
-            samImageInputs,
-          );
-          samEncodedForFile = selectedFile;
-          samSetStatus("✅ Listo · toca una pieza");
-        } catch (err) {
-          console.error("SAM encode error:", err);
-          samSetStatus("⚠️ No se pudo analizar la imagen");
-          samImageEmbeddings = null;
-        }
-        samEncoding = false;
-      }
-      async function samTapSegment(e) {
-        if (!checkClase()) return;
-        if (!samReady) {
-          await initSAM();
-          if (!samReady) return;
-        }
-        if (samEncodedForFile !== selectedFile) {
-          await samEncodeCurrentImage();
-        }
-        if (!samImageEmbeddings) return;
-        const p = getPos(e); // coords en espacio canvas (imgDispW/H)
-        const sx = imgNatW / canvas.width,
-          sy = imgNatH / canvas.height;
-        const origX = p.x * sx,
-          origY = p.y * sy;
-        samSetStatus("⏳ Segmentando…");
-        try {
-          const mod = await import(SAM_CDN);
-          const reshaped = samImageInputs.reshaped_input_sizes[0]; // [h, w]
-          const nx = (origX / imgNatW) * reshaped[1];
-          const ny = (origY / imgNatH) * reshaped[0];
-          const inputs = await samProcessor(undefined, undefined, undefined, {
-            input_points: [[[[nx, ny]]]],
-            input_labels: [[[1]]],
-          });
-          const { pred_masks, iou_scores } = await samModel({
-            ...samImageInputs,
-            ...inputs,
-          });
-          const processed = await samProcessor.post_process_masks(
-            pred_masks,
-            samImageInputs.original_sizes,
-            samImageInputs.reshaped_input_sizes,
-          );
-          const maskTensor = processed[0]; // dims [1, num_masks, H, W]
-          const scores = iou_scores.data;
-          let bestIdx = 0,
-            bestScore = -Infinity;
-          for (let i = 0; i < scores.length; i++) {
-            if (scores[i] > bestScore) {
-              bestScore = scores[i];
-              bestIdx = i;
-            }
-          }
-          const dims = maskTensor.dims; // [1, numMasks, H, W]
-          const H = dims[dims.length - 2],
-            W = dims[dims.length - 1];
-          const numMasks = dims[dims.length - 3] || 1;
-          const flat = maskTensor.data;
-          const maskArr = new Uint8Array(W * H);
-          const base = bestIdx * H * W;
-          for (let i = 0; i < H * W; i++) maskArr[i] = flat[base + i] ? 1 : 0;
+// Registro básico automático al cargar imagen: aspecto, tamaño, nitidez (blur var)
+let _lastMemoryEntry=null;
+function recordMemory(img,file){
+  const w=img.naturalWidth, h=img.naturalHeight;
+  const aspect=+(w/h).toFixed(3);
+  const entry={
+    id:Date.now(),
+    filename:file?.name||"cam",
+    w,h,aspect,
+    orientation: aspect>1.2?"horizontal":aspect<0.83?"vertical":"cuadrada",
+    classes:[], qty:null, blur:null,
+    note:"", aiObs:null,
+    date:new Date().toISOString(),
+  };
+  imgMemory.unshift(entry); if(imgMemory.length>200) imgMemory.length=200;
+  _lastMemoryEntry=entry; saveMemory();
+}
+// Al confirmar upload, enriquecer la última entrada con las clases anotadas
+function updateMemoryFromUpload(checkedAnnos){
+  if(!_lastMemoryEntry) return;
+  const clsList=[...new Set(checkedAnnos.filter(a=>!a.isQty).map(a=>a.clase))];
+  _lastMemoryEntry.classes=clsList;
+  _lastMemoryEntry.qty=checkedAnnos.find(a=>a.qty)?.qty||null;
+  saveMemory();
+}
+// Hook al upload existente: parche liviano
+const _origUploadAll=window.uploadAll;
+// (uploadAll ya está definido arriba; le añadimos gancho via wrap después)
 
-          const contourOrig = traceMooreContour(maskArr, W, H);
-          if (contourOrig.length < 3) {
-            samSetStatus("⚠️ No se detectó contorno, intenta otro punto");
-            return;
-          }
-          const simplified = simplifyToMax(contourOrig, 80);
-          const scaleX = canvas.width / W,
-            scaleY = canvas.height / H;
-          const pts = simplified.map(([x, y]) => ({
-            x: x * scaleX,
-            y: y * scaleY,
-          }));
+// Blur ya calcula variance; capturamos el número en un data-attr
+const _origAnalyzeBlur=analyzeBlur;
+analyzeBlur=function(img){
+  try{
+    const S=180, c=document.createElement("canvas"); c.width=S; c.height=S;
+    const g=c.getContext("2d"); g.drawImage(img,0,0,S,S);
+    const d=g.getImageData(0,0,S,S).data;
+    const lum=new Float32Array(S*S);
+    for(let i=0;i<S*S;i++) lum[i]=0.299*d[i*4]+0.587*d[i*4+1]+0.114*d[i*4+2];
+    let sum=0,sum2=0,n=0;
+    for(let y=1;y<S-1;y++) for(let x=1;x<S-1;x++){
+      const i=y*S+x; const v=-lum[i-S]-lum[i-1]+4*lum[i]-lum[i+1]-lum[i+S];
+      sum+=v; sum2+=v*v; n++;
+    }
+    const variance=(sum2/n)-(sum/n)**2;
+    if(_lastMemoryEntry){ _lastMemoryEntry.blur=Math.round(variance); saveMemory(); }
+  }catch(_){}
+  return _origAnalyzeBlur(img);
+};
 
-          const id = Date.now();
-          const color = COLORS[annotations.length % COLORS.length];
-          annotations.push({
-            id,
-            clase: currentClase,
-            type: "polygon",
-            points: pts,
-            color,
-            checked: true,
-            qty: null,
-          });
-          redraw();
-          renderAnnoList();
-          updateButtons();
-          samSetStatus("✅ Listo · toca otra pieza");
-          if (modoArrume) arrumeTick();
-          else showQtyPrompt(id);
-        } catch (err) {
-          console.error("SAM segment error:", err);
-          samSetStatus("⚠️ Error al segmentar, intenta otro punto");
-          showToast("⚠️ SAM no pudo segmentar ese punto", "err");
-        }
-      }
-      // Moore-neighbor contour tracing sobre máscara binaria (W×H)
-      function traceMooreContour(mask, w, h) {
-        const at = (x, y) =>
-          x < 0 || y < 0 || x >= w || y >= h ? 0 : mask[y * w + x];
-        let start = null;
-        outer: for (let y = 0; y < h; y++)
-          for (let x = 0; x < w; x++)
-            if (at(x, y)) {
-              start = [x, y];
-              break outer;
-            }
-        if (!start) return [];
-        const dirs = [
-          [1, 0],
-          [1, 1],
-          [0, 1],
-          [-1, 1],
-          [-1, 0],
-          [-1, -1],
-          [0, -1],
-          [1, -1],
-        ];
-        const contour = [];
-        let curr = start,
-          prev = [start[0] - 1, start[1]];
-        const maxIter = w * h * 4;
-        let count = 0;
-        do {
-          contour.push([curr[0], curr[1]]);
-          let dIdx = dirs.findIndex(
-            (d) => curr[0] + d[0] === prev[0] && curr[1] + d[1] === prev[1],
-          );
-          if (dIdx === -1) dIdx = 6;
-          let found = false;
-          for (let i = 1; i <= 8; i++) {
-            const idx = (dIdx + i) % 8;
-            const nx = curr[0] + dirs[idx][0],
-              ny = curr[1] + dirs[idx][1];
-            if (at(nx, ny)) {
-              const bgIdx = (idx + 7) % 8;
-              prev = [curr[0] + dirs[bgIdx][0], curr[1] + dirs[bgIdx][1]];
-              curr = [nx, ny];
-              found = true;
-              break;
-            }
-          }
-          if (!found) break;
-          count++;
-        } while (
-          !(curr[0] === start[0] && curr[1] === start[1]) &&
-          count < maxIter
-        );
-        return contour;
-      }
-      function perpDist(p, a, b) {
-        const [x, y] = p,
-          [x1, y1] = a,
-          [x2, y2] = b;
-        const num = Math.abs((y2 - y1) * x - (x2 - x1) * y + x2 * y1 - y2 * x1);
-        const den = Math.hypot(y2 - y1, x2 - x1) || 1;
-        return num / den;
-      }
-      function douglasPeucker(points, epsilon) {
-        if (points.length < 3) return points;
-        let dmax = 0,
-          index = 0;
-        for (let i = 1; i < points.length - 1; i++) {
-          const d = perpDist(
-            points[i],
-            points[0],
-            points[points.length - 1],
-          );
-          if (d > dmax) {
-            dmax = d;
-            index = i;
-          }
-        }
-        if (dmax > epsilon) {
-          const left = douglasPeucker(points.slice(0, index + 1), epsilon);
-          const right = douglasPeucker(points.slice(index), epsilon);
-          return left.slice(0, -1).concat(right);
-        }
-        return [points[0], points[points.length - 1]];
-      }
-      function simplifyToMax(points, maxPts) {
-        let eps = 1,
-          simplified = points;
-        for (let i = 0; i < 25 && simplified.length > maxPts; i++) {
-          simplified = douglasPeucker(points, eps);
-          eps *= 1.4;
-        }
-        return simplified;
-      }
+async function analyzeCurrentWithAI(){
+  const key=(document.getElementById("openai-key")?.value||"").trim();
+  const out=document.getElementById("ai-analysis-out");
+  out.style.display="block";
+  if(!selectedFile){ out.textContent="⚠️ Carga una imagen primero (Cámara o Galería)."; return; }
+  if(!key){
+    // Modo offline: describir la imagen con datos que ya tenemos
+    const e=_lastMemoryEntry;
+    if(!e){ out.textContent="⚠️ Sin datos aún."; return; }
+    out.innerHTML=`
+      <b>Observación local (sin IA):</b><br>
+      • Dimensiones: ${e.w}×${e.h} px · aspecto ${e.aspect} (${e.orientation})<br>
+      • Nitidez (var. Laplaciano): ${e.blur??"?"} ${e.blur>180?"✅ nítida":e.blur>80?"⚠️ media":"❌ borrosa"}<br>
+      • Clases anotadas hasta ahora: ${e.classes.length?e.classes.join(", "):"(ninguna)"}<br>
+      <span style="color:var(--steel)">Agrega una API key de OpenAI para análisis visual profundo de estructura, bridas, perforaciones y refuerzos.</span>`;
+    return;
+  }
+  localStorage.setItem("openai_key",key);
+  out.innerHTML="⏳ Analizando con gpt-4o-mini…";
+  try{
+    const b64=await fileToB64(selectedFile);
+    const prompt=`Eres un experto en formaletas UNISPAN. Analiza esta foto de un panel formaleta y describe brevemente:
+1) Tipo probable (PM panel principal / PB básico / EI esquinero interior / EE exterior / accesorio)
+2) Estructura visible: lámina, bridas (marco perimetral), platinas, refuerzos transversales/estructurales
+3) Perforaciones frontales (bridas cortas) y laterales (bridas largas) si son contables — cuenta aproximada
+4) Estimación de medidas: ancho × longitud (mm) según perforaciones (inicio 25 mm, paso 50 mm, n=medida/50)
+5) Anomalías: perforaciones en la lámina, daños, reparaciones
+6) Calidad de la foto para dataset (nítida / borrosa / ángulo / iluminación)
+Responde en JSON compacto: {"tipo":"","estructura":"","frontales":0,"laterales":0,"ancho_mm":0,"largo_mm":0,"referencia_sugerida":"","anomalias":"","calidad_foto":"","confianza":0.0}`;
+    const res=await fetch("https://api.openai.com/v1/chat/completions",{
+      method:"POST",
+      headers:{"Content-Type":"application/json","Authorization":"Bearer "+key},
+      body:JSON.stringify({
+        model:"gpt-4o-mini",
+        messages:[{role:"user",content:[
+          {type:"text",text:prompt},
+          {type:"image_url",image_url:{url:b64}}
+        ]}],
+        max_tokens:400,
+      }),
+    });
+    const data=await res.json();
+    if(!res.ok) throw new Error(data.error?.message||`HTTP ${res.status}`);
+    const raw=data.choices?.[0]?.message?.content||"";
+    let parsed=null;
+    try{ const m=raw.match(/\{[\s\S]*\}/); if(m) parsed=JSON.parse(m[0]); }catch(_){}
+    if(_lastMemoryEntry){ _lastMemoryEntry.aiObs=parsed||raw; saveMemory(); }
+    if(parsed){
+      out.innerHTML=`<b style="color:var(--amber)">🤖 Análisis IA:</b><br>
+        • <b>Tipo:</b> ${parsed.tipo||"?"} ${parsed.referencia_sugerida?` → <span style="color:var(--amber);font-family:monospace">${parsed.referencia_sugerida}</span>`:""}<br>
+        • <b>Estructura:</b> ${parsed.estructura||"?"}<br>
+        • <b>Perforaciones:</b> ${parsed.frontales||"?"} frontales · ${parsed.laterales||"?"} laterales<br>
+        • <b>Medidas estimadas:</b> ${parsed.ancho_mm||"?"} × ${parsed.largo_mm||"?"} mm<br>
+        • <b>Anomalías:</b> ${parsed.anomalias||"ninguna"}<br>
+        • <b>Foto:</b> ${parsed.calidad_foto||"?"} · confianza ${((parsed.confianza||0)*100).toFixed(0)}%<br>
+        <span style="color:var(--steel);font-size:10px">Guardado en memoria para consulta posterior.</span>`;
+    } else {
+      out.innerHTML=`<b>🤖 Análisis IA (texto):</b><br><pre style="white-space:pre-wrap;font-size:11px">${raw}</pre>`;
+    }
+  }catch(err){
+    out.innerHTML=`❌ Error IA: ${err.message}`;
+  }
+}
 
-      // ── Descarga del archivo HTML ─────────────────────────────────────────────
-      function descargarHTML(){
-        const html = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
-        const blob = new Blob([html], {type: 'text/html;charset=utf-8'});
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url; a.download = 'UNISPAN-v6.html';
-        document.body.appendChild(a); a.click();
-        document.body.removeChild(a); URL.revokeObjectURL(url);
-        showToast('✅ Descargando UNISPAN-v6.html', 'ok');
-      }
-    </script>
-  <script src="https://replit-cdn.com/replit-pill/replit-pill.global.js" data-repl-id="28ac5d31-eec0-47b4-9cb2-d0226f01e665"></script>
+function showMemorySummary(){
+  const out=document.getElementById("ai-analysis-out");
+  out.style.display="block";
+  if(!imgMemory.length){ out.innerHTML="📭 Aún no hay imágenes en memoria."; return; }
+  // Agregar por clase
+  const byClass={};
+  imgMemory.forEach(e=>e.classes.forEach(c=>{
+    if(!byClass[c]) byClass[c]={n:0,aspects:[],blurs:[]};
+    byClass[c].n++;
+    byClass[c].aspects.push(e.aspect);
+    if(e.blur) byClass[c].blurs.push(e.blur);
+  }));
+  const withAI=imgMemory.filter(e=>e.aiObs).length;
+  let html=`<b>🧠 Memoria: ${imgMemory.length} imágenes · ${withAI} con análisis IA</b><br><br>`;
+  const entries=Object.entries(byClass).sort((a,b)=>b[1].n-a[1].n).slice(0,12);
+  if(!entries.length){ html+="<i style='color:var(--steel)'>Sin clases anotadas todavía.</i>"; }
+  else{
+    html+="<table style='width:100%;border-collapse:collapse;font-size:11px'><tr style='color:var(--amber)'><th style='text-align:left;padding:3px'>Clase</th><th style='padding:3px'>N</th><th style='padding:3px'>Aspecto μ</th><th style='padding:3px'>Nitidez μ</th></tr>";
+    entries.forEach(([c,d])=>{
+      const avgA=(d.aspects.reduce((s,x)=>s+x,0)/d.aspects.length).toFixed(2);
+      const avgB=d.blurs.length?Math.round(d.blurs.reduce((s,x)=>s+x,0)/d.blurs.length):"?";
+      html+=`<tr style='border-top:1px solid #223'><td style='padding:3px;font-family:monospace'>${c}</td><td style='padding:3px;text-align:center'>${d.n}</td><td style='padding:3px;text-align:center'>${avgA}</td><td style='padding:3px;text-align:center'>${avgB}</td></tr>`;
+    });
+    html+="</table>";
+  }
+  out.innerHTML=html;
+}
+function clearMemory(){
+  if(!confirm("¿Borrar toda la memoria de imágenes analizadas? (No afecta al dataset en Roboflow)")) return;
+  imgMemory=[]; saveMemory();
+  const out=document.getElementById("ai-analysis-out");
+  out.style.display="block"; out.textContent="🗑️ Memoria borrada.";
+}
 
-</body></html>
+// Enriquecer la memoria cuando se sube (parche al uploadAll existente)
+(function(){
+  const origUp=window.uploadAll;
+  window.uploadAll=async function(){
+    const checkedBefore=annotations.filter(a=>a.checked);
+    const r=await origUp.apply(this,arguments);
+    updateMemoryFromUpload(checkedBefore);
+    return r;
+  };
+})();
+
+// Ampliar chips del experto con temas de memoria
+setTimeout(()=>{
+  const chips=document.getElementById("expert-chips");
+  if(chips && !chips.dataset.v9){
+    chips.dataset.v9="1";
+    // Se rellenan en expertInit; nada más que hacer aquí
+  }
+},100);
+</script>
+</body>
+</html>
