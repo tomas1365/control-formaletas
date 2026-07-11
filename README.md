@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#0a1628">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>UNISPAN — Captura Dataset v10</title>
+<title>UNISPAN — Captura Dataset v11</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;touch-action:manipulation;}
 :root{--bg:#0a1628;--surface:#102a43;--surface2:#1a3a5c;--border:rgba(99,125,152,0.25);--amber:#f59e0b;--steel:#627d98;--text:#e2e8f0;--text2:#94a3b8;--ok:#22c55e;--danger:#ef4444;--radius:14px;}
@@ -187,7 +187,7 @@ input[type="password"]{letter-spacing:2px;}
 
 <header>
   <div class="logo">U</div>
-  <div><h1>UNISPAN Dataset v10</h1><p>Esquinero + Galería + Memoria IA + Descarte de foto</p></div>
+  <div><h1>UNISPAN Dataset v11</h1><p>SAM fix + Experto con IA + memoria contextual + familia EE</p></div>
 </header>
 
 <div class="tabs">
@@ -467,6 +467,7 @@ const CATALOG=[];
 [2400,1200,900,800,750,600].forEach(l=>[600,550,500,450,420,400,380,350,320,300].forEach(a=>CATALOG.push({code:`PM-${l}x${a}`,family:"PM",spec:`${l}×${a}mm`})));
 [2400,1200,900,800,750,600].forEach(l=>[270,250,230,200,150,120,100,90,80].forEach(a=>CATALOG.push({code:`PB-${l}x${a}`,family:"PB",spec:`${l}×${a}mm`})));
 [2400,1200,900,800,600].forEach(l=>CATALOG.push({code:`EI-${l}x150x150`,family:"EI",spec:`${l}×150×150mm`}));
+[2400,1200,900,800,600].forEach(l=>CATALOG.push({code:`EE-${l}x150x150`,family:"EE",spec:`${l}×150×150mm`}));
 
 // Texto compacto del catálogo para dar contexto real al modelo de IA (grounding)
 function catalogSummaryForPrompt(){
@@ -1070,24 +1071,37 @@ async function ensureSamReady(){
       samStatus("⏳ Cargando SAM (~40MB, solo primera vez)…");
       const mod=await import("https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.0.2");
       window._tf=mod;
-      samStatus("⏳ Inicializando modelo…");
-      samModel=await mod.SamModel.from_pretrained("Xenova/slimsam-77-uniform",{dtype:"fp16"}).catch(async ()=>{
-        return await mod.SamModel.from_pretrained("Xenova/slimsam-77-uniform");
-      });
+      samStatus("⏳ Inicializando modelo (fp32, sin WebGPU)…");
+      // fp16 se cuelga en muchos móviles sin WebGPU: usar fp32 directo. Timeout de 90s para no quedar "Cargando" infinito.
+      const loadModel=mod.SamModel.from_pretrained("Xenova/slimsam-77-uniform");
+      const timeout=new Promise((_,rej)=>setTimeout(()=>rej(new Error("timeout carga modelo (90s)")),90000));
+      samModel=await Promise.race([loadModel,timeout]);
       samProcessor=await mod.AutoProcessor.from_pretrained("Xenova/slimsam-77-uniform");
     }
     if(!samInputs || !samEmbeddings){
       samStatus("⏳ Analizando imagen…");
       const mod=window._tf;
       const img=document.getElementById("bbox-img");
-      const raw=await mod.RawImage.fromURL(img.src);
+      let raw;
+      try{
+        raw=await mod.RawImage.fromURL(img.src);
+      }catch(e1){
+        // Fallback: blob:/objectURL a veces falla silenciosamente en fromURL → re-render por canvas
+        samStatus("⏳ Reintentando lectura de imagen (canvas)…");
+        const cv=document.createElement("canvas");
+        cv.width=img.naturalWidth; cv.height=img.naturalHeight;
+        cv.getContext("2d").drawImage(img,0,0);
+        const blob=await new Promise(r=>cv.toBlob(r,"image/png"));
+        raw=await mod.RawImage.fromBlob(blob);
+      }
       samInputs=await samProcessor(raw);
       samEmbeddings=await samModel.get_image_embeddings(samInputs);
     }
     samStatus("✅ SAM listo · Toca una pieza dentro del arrume");
   }catch(err){
     console.error("SAM error:",err);
-    samStatus(`❌ SAM no disponible: ${(err.message||err).toString().slice(0,80)}`);
+    samModel=null; samInputs=null; samEmbeddings=null; // permitir reintento limpio
+    samStatus(`❌ SAM no disponible: ${(err.message||err).toString().slice(0,120)} · Toca la imagen para reintentar`);
   }finally{ samLoading=false; }
 }
 
@@ -1158,7 +1172,8 @@ function maskToPolygon(data, offset, W, H, tapX, tapY){
   // en vez de tomar el primer píxel activo top-left de toda la máscara (eso hacía que, si la
   // máscara traía ruido u otras regiones, se dibujara el contorno de una pieza distinta a la tocada).
   const bin=new Uint8Array(W*H);
-  for(let i=0;i<W*H;i++){ const v=data[offset+i]; bin[i]=(v && v!==0n)?1:0; }
+  // v puede ser Number (Uint8Array/Float32) o BigInt (BigInt64). `!==0n` da true para 0-Number ⇒ activaba TODOS los píxeles.
+  for(let i=0;i<W*H;i++){ const v=data[offset+i]; bin[i]=v?1:0; }
   let sx=-1, sy=-1;
   if(tapX!=null && tapY!=null){
     const near=nearestActivePixel(bin, W, H, tapX, tapY, 80);
@@ -1674,7 +1689,46 @@ function expertUser(txt){
 }
 function expertSay(topic){ document.getElementById("expert-input").value=topic; expertAsk(); }
 function normTxt(s){ return s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,""); }
-function expertAsk(){
+function memoryContextForAI(){
+  // Resumen compacto de imgMemory + última observación IA para dar contexto al chat
+  if(!imgMemory.length) return "Memoria vacía (aún no se ha capturado ninguna imagen).";
+  const byClass={};
+  imgMemory.forEach(e=>e.classes.forEach(c=>{ byClass[c]=(byClass[c]||0)+1; }));
+  const clsList=Object.entries(byClass).sort((a,b)=>b[1]-a[1]).slice(0,15).map(([c,n])=>`${c}:${n}`).join(", ")||"(sin clases anotadas)";
+  const withAI=imgMemory.filter(e=>e.aiObs);
+  const lastAI=withAI[0]?.aiObs;
+  let lastAiTxt="(sin análisis IA previo)";
+  if(lastAI){
+    if(typeof lastAI==="object"){
+      lastAiTxt=`tipo=${lastAI.tipo||"?"} familia=${lastAI.familia||"?"} ref=${lastAI.referencia_validada||"?"} ancho=${lastAI.ancho_mm||"?"} largo=${lastAI.largo_mm||"?"} frontales=${lastAI.frontales||"?"} laterales=${lastAI.laterales||"?"} anomalias=${lastAI.anomalias||"-"}`;
+    } else lastAiTxt=String(lastAI).slice(0,300);
+  }
+  return `Imágenes capturadas: ${imgMemory.length} (${withAI.length} con análisis IA).\nClases anotadas: ${clsList}.\nÚltima observación IA: ${lastAiTxt}.`;
+}
+async function askAIExpertFallback(question){
+  const key=(document.getElementById("openai-key")?.value||"").trim();
+  if(!key) return null;
+  const ctx=memoryContextForAI();
+  const kbBrief=EXPERT_KB.map(e=>`• ${e.t}`).join("\n");
+  const sys=`Eres el agente experto UNISPAN. Sabes de láminas, bridas, platinas, refuerzos (transversal, estructural, brida), ángulos EI/EE, perforaciones (inicio 25mm, paso 50mm ⇒ n=medida/50), y de identificar piezas por perforaciones frontales (ancho) y laterales (largo).\nCatálogo real:\n${catalogSummaryForPrompt()}\nTemas conocidos internamente:\n${kbBrief}\nEstado actual de la captura de este usuario:\n${ctx}\nResponde en español, breve y práctico (máx 6 líneas), usando <b> para lo clave. Si la pregunta se refiere a "la foto actual" o "lo que capturé", usa la observación IA de arriba. Si no hay datos suficientes, dilo.`;
+  try{
+    const res=await fetch("https://api.openai.com/v1/chat/completions",{
+      method:"POST",
+      headers:{"Content-Type":"application/json","Authorization":"Bearer "+key},
+      body:JSON.stringify({
+        model:"gpt-4o-mini",
+        messages:[{role:"system",content:sys},{role:"user",content:question}],
+        max_tokens:350,
+      }),
+    });
+    const data=await res.json();
+    if(!res.ok) throw new Error(data.error?.message||`HTTP ${res.status}`);
+    return data.choices?.[0]?.message?.content||null;
+  }catch(err){
+    return `<span style="color:var(--danger)">❌ IA falló: ${err.message}</span>`;
+  }
+}
+async function expertAsk(){
   const inp=document.getElementById("expert-input");
   const q=inp.value.trim(); if(!q) return;
   inp.value=""; expertUser(q);
@@ -1686,9 +1740,21 @@ function expertAsk(){
     e.k.forEach(k=>{ if(qn.includes(normTxt(k))) s+=6; });
     return {e,s};
   }).sort((a,b)=>b.s-a.s);
-  if(scored[0].s===0){
-    expertBot("No encontré una coincidencia clara. Intenta con: <i>lámina, brida, platina, refuerzo transversal, ángulo EI, perforación frontal, distancia entre centros, inicio de perforación</i>.");
-    return;
+  // Palabras que fuerzan uso de memoria/IA (contexto), aunque haya match en KB
+  const wantsContext=/\b(foto|imagen|captur|actual|memoria|analic|reciente|ultim|últim|qu[eé] tom|qu[eé] veo|reconoc)/i.test(q);
+  const hasKey=!!(document.getElementById("openai-key")?.value||"").trim();
+  if(scored[0].s===0 || wantsContext){
+    if(hasKey){
+      expertBot("⏳ Consultando IA…");
+      const c=document.getElementById("expert-chat"); const loading=c.lastElementChild;
+      const ans=await askAIExpertFallback(q);
+      if(loading) loading.remove();
+      if(ans){ expertBot(`🤖 <i>IA</i>: ${ans}`); return; }
+    }
+    if(scored[0].s===0){
+      expertBot("No encontré una coincidencia clara en la base local. Agrega tu API key OpenAI arriba para que pueda razonar sobre tus capturas. Temas locales: <i>lámina, brida, platina, refuerzo transversal, ángulo EI/EE, perforación frontal, distancia entre centros, inicio de perforación</i>.");
+      return;
+    }
   }
   const top=scored[0].e;
   let out=`<b>${top.t}</b><br>${top.a}`;
@@ -1847,7 +1913,7 @@ Responde SOLO en JSON compacto (sin texto extra): {"tipo":"","familia":"PM|PB|EI
     if(parsed){
       // Validar/ajustar contra el catálogo real en vez de confiar en texto libre del modelo
       const fam=(parsed.familia||"").toUpperCase().trim();
-      const match=["PM","PB","EI"].includes(fam)?nearestCatalogMatch(fam,parsed.largo_mm,parsed.ancho_mm):null;
+      const match=["PM","PB","EI","EE"].includes(fam)?nearestCatalogMatch(fam,parsed.largo_mm,parsed.ancho_mm):null;
       parsed.referencia_validada=match?match.code:null;
       parsed.distancia_catalogo_mm=match?match.distancia_mm:null;
     }
@@ -1858,7 +1924,7 @@ Responde SOLO en JSON compacto (sin texto extra): {"tipo":"","familia":"PM|PB|EI
             ? `<span style="color:var(--ok);font-family:monospace">${parsed.referencia_validada}</span> ✅`
             : `<span style="color:var(--amber);font-family:monospace">${parsed.referencia_validada}</span> ⚠️ (no calza exacto, medida más cercana en catálogo)`)
         : `<span style="color:var(--danger)">sin match en catálogo</span>`;
-      out.innerHTML=`<b style="color:var(--amber)">🤖 Análisis IA:</b><br>
+      const html=`<b style="color:var(--amber)">🤖 Análisis IA:</b><br>
         • <b>Tipo:</b> ${parsed.tipo||"?"} (familia ${parsed.familia||"?"})<br>
         • <b>Referencia validada contra catálogo:</b> ${refHtml}<br>
         • <b>Estructura:</b> ${parsed.estructura||"?"}<br>
@@ -1866,9 +1932,13 @@ Responde SOLO en JSON compacto (sin texto extra): {"tipo":"","familia":"PM|PB|EI
         • <b>Medidas estimadas por IA:</b> ${parsed.ancho_mm||"?"} × ${parsed.largo_mm||"?"} mm<br>
         • <b>Anomalías:</b> ${parsed.anomalias||"ninguna"}<br>
         • <b>Foto:</b> ${parsed.calidad_foto||"?"} · confianza ${((parsed.confianza||0)*100).toFixed(0)}%<br>
-        <span style="color:var(--steel);font-size:10px">Guardado en memoria para consulta posterior.</span>`;
+        <span style="color:var(--steel);font-size:10px">Guardado en memoria — ahora puedes preguntar al experto sobre esta pieza.</span>`;
+      out.innerHTML=html;
+      // Publicar en el hilo del experto para que "recuerde" lo que acaba de ver
+      if(document.getElementById("expert-chat")){ expertInit(); expertBot(`📸 Acabo de analizar una foto: ${html}`); }
     } else {
       out.innerHTML=`<b>🤖 Análisis IA (texto):</b><br><pre style="white-space:pre-wrap;font-size:11px">${raw}</pre>`;
+      if(document.getElementById("expert-chat")){ expertInit(); expertBot(`📸 Nueva foto analizada (texto):<br><pre style="white-space:pre-wrap;font-size:11px">${raw}</pre>`); }
     }
   }catch(err){
     out.innerHTML=`❌ Error IA: ${err.message}`;
