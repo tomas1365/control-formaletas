@@ -28,36 +28,26 @@ input,select{width:100%;background:var(--bg);border:1px solid var(--border);bord
 input:focus,select:focus{border-color:var(--amber);}
 input[type="file"]{display:none;}
 input[type="password"]{letter-spacing:2px;}
-
-/* Tool selector */
 .tool-bar{display:flex;gap:8px;margin-bottom:10px;}
 .tool-btn{flex:1;padding:10px 8px;border-radius:10px;border:1.5px solid var(--border);background:var(--bg);color:var(--text2);font-size:12px;font-weight:600;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;transition:all .15s;}
 .tool-btn.active{border-color:var(--amber);background:rgba(245,158,11,.1);color:var(--amber);}
 .tool-icon{font-size:20px;}
 .tool-hint{font-size:10px;color:var(--steel);text-align:center;margin-bottom:6px;padding:6px 10px;background:rgba(245,158,11,.06);border-radius:8px;}
-
-/* BBox / Canvas + Zoom viewport */
 .zoom-viewport{position:relative;overflow:hidden;border-radius:12px;background:#000;touch-action:none;user-select:none;}
 .bbox-wrap{position:relative;transform-origin:0 0;transition:transform .05s linear;touch-action:none;user-select:none;}
 .bbox-img{width:100%;display:block;user-select:none;-webkit-user-drag:none;pointer-events:none;}
 #bbox-canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none;}
 .capture-zone{border:2px dashed var(--border);border-radius:var(--radius);min-height:160px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;cursor:pointer;transition:border-color .2s;}
 .capture-zone.has-img{display:none;}
-
-/* Zoom controls */
 .zoom-bar{display:flex;gap:6px;margin-top:8px;align-items:center;flex-wrap:wrap;}
 .zoom-btn{background:var(--bg);border:1.5px solid var(--border);color:var(--text);border-radius:8px;padding:7px 11px;font-size:14px;font-weight:700;cursor:pointer;min-width:38px;}
 .zoom-btn:active{background:var(--surface2);}
 .zoom-lbl{font-size:11px;color:var(--steel);font-family:monospace;}
 .zoom-hint{font-size:10px;color:var(--steel);flex:1;text-align:right;}
-
-/* Blur warning */
 .blur-warn{background:rgba(239,68,68,.12);border:1.5px solid rgba(239,68,68,.4);color:#fca5a5;padding:9px 11px;border-radius:10px;font-size:12px;margin-top:8px;display:flex;align-items:center;gap:8px;}
 .blur-warn.ok{background:rgba(34,197,94,.1);border-color:rgba(34,197,94,.3);color:#86efac;}
 .blur-warn .x{margin-left:auto;cursor:pointer;font-size:16px;}
 .blur-warn-discard{cursor:pointer;text-decoration:underline;font-weight:700;white-space:nowrap;}
-
-/* Class stats */
 .stat-row{display:flex;justify-content:space-between;align-items:center;padding:7px 10px;background:var(--bg);border-radius:8px;font-size:12px;margin-bottom:4px;}
 .stat-code{font-family:monospace;font-weight:700;color:var(--text);}
 .stat-count{font-family:monospace;font-weight:700;color:var(--amber);}
@@ -65,11 +55,7 @@ input[type="password"]{letter-spacing:2px;}
 .stat-count.ok{color:var(--ok);}
 .stat-bar{height:4px;background:var(--bg);border-radius:99px;overflow:hidden;margin-top:3px;}
 .stat-bar-fill{height:100%;background:var(--amber);border-radius:99px;}
-
-/* Polygon toolbar */
 .poly-toolbar{display:flex;gap:6px;margin-top:8px;}
-
-/* Anno list */
 .anno-list{display:flex;flex-direction:column;gap:6px;margin-top:10px;}
 .anno-item{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:10px;border:1.5px solid var(--border);background:var(--bg);font-size:12px;flex-wrap:wrap;}
 .anno-color{width:14px;height:14px;border-radius:4px;flex-shrink:0;}
@@ -77,18 +63,12 @@ input[type="password"]{letter-spacing:2px;}
 .anno-type{font-size:10px;color:var(--steel);background:var(--surface);border-radius:5px;padding:2px 6px;}
 .anno-check{font-size:18px;cursor:pointer;}
 .anno-del{cursor:pointer;font-size:16px;color:var(--steel);}
-
-/* Clase selector */
 .quick-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-bottom:6px;}
 .quick-btn{background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:7px 4px;color:var(--text2);font-size:10px;font-weight:600;text-align:center;cursor:pointer;transition:all .15s;}
 .quick-btn.active{background:rgba(245,158,11,.15);border-color:var(--amber);color:var(--amber);}
-
-/* Progress */
 .prog-wrap{background:var(--bg);border-radius:99px;height:5px;overflow:hidden;display:none;margin-top:10px;}
 .prog-wrap.show{display:block;}
 .prog-bar{height:100%;background:var(--amber);border-radius:99px;transition:width .4s;width:0%;}
-
-/* Buttons */
 .btn-row{display:flex;gap:8px;}
 .btn{flex:1;padding:13px;border-radius:12px;font-size:13px;font-weight:700;cursor:pointer;border:none;display:flex;align-items:center;justify-content:center;gap:6px;transition:opacity .15s,transform .1s;-webkit-tap-highlight-color:transparent;}
 .btn:active{transform:scale(.97);}
@@ -101,14 +81,10 @@ input[type="password"]{letter-spacing:2px;}
 .btn-ok{background:rgba(34,197,94,.15);color:var(--ok);border:1.5px solid rgba(34,197,94,.3);}
 .btn-ghost{background:var(--surface);color:var(--text2);border:1.5px solid var(--border);}
 .btn-amber{background:rgba(245,158,11,.15);color:var(--amber);border:1.5px solid rgba(245,158,11,.3);}
-
-/* Counter */
 .counter{display:flex;gap:8px;}
 .counter-item{flex:1;background:var(--bg);border-radius:10px;padding:10px;text-align:center;}
 .counter-num{font-size:22px;font-weight:800;color:var(--amber);}
 .counter-lbl{font-size:10px;color:var(--steel);margin-top:1px;}
-
-/* Log */
 .log-list{display:flex;flex-direction:column;gap:6px;}
 .log-item{background:var(--bg);border-radius:10px;padding:10px;border:1.5px solid transparent;}
 .log-item.error{border-color:rgba(239,68,68,.3);}
@@ -120,8 +96,6 @@ input[type="password"]{letter-spacing:2px;}
 .log-annos{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;}
 .log-anno-tag{padding:3px 8px;border-radius:6px;font-size:10px;font-weight:700;font-family:monospace;}
 .log-actions{display:flex;flex-direction:column;align-items:center;gap:4px;flex-shrink:0;}
-
-/* Catalog */
 .cat-search{position:relative;margin-bottom:8px;}
 .cat-search input{margin-bottom:0;padding-left:36px;}
 .cat-search .ico{position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:14px;}
@@ -138,19 +112,16 @@ input[type="password"]{letter-spacing:2px;}
 .ref-fam.PM{background:rgba(59,130,246,.15);color:#60a5fa;}
 .ref-fam.PB{background:rgba(168,85,247,.15);color:#c084fc;}
 .ref-fam.EI{background:rgba(245,158,11,.15);color:var(--amber);}
+.ref-fam.EE{background:rgba(34,197,94,.15);color:var(--ok);}
 .ref-info{flex:1;min-width:0;}
 .ref-code{font-family:monospace;font-weight:700;font-size:13px;}
 .ref-spec{font-size:11px;color:var(--steel);margin-top:2px;}
 .ref-copy{font-size:20px;cursor:pointer;padding:4px;}
-
-/* Modal */
 .modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;align-items:flex-end;}
 .modal-bg.show{display:flex;}
 .modal{background:var(--surface);border-radius:20px 20px 0 0;padding:20px 16px 32px;width:100%;max-height:85vh;overflow-y:auto;}
 .modal-title{font-size:15px;font-weight:700;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;}
 .modal-close{font-size:22px;cursor:pointer;color:var(--steel);}
-
-/* Review */
 .review-img-wrap{position:relative;border-radius:12px;overflow:hidden;background:#000;margin-bottom:12px;}
 .review-img{width:100%;display:block;}
 #review-canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;}
@@ -159,14 +130,10 @@ input[type="password"]{letter-spacing:2px;}
 .review-anno.approved{border-color:var(--ok);}
 .review-anno.rejected{border-color:var(--danger);opacity:.5;}
 .review-check{font-size:22px;cursor:pointer;flex-shrink:0;}
-
-/* Toast */
 .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:11px 18px;font-size:13px;font-weight:600;transition:transform .3s;z-index:500;white-space:nowrap;box-shadow:0 8px 32px rgba(0,0,0,.4);}
 .toast.show{transform:translateX(-50%) translateY(0);}
 .toast.ok{border-color:var(--ok);color:var(--ok);}
 .toast.err{border-color:var(--danger);color:var(--danger);}
-
-/* Floating draggable panel (qty / esquinero controls) */
 .float-panel{position:fixed;top:80px;right:10px;z-index:350;background:var(--surface);border:1.5px solid var(--amber);border-radius:12px;padding:0;width:260px;max-width:92vw;box-shadow:0 8px 32px rgba(0,0,0,.5);user-select:none;}
 .float-panel .fp-head{display:flex;align-items:center;gap:6px;padding:8px 10px;background:rgba(245,158,11,.15);border-radius:12px 12px 0 0;cursor:grab;font-size:12px;font-weight:700;color:var(--amber);}
 .float-panel .fp-head:active{cursor:grabbing;}
@@ -184,44 +151,31 @@ input[type="password"]{letter-spacing:2px;}
 </style>
 </head>
 <body>
-
 <header>
   <div class="logo">U</div>
-  <div><h1>UNISPAN Dataset v11</h1><p>SAM fix + Experto con IA + memoria contextual + familia EE</p></div>
+  <div style="flex:1"><h1>UNISPAN Dataset v11</h1><p>Auto-SAM + Experto IA + memoria contextual + familia EE</p></div>
+  <button class="btn btn-sm" style="background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.2);flex:none;padding:10px 14px" onclick="downloadApp()">⬇ Descargar</button>
 </header>
-
 <div class="tabs">
   <div class="tab active" onclick="switchTab('captura')">📸 Captura</div>
   <div class="tab" onclick="switchTab('historial')">📋 Historial</div>
   <div class="tab" onclick="switchTab('catalogo')">📖 Catálogo</div>
   <div class="tab" onclick="switchTab('experto')">🎓 Experto</div>
 </div>
-
 <main>
-
-<!-- ══ CAPTURA ══ -->
 <div class="page active" id="page-captura">
-
   <div class="counter">
     <div class="counter-item"><div class="counter-num" id="cnt-session">0</div><div class="counter-lbl">Sesión</div></div>
     <div class="counter-item"><div class="counter-num" id="cnt-total">0</div><div class="counter-lbl">Total</div></div>
     <div class="counter-item"><div class="counter-num" id="cnt-ok" style="color:var(--ok)">0</div><div class="counter-lbl">Exitosas</div></div>
   </div>
-
-  <!-- Config -->
   <div class="card">
     <div class="card-title">⚙️ Configuración</div>
     <label>API Key Roboflow</label>
     <input type="password" id="api-key" placeholder="rf_xxxxxxxxxxxxxx" autocomplete="off">
     <label>Split destino</label>
-    <select id="split">
-      <option value="train">Train</option>
-      <option value="valid">Valid</option>
-      <option value="test">Test</option>
-    </select>
+    <select id="split"><option value="train">Train</option><option value="valid">Valid</option><option value="test">Test</option></select>
   </div>
-
-  <!-- Clase -->
   <div class="card">
     <div class="card-title">🏷️ Clase activa</div>
     <div id="recientes-wrap" style="display:none">
@@ -234,46 +188,25 @@ input[type="password"]{letter-spacing:2px;}
     </div>
     <div id="current-clase-display" style="display:none;padding:8px 12px;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3);border-radius:8px;font-family:monospace;font-weight:700;color:var(--amber);font-size:14px"></div>
   </div>
-
-  <!-- Herramienta -->
   <div class="card">
     <div class="card-title">🛠️ Herramienta de anotación</div>
     <div class="tool-bar" style="flex-wrap:wrap">
-      <div class="tool-btn active" id="tool-bbox" onclick="setTool('bbox')">
-        <span class="tool-icon">⬜</span>
-        <span>BBox</span>
-      </div>
-      <div class="tool-btn" id="tool-corner" onclick="setTool('corner')">
-        <span class="tool-icon">📐</span>
-        <span>Esquinero</span>
-      </div>
-      <div class="tool-btn" id="tool-polygon" onclick="setTool('polygon')">
-        <span class="tool-icon">🔷</span>
-        <span>Polígono</span>
-      </div>
-      <div class="tool-btn" id="tool-sam" onclick="setTool('sam')">
-        <span class="tool-icon">🎯</span>
-        <span>SAM<span style="font-size:8px;background:var(--amber);color:#0a1628;border-radius:4px;padding:1px 4px;margin-left:3px;vertical-align:top">β</span></span>
-      </div>
+      <div class="tool-btn active" id="tool-bbox" onclick="setTool('bbox')"><span class="tool-icon">⬜</span><span>BBox</span></div>
+      <div class="tool-btn" id="tool-corner" onclick="setTool('corner')"><span class="tool-icon">📐</span><span>Esquinero</span></div>
+      <div class="tool-btn" id="tool-polygon" onclick="setTool('polygon')"><span class="tool-icon">🔷</span><span>Polígono</span></div>
+      <div class="tool-btn" id="tool-sam" onclick="setTool('sam')"><span class="tool-icon">🎯</span><span>Auto</span></div>
     </div>
     <div class="tool-hint" id="tool-hint-bbox">Toca y arrastra para dibujar un rectángulo</div>
     <div class="tool-hint" id="tool-hint-corner" style="display:none">📐 Arrastra para el rectángulo base · luego ajusta el brazo del esquinero con los deslizadores flotantes</div>
     <div class="tool-hint" id="tool-hint-polygon" style="display:none">Toca para agregar puntos · Doble toque para cerrar</div>
-    <div class="tool-hint" id="tool-hint-sam" style="display:none">🎯 Toca una pieza dentro del arrume y SAM genera el polígono. Primera vez descarga ~40MB.</div>
+    <div class="tool-hint" id="tool-hint-sam" style="display:none">🎯 Toca una pieza y la app traza su contorno automáticamente por color/borde</div>
     <div id="sam-status" style="display:none;font-size:11px;color:var(--amber);margin-top:6px;padding:6px 10px;background:rgba(245,158,11,.08);border-radius:8px;text-align:center"></div>
-
-    <!-- Modo Arrume -->
     <label style="display:flex;align-items:center;gap:10px;margin-top:10px;padding:10px;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;cursor:pointer" for="arrume-toggle">
       <input type="checkbox" id="arrume-toggle" onchange="toggleArrume(this.checked)" style="width:18px;height:18px;margin:0;accent-color:var(--amber)">
-      <div style="flex:1">
-        <div style="font-size:13px;font-weight:700;color:var(--text)">🔗 Modo Arrume</div>
-        <div style="font-size:10px;color:var(--steel)">Mantiene la clase activa y dibuja varias piezas iguales sin reabrir catálogo</div>
-      </div>
+      <div style="flex:1"><div style="font-size:13px;font-weight:700;color:var(--text)">🔗 Modo Arrume</div><div style="font-size:10px;color:var(--steel)">Mantiene la clase activa y dibuja varias piezas iguales sin reabrir catálogo</div></div>
       <span id="arrume-counter" style="display:none;font-family:monospace;font-weight:800;color:var(--amber);font-size:16px">×0</span>
     </label>
   </div>
-
-  <!-- Imagen + Canvas -->
   <div class="card">
     <div class="card-title">📸 Imagen</div>
     <div class="capture-zone" id="capture-zone">
@@ -287,15 +220,8 @@ input[type="password"]{letter-spacing:2px;}
     <input type="file" id="file-input-cam" accept="image/*" capture="environment">
     <input type="file" id="file-input-gal" accept="image/*" multiple>
     <div id="bbox-section" style="display:none">
-      <div class="btn-row" style="margin-bottom:8px">
-        <button class="btn btn-danger btn-sm" style="flex:1" onclick="discardPhoto()">🗑️ Descartar y tomar/cargar otra</button>
-      </div>
-      <div class="zoom-viewport" id="zoom-viewport">
-        <div class="bbox-wrap" id="bbox-wrap">
-          <img id="bbox-img" class="bbox-img" alt="">
-          <canvas id="bbox-canvas"></canvas>
-        </div>
-      </div>
+      <div class="btn-row" style="margin-bottom:8px"><button class="btn btn-danger btn-sm" style="flex:1" onclick="discardPhoto()">🗑️ Descartar y tomar/cargar otra</button></div>
+      <div class="zoom-viewport" id="zoom-viewport"><div class="bbox-wrap" id="bbox-wrap"><img id="bbox-img" class="bbox-img" alt=""><canvas id="bbox-canvas"></canvas></div></div>
       <div class="zoom-bar" id="zoom-bar">
         <button class="zoom-btn" onclick="zoomBy(1.4)" title="Acercar">➕</button>
         <button class="zoom-btn" onclick="zoomBy(1/1.4)" title="Alejar">➖</button>
@@ -303,11 +229,7 @@ input[type="password"]{letter-spacing:2px;}
         <span class="zoom-lbl" id="zoom-lbl">1.0×</span>
         <span class="zoom-hint">Pellizca 2 dedos para zoom · 1 dedo dibuja</span>
       </div>
-      <div class="blur-warn" id="blur-warn" style="display:none">
-        <span id="blur-warn-txt"></span>
-        <span id="blur-warn-action"></span>
-        <span class="x" onclick="document.getElementById('blur-warn').style.display='none'">✕</span>
-      </div>
+      <div class="blur-warn" id="blur-warn" style="display:none"><span id="blur-warn-txt"></span><span id="blur-warn-action"></span><span class="x" onclick="document.getElementById('blur-warn').style.display='none'">✕</span></div>
       <div class="poly-toolbar" id="poly-toolbar" style="display:none">
         <button class="btn btn-amber btn-sm" onclick="closePolygon()">✅ Cerrar polígono</button>
         <button class="btn btn-danger btn-sm" onclick="cancelPolygon()">✕ Cancelar</button>
@@ -315,15 +237,11 @@ input[type="password"]{letter-spacing:2px;}
       </div>
     </div>
   </div>
-
-  <!-- Anotaciones -->
   <div class="card" id="annos-card" style="display:none">
     <div class="card-title" id="annos-title">📦 Anotaciones (0)</div>
     <div class="anno-list" id="anno-list"></div>
     <div style="margin-top:8px;font-size:11px;color:var(--steel)">✅ marcadas se subirán · ☐ desmarcadas se omitirán · Toca la etiqueta para cambiar clase</div>
   </div>
-
-  <!-- Estadísticas por clase -->
   <div class="card">
     <div class="card-title" style="display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick="toggleStats()">
       <span>📊 Balance del dataset <span id="stats-total" style="color:var(--amber);font-weight:800">0</span></span>
@@ -332,84 +250,44 @@ input[type="password"]{letter-spacing:2px;}
     <div id="stats-body" style="display:none">
       <div style="font-size:11px;color:var(--steel);margin-bottom:8px">Meta inicial: <b style="color:var(--amber)">30 img/clase</b> (varios ángulos). Se ampliará tras el primer entrenamiento.</div>
       <div id="stats-list"></div>
-      <div class="btn-row" style="margin-top:8px">
-        <button class="btn btn-ghost btn-sm" onclick="resetStats()">🗑️ Reiniciar contador</button>
-      </div>
+      <div class="btn-row" style="margin-top:8px"><button class="btn btn-ghost btn-sm" onclick="resetStats()">🗑️ Reiniciar contador</button></div>
     </div>
   </div>
-
   <div class="prog-wrap" id="prog-wrap"><div class="prog-bar" id="prog-bar"></div></div>
-
   <div class="btn-row">
     <button class="btn btn-ghost btn-sm" onclick="resetAll()" style="flex:none;padding:13px 16px">🔄</button>
     <button class="btn btn-amber" id="btn-review" onclick="openReview()" disabled>👁️ Revisar</button>
     <button class="btn btn-up" id="btn-upload" onclick="uploadAll()" disabled>⬆️ Subir</button>
   </div>
-
 </div>
-
-<!-- ══ HISTORIAL ══ -->
 <div class="page" id="page-historial">
-  <div class="card">
-    <div class="card-title">📋 Historial de sesión</div>
-    <div class="log-list" id="log-list">
-      <p style="color:var(--steel);font-size:13px;text-align:center;padding:20px">Las subidas aparecerán aquí</p>
-    </div>
-  </div>
+  <div class="card"><div class="card-title">📋 Historial de sesión</div><div class="log-list" id="log-list"><p style="color:var(--steel);font-size:13px;text-align:center;padding:20px">Las subidas aparecerán aquí</p></div></div>
 </div>
-
-<!-- ══ CATÁLOGO ══ -->
 <div class="page" id="page-catalogo">
   <div class="card">
     <div class="card-title">📖 Catálogo UNISPAN</div>
-    <div class="cat-search" style="margin-bottom:8px">
-      <span class="ico">🔍</span>
-      <input type="text" id="cat-main-search" placeholder="Buscar..." oninput="renderCatalogPage(this.value)" style="margin-bottom:0;padding-left:36px">
-    </div>
+    <div class="cat-search" style="margin-bottom:8px"><span class="ico">🔍</span><input type="text" id="cat-main-search" placeholder="Buscar..." oninput="renderCatalogPage(this.value)" style="margin-bottom:0;padding-left:36px"></div>
     <div class="cat-families" id="cat-main-families"></div>
     <div class="ref-grid" id="cat-main-grid"></div>
   </div>
 </div>
-
-<!-- ══ EXPERTO ══ -->
 <div class="page" id="page-experto">
   <div class="card">
     <div class="card-title">🎓 Agente Experto UNISPAN</div>
-    <div style="font-size:12px;color:var(--steel);margin-bottom:10px">
-      Consulta sobre láminas, bridas, platinas, refuerzos, perforaciones y estructura de las paneles formaletas. Toca un tema o escribe tu pregunta.
-    </div>
-
-    <!-- Calculadora bidireccional perforaciones ⇄ medidas -->
+    <div style="font-size:12px;color:var(--steel);margin-bottom:10px">Consulta sobre láminas, bridas, platinas, refuerzos, perforaciones y estructura de las paneles formaletas. Toca un tema o escribe tu pregunta.</div>
     <div style="background:#0b1220;border:1px solid #334;border-radius:10px;padding:10px;margin-bottom:10px">
       <div style="font-size:12px;color:var(--amber);font-weight:700;margin-bottom:8px">🧮 Calculadora de perforaciones</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:12px">
-        <div>
-          <label style="color:var(--steel);font-size:11px">Ancho (mm)</label>
-          <input type="number" id="calc-w" placeholder="600" oninput="calcFromDims()" style="width:100%;padding:8px;border-radius:8px;border:1px solid #334;background:#0f1520;color:#eee">
-        </div>
-        <div>
-          <label style="color:var(--steel);font-size:11px">Longitud (mm)</label>
-          <input type="number" id="calc-l" placeholder="2400" oninput="calcFromDims()" style="width:100%;padding:8px;border-radius:8px;border:1px solid #334;background:#0f1520;color:#eee">
-        </div>
-        <div>
-          <label style="color:var(--steel);font-size:11px">Frontales (cont.)</label>
-          <input type="number" id="calc-nf" placeholder="12" oninput="calcFromCounts()" style="width:100%;padding:8px;border-radius:8px;border:1px solid #334;background:#0f1520;color:#eee">
-        </div>
-        <div>
-          <label style="color:var(--steel);font-size:11px">Laterales (cont.)</label>
-          <input type="number" id="calc-nl" placeholder="48" oninput="calcFromCounts()" style="width:100%;padding:8px;border-radius:8px;border:1px solid #334;background:#0f1520;color:#eee">
-        </div>
+        <div><label style="color:var(--steel);font-size:11px">Ancho (mm)</label><input type="number" id="calc-w" placeholder="600" oninput="calcFromDims()" style="width:100%;padding:8px;border-radius:8px;border:1px solid #334;background:#0f1520;color:#eee"></div>
+        <div><label style="color:var(--steel);font-size:11px">Longitud (mm)</label><input type="number" id="calc-l" placeholder="2400" oninput="calcFromDims()" style="width:100%;padding:8px;border-radius:8px;border:1px solid #334;background:#0f1520;color:#eee"></div>
+        <div><label style="color:var(--steel);font-size:11px">Frontales (cont.)</label><input type="number" id="calc-nf" placeholder="12" oninput="calcFromCounts()" style="width:100%;padding:8px;border-radius:8px;border:1px solid #334;background:#0f1520;color:#eee"></div>
+        <div><label style="color:var(--steel);font-size:11px">Laterales (cont.)</label><input type="number" id="calc-nl" placeholder="48" oninput="calcFromCounts()" style="width:100%;padding:8px;border-radius:8px;border:1px solid #334;background:#0f1520;color:#eee"></div>
       </div>
       <div id="calc-out" style="margin-top:8px;padding:8px;background:#1a2130;border-radius:8px;font-size:12px;color:#cbd5e1;text-align:center">Ingresa medidas o conteos · inicio 25 mm · paso 50 mm</div>
     </div>
-
-    <!-- Análisis IA + Memoria de imágenes -->
     <div style="background:#0b1220;border:1px solid #334;border-radius:10px;padding:10px;margin-bottom:10px">
       <div style="font-size:12px;color:var(--amber);font-weight:700;margin-bottom:8px">🧠 Análisis IA y memoria</div>
-      <div style="font-size:11px;color:var(--steel);margin-bottom:8px">
-        El agente aprende de cada imagen capturada (aspecto, nitidez, clases anotadas).
-        Opcional: pega una API key de OpenAI para <b>análisis visual profundo</b> (gpt-4o-mini).
-      </div>
+      <div style="font-size:11px;color:var(--steel);margin-bottom:8px">El agente aprende de cada imagen capturada (aspecto, nitidez, clases anotadas). Opcional: pega una API key de OpenAI para <b>análisis visual profundo</b> (gpt-4o-mini).</div>
       <label style="font-size:11px;color:var(--steel)">API Key OpenAI (opcional)</label>
       <input type="password" id="openai-key" placeholder="sk-..." autocomplete="off" style="width:100%;padding:8px;border-radius:8px;border:1px solid #334;background:#0f1520;color:#eee;margin-bottom:6px">
       <div class="btn-row" style="gap:6px">
@@ -419,8 +297,6 @@ input[type="password"]{letter-spacing:2px;}
       </div>
       <div id="ai-analysis-out" style="margin-top:8px;padding:8px;background:#1a2130;border-radius:8px;font-size:11px;color:#cbd5e1;display:none"></div>
     </div>
-
-
     <div id="expert-chips" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px"></div>
     <div id="expert-chat" style="max-height:52vh;overflow-y:auto;padding:8px;background:#0f1520;border-radius:10px;border:1px solid #223;font-size:13px;line-height:1.5"></div>
     <div style="display:flex;gap:6px;margin-top:10px">
@@ -430,10 +306,7 @@ input[type="password"]{letter-spacing:2px;}
     <div style="font-size:10px;color:var(--steel);margin-top:8px">💡 Base de conocimiento local · funciona sin conexión</div>
   </div>
 </div>
-
 </main>
-
-<!-- Modal catálogo -->
 <div class="modal-bg" id="cat-modal-bg" onclick="closeCatModal(event)">
   <div class="modal">
     <div class="modal-title"><span>Seleccionar clase</span><span class="modal-close" onclick="closeCatModalDirect()">✕</span></div>
@@ -442,25 +315,15 @@ input[type="password"]{letter-spacing:2px;}
     <div class="cat-list" id="cat-modal-list"></div>
   </div>
 </div>
-
-<!-- Modal revisión -->
 <div class="modal-bg" id="review-modal-bg" onclick="closeReviewModal(event)">
   <div class="modal">
     <div class="modal-title"><span>👁️ Revisar antes de subir</span><span class="modal-close" onclick="closeReviewModalDirect()">✕</span></div>
-    <div class="review-img-wrap">
-      <img id="review-img" class="review-img" alt="">
-      <canvas id="review-canvas"></canvas>
-    </div>
+    <div class="review-img-wrap"><img id="review-img" class="review-img" alt=""><canvas id="review-canvas"></canvas></div>
     <div class="review-annos" id="review-annos"></div>
-    <div class="btn-row">
-      <button class="btn btn-ghost" onclick="closeReviewModalDirect()">Volver</button>
-      <button class="btn btn-up" onclick="confirmAndUpload()">✅ Confirmar y subir</button>
-    </div>
+    <div class="btn-row"><button class="btn btn-ghost" onclick="closeReviewModalDirect()">Volver</button><button class="btn btn-up" onclick="confirmAndUpload()">✅ Confirmar y subir</button></div>
   </div>
 </div>
-
 <div class="toast" id="toast"></div>
-
 <script>
 // ── Catálogo ──────────────────────────────────────────────────────────────────
 const CATALOG=[];
@@ -468,8 +331,8 @@ const CATALOG=[];
 [2400,1200,900,800,750,600].forEach(l=>[270,250,230,200,150,120,100,90,80].forEach(a=>CATALOG.push({code:`PB-${l}x${a}`,family:"PB",spec:`${l}×${a}mm`})));
 [2400,1200,900,800,600].forEach(l=>CATALOG.push({code:`EI-${l}x150x150`,family:"EI",spec:`${l}×150×150mm`}));
 [2400,1200,900,800,600].forEach(l=>CATALOG.push({code:`EE-${l}x150x150`,family:"EE",spec:`${l}×150×150mm`}));
+const FAMILIES=["ALL","PM","PB","EI","EE"];
 
-// Texto compacto del catálogo para dar contexto real al modelo de IA (grounding)
 function catalogSummaryForPrompt(){
   const byFam={};
   CATALOG.forEach(c=>{
@@ -482,7 +345,6 @@ function catalogSummaryForPrompt(){
   ).join("\n");
 }
 
-// Dado family/ancho/largo estimados, buscar la referencia real más cercana en CATALOG
 function nearestCatalogMatch(family, largo_mm, ancho_mm){
   const cands=CATALOG.filter(c=>c.family===family);
   if(!cands.length) return null;
@@ -506,20 +368,11 @@ let sessionCount=0, totalCount=+localStorage.getItem("rf_total")||0, okCount=+lo
 let recientes=JSON.parse(localStorage.getItem("rf_recientes")||"[]");
 let catModalFam="ALL", catPageFam="ALL", uploadLog=[];
 let annotations=[];
-
-// Contador de imágenes por clase (persistente)
 let classCounts=JSON.parse(localStorage.getItem("rf_class_counts")||"{}");
 const CLASS_GOAL=30;
-
-// Modo del catálogo: "select" (asigna currentClase) | "reassign" (reasigna anno)
 let catModalMode="select", catReassignId=null;
-
-// Zoom / Pan
 let zoomScale=1, zoomTx=0, zoomTy=0;
-let pinchState=null; // {d0, s0, cx, cy, tx0, ty0}
-let panState=null;   // {x0, y0, tx0, ty0}
-
-// Herramienta activa: 'bbox' | 'polygon' | 'sam'
+let pinchState=null;
 let activeTool="bbox";
 
 // ── Modo Arrume ──────────────────────────────────────────────────────────────
@@ -538,16 +391,12 @@ function bumpArrume(){
   document.getElementById("arrume-counter").textContent="×"+arrumeCount;
 }
 
-// ── SAM state ────────────────────────────────────────────────────────────────
-let samModel=null, samProcessor=null, samInputs=null, samEmbeddings=null;
-let samLoading=false, samImgKey=null;
-
 // Estado BBox
 let bboxDrawing=false, bboxStart={x:0,y:0}, bboxCurrent=null;
-
 // Estado Polygon
 let polyPoints=[], polyDrawing=false, polyPreview=null;
-
+// Estado Esquinero
+let cornerState=null, cornerDrawing=false, cornerBaseStart=null;
 // Imagen
 let imgNatW=0, imgNatH=0, imgDispW=0, imgDispH=0;
 
@@ -560,6 +409,13 @@ if(savedKey) document.getElementById("api-key").value=savedKey;
 document.getElementById("api-key").addEventListener("blur",()=>localStorage.setItem("rf_api_key",document.getElementById("api-key").value.trim()));
 document.getElementById("cnt-total").textContent=totalCount;
 document.getElementById("cnt-ok").textContent=okCount;
+
+// ── fetch con timeout ─────────────────────────────────────────────────────────
+function fetchWithTimeout(url, opts, ms=15000){
+  const ctrl=new AbortController();
+  const timer=setTimeout(()=>ctrl.abort(), ms);
+  return fetch(url, {...opts, signal:ctrl.signal}).finally(()=>clearTimeout(timer));
+}
 
 // ── Tabs ──────────────────────────────────────────────────────────────────────
 function switchTab(n){
@@ -576,10 +432,9 @@ function setTool(t){
     document.getElementById("tool-"+k).classList.toggle("active",t===k);
     const h=document.getElementById("tool-hint-"+k); if(h) h.style.display=t===k?"block":"none";
   });
-  // Cancelar cualquier dibujo en curso
   bboxCurrent=null; bboxDrawing=false;
   cancelPolygon(); cornerCancel();
-  if(t==="sam") ensureSamReady();
+  if(t==="sam") samStatus("✅ Auto-segmento listo · Toca una pieza",true);
 }
 
 // ── Clase ─────────────────────────────────────────────────────────────────────
@@ -600,7 +455,6 @@ function setClase(code){
 function reassignClass(id){
   catModalMode="reassign"; catReassignId=id;
   openCatModal();
-  // pequeño hint en el título del modal
   setTimeout(()=>{ const t=document.querySelector("#cat-modal-bg .modal-title span:first-child"); if(t) t.textContent="Reasignar clase a esta anotación"; },50);
 }
 function onCustomInput(v){
@@ -634,27 +488,21 @@ function loadFile(f){
   document.getElementById("annos-card").style.display="none";
   document.getElementById("blur-warn").style.display="none";
   cancelPolygon(); bboxCurrent=null; cornerCancel();
-  // Reset SAM embeddings (nueva imagen → nuevo embedding)
-  samInputs=null; samEmbeddings=null; samImgKey=Date.now();
-  if(activeTool==="sam") ensureSamReady();
-  // Reset contador de arrume
   arrumeCount=0; const ac=document.getElementById("arrume-counter"); if(ac&&arrumeMode) ac.textContent="×0";
   renderAnnoList(); updateButtons();
 }
 document.getElementById("file-input-cam").addEventListener("change",e=>loadFile(e.target.files[0]));
 document.getElementById("file-input-gal").addEventListener("change",e=>loadFile(e.target.files[0]));
 
-// ── Blur detection (varianza de Laplaciano sobre imagen escalada) ────────────
+// ── Blur detection ────────────────────────────────────────────────────────────
 function analyzeBlur(img){
   try{
     const S=220; const c=document.createElement("canvas");
     c.width=S; c.height=S;
     const g=c.getContext("2d"); g.drawImage(img,0,0,S,S);
     const d=g.getImageData(0,0,S,S).data;
-    // convertir a luminancia
     const lum=new Float32Array(S*S);
     for(let i=0;i<S*S;i++) lum[i]=0.299*d[i*4]+0.587*d[i*4+1]+0.114*d[i*4+2];
-    // Laplaciano 3x3
     let sum=0, sum2=0, n=0;
     for(let y=1;y<S-1;y++){
       for(let x=1;x<S-1;x++){
@@ -668,6 +516,7 @@ function analyzeBlur(img){
     const t=document.getElementById("blur-warn-txt");
     const act=document.getElementById("blur-warn-action");
     w.classList.remove("ok");
+    if(_lastMemoryEntry){ _lastMemoryEntry.blur=Math.round(variance); saveMemory(); }
     if(variance<80){
       w.style.display="flex";
       t.innerHTML=`⚠️ <b>Foto borrosa</b> (nitidez ${variance.toFixed(0)}).`;
@@ -717,7 +566,6 @@ function zoomBy(factor){
 }
 function zoomAt(newScale,cx,cy){
   newScale=Math.max(1,Math.min(6,newScale));
-  // punto en coords de contenido bajo (cx,cy) antes del zoom
   const kx=(cx-zoomTx)/zoomScale, ky=(cy-zoomTy)/zoomScale;
   zoomScale=newScale;
   zoomTx=cx-kx*zoomScale;
@@ -737,7 +585,7 @@ function clampPan(){
 function touchDist(t1,t2){ const dx=t1.clientX-t2.clientX, dy=t1.clientY-t2.clientY; return Math.hypot(dx,dy); }
 function touchMid(t1,t2,vpRect){ return {x:(t1.clientX+t2.clientX)/2-vpRect.left, y:(t1.clientY+t2.clientY)/2-vpRect.top}; }
 
-// ── Eventos canvas (con pinch/pan) ───────────────────────────────────────────
+// ── Eventos canvas ───────────────────────────────────────────────────────────
 function pointerDown_(e){
   if(activeTool==="bbox") bboxStart_(e);
   else if(activeTool==="corner") cornerStart_(e);
@@ -756,22 +604,16 @@ function pointerUp_(e){
 canvas.addEventListener("mousedown", e=>{ e.preventDefault(); pointerDown_(e); },{passive:false});
 canvas.addEventListener("mousemove", e=>{ e.preventDefault(); pointerMove_(e); },{passive:false});
 canvas.addEventListener("mouseup",   e=>{ e.preventDefault(); pointerUp_(e); },{passive:false});
-
 canvas.addEventListener("touchstart",e=>{
   e.preventDefault();
   if(e.touches.length===2){
-    // Iniciar pinch — cancelar dibujos en progreso
     bboxDrawing=false; bboxCurrent=null;
     const vp=document.getElementById("zoom-viewport").getBoundingClientRect();
     const mid=touchMid(e.touches[0],e.touches[1],vp);
     pinchState={d0:touchDist(e.touches[0],e.touches[1]),s0:zoomScale,cx:mid.x,cy:mid.y,tx0:zoomTx,ty0:zoomTy,mx0:mid.x,my0:mid.y};
-    panState=null;
     redraw();
-  } else {
-    pointerDown_(e);
-  }
+  } else { pointerDown_(e); }
 },{passive:false});
-
 canvas.addEventListener("touchmove", e=>{
   e.preventDefault();
   if(pinchState && e.touches.length===2){
@@ -788,13 +630,11 @@ canvas.addEventListener("touchmove", e=>{
   }
   pointerMove_(e);
 },{passive:false});
-
 canvas.addEventListener("touchend",  e=>{
   e.preventDefault();
-  if(pinchState && e.touches.length<2){ pinchState=null; return; }
+ if(pinchState && e.touches.length<2){ pinchState=null; return; }
   pointerUp_(e);
 },{passive:false});
-
 canvas.addEventListener("dblclick",  e=>{ e.preventDefault(); if(activeTool==="polygon") closePolygon(); });
 
 // ── BBox ──────────────────────────────────────────────────────────────────────
@@ -821,10 +661,6 @@ function bboxEnd_(e){
 }
 
 // ── Esquinero (L-shape) ──────────────────────────────────────────────────────
-// Rectángulo base con un "brazo" recortado en una esquina, formando una L.
-// Estado: cornerState = { base:{x,y,w,h}, corner:'TL|TR|BL|BR', armW, armH }
-let cornerState=null;
-let cornerDrawing=false, cornerBaseStart=null;
 function cornerStart_(e){
   if(!checkClase()) return;
   const p=getPos(e); cornerDrawing=true; cornerBaseStart=p;
@@ -852,8 +688,6 @@ function cornerPolygonPoints(){
   if(!cornerState) return null;
   const {base:b, corner:c, armW:aw, armH:ah} = cornerState;
   const W=Math.min(aw,b.w-4), H=Math.min(ah,b.h-4);
-  // Genera 6 puntos según esquina recortada
-  // Base rect corners: TL(x,y) TR(x+w,y) BR(x+w,y+h) BL(x,y+h)
   const TL={x:b.x,y:b.y}, TR={x:b.x+b.w,y:b.y}, BR={x:b.x+b.w,y:b.y+b.h}, BL={x:b.x,y:b.y+b.h};
   if(c==="TR") return [TL,{x:b.x+b.w-W,y:b.y},{x:b.x+b.w-W,y:b.y+H},{x:b.x+b.w,y:b.y+H},BR,BL];
   if(c==="TL") return [{x:b.x+W,y:b.y},TR,BR,BL,{x:b.x,y:b.y+H},{x:b.x+W,y:b.y+H}];
@@ -914,7 +748,7 @@ function cornerConfirm(){
   else showQtyPrompt(id);
 }
 
-// Utilidad genérica: hacer un panel arrastrable por un asa
+// Utilidad: panel arrastrable
 function makeDraggable(el, handle){
   let sx=0, sy=0, ox=0, oy=0, dragging=false;
   const start=(cx,cy)=>{ dragging=true; sx=cx; sy=cy; const r=el.getBoundingClientRect(); ox=r.left; oy=r.top; el.style.left=ox+"px"; el.style.top=oy+"px"; el.style.right="auto"; };
@@ -927,7 +761,6 @@ function makeDraggable(el, handle){
   window.addEventListener("touchmove",e=>{ if(!dragging) return; const t=e.touches[0]; move(t.clientX,t.clientY); },{passive:true});
   window.addEventListener("touchend",end);
 }
-
 
 // ── Polygon ───────────────────────────────────────────────────────────────────
 let lastTapTime=0;
@@ -961,19 +794,169 @@ function cancelPolygon(){
   redraw();
 }
 
+// ── Auto-segmento (reemplaza SAM) ──────────────────────────────────────────────
+// Flood-fill por similitud de color desde el punto tocado. Sin CDN, sin descargas.
+function samStatus(msg,show){
+  const el=document.getElementById("sam-status");
+  if(!el) return;
+  el.style.display=show?"block":"none";
+  if(show) el.innerHTML=msg;
+}
+
+// Canvas oculto con la imagen a resolución reducida para el flood-fill
+let _segCanvas=null, _segCtx=null, _segData=null, _segW=0, _segH=0;
+
+function ensureSegCanvas(){
+  const img=document.getElementById("bbox-img");
+  if(!img||!img.naturalWidth) return false;
+  const maxDim=400;
+  const sc=Math.min(1, maxDim/Math.max(img.naturalWidth, img.naturalHeight));
+  _segW=Math.round(img.naturalWidth*sc);
+  _segH=Math.round(img.naturalHeight*sc);
+  if(!_segCanvas){ _segCanvas=document.createElement("canvas"); _segCtx=_segCanvas.getContext("2d"); }
+  _segCanvas.width=_segW; _segCanvas.height=_segH;
+  _segCtx.drawImage(img,0,0,_segW,_segH);
+  _segData=_segCtx.getImageData(0,0,_segW,_segH).data;
+  return true;
+}
+
+function colorDist(r1,g1,b1,r2,g2,b2){ return Math.sqrt((r1-r2)**2+(g1-g2)**2+(b1-b2)**2); }
+
+function floodFill(startX, startY, threshold){
+  const W=_segW, H=_segH, data=_segData;
+  const idx0=(startY*W+startX)*4;
+  const sr=data[idx0], sg=data[idx0+1], sb=data[idx0+2];
+  const visited=new Uint8Array(W*H);
+  const mask=new Uint8Array(W*H);
+  const stack=[[startX,startY]];
+  let count=0;
+  while(stack.length){
+    const [x,y]=stack.pop();
+    if(x<0||x>=W||y<0||y>=H) continue;
+    const pi=y*W+x;
+    if(visited[pi]) continue;
+    visited[pi]=1;
+    const di=pi*4;
+    if(colorDist(data[di],data[di+1],data[di+2], sr,sg,sb) > threshold) continue;
+    mask[pi]=1; count++;
+    if(count > W*H*0.5) break; // límite: 50% de la imagen
+    stack.push([x+1,y],[x-1,y],[x,y+1],[x,y-1]);
+  }
+  return {mask, count};
+}
+
+function maskToContour(mask, W, H, tapX, tapY){
+  // Buscar el píxel activo más cercano al toque
+  let sx=-1, sy=-1;
+  if(tapX!=null){
+    const near=nearestActivePixel(mask, W, H, Math.round(tapX), Math.round(tapY), 80);
+    if(near){ sx=near.x; sy=near.y; }
+  }
+  if(sx<0){
+    for(let y=0;y<H&&sx<0;y++) for(let x=0;x<W;x++){ if(mask[y*W+x]){ sx=x; sy=y; break; } }
+  }
+  if(sx<0) return null;
+  // Moore-neighbor tracing
+  const dirs=[[1,0],[1,1],[0,1],[-1,1],[-1,0],[-1,-1],[0,-1],[1,-1]];
+  const contour=[]; let cx=sx, cy=sy, prevDir=6;
+  const maxSteps=W*H*2; let steps=0;
+  while(steps++<maxSteps){
+    contour.push({x:cx,y:cy});
+    let found=false;
+    for(let i=0;i<8;i++){
+      const d=(prevDir+6+i)%8;
+      const nx=cx+dirs[d][0], ny=cy+dirs[d][1];
+      if(nx>=0&&nx<W&&ny>=0&&ny<H&&mask[ny*W+nx]){
+        cx=nx; cy=ny; prevDir=(d+4)%8; found=true; break;
+      }
+    }
+    if(!found) break;
+    if(cx===sx&&cy===sy&&contour.length>2) break;
+    if(contour.length>4000) break;
+  }
+  if(contour.length<8) return null;
+  const eps=Math.max(2, Math.min(W,H)*0.01);
+  return douglasPeucker(contour, eps);
+}
+
+function nearestActivePixel(bin, W, H, tx, ty, maxR){
+  maxR=maxR||Math.max(W,H);
+  if(tx>=0&&tx<W&&ty>=0&&ty<H&&bin[ty*W+tx]) return {x:tx,y:ty};
+  for(let r=1;r<=maxR;r++){
+    for(let dx=-r;dx<=r;dx++){
+      for(let dy=-r;dy<=r;dy++){
+        if(Math.max(Math.abs(dx),Math.abs(dy))!==r) continue;
+        const x=tx+dx, y=ty+dy;
+        if(x>=0&&x<W&&y>=0&&y<H&&bin[y*W+x]) return {x,y};
+      }
+    }
+  }
+  return null;
+}
+
+function douglasPeucker(pts, eps){
+  if(pts.length<3) return pts;
+  const first=0, last=pts.length-1;
+  const keep=new Uint8Array(pts.length); keep[first]=1; keep[last]=1;
+  const stack=[[first,last]];
+  while(stack.length){
+    const [a,b]=stack.pop();
+    let maxD=0, idx=-1;
+    const ax=pts[a].x, ay=pts[a].y, bx=pts[b].x, by=pts[b].y;
+    const dx=bx-ax, dy=by-ay, len=Math.hypot(dx,dy)||1;
+    for(let i=a+1;i<b;i++){
+      const d=Math.abs((pts[i].x-ax)*dy - (pts[i].y-ay)*dx)/len;
+      if(d>maxD){ maxD=d; idx=i; }
+    }
+    if(maxD>eps && idx>0){ keep[idx]=1; stack.push([a,idx]); stack.push([idx,b]); }
+  }
+  const out=[];
+  for(let i=0;i<pts.length;i++) if(keep[i]) out.push(pts[i]);
+  if(out.length>80){ const step=Math.ceil(out.length/80); return out.filter((_,i)=>i%step===0); }
+  return out;
+}
+
+async function samTap(e){
+  if(!checkClase()) return;
+  if(!selectedFile){ samStatus("📷 Carga una imagen primero"); return; }
+  samStatus("⏳ Segmentando…");
+  try{
+    if(!ensureSegCanvas()){ samStatus("❌ No se pudo procesar la imagen"); return; }
+    const p=getPos(e);
+    // Convertir coords del canvas display a coords del segCanvas
+    const sx=Math.round(p.x*(_segW/imgDispW));
+    const sy=Math.round(p.y*(_segH/imgDispH));
+    if(sx<0||sx>=_segW||sy<0||sy>=_segH){ samStatus("⚠️ Toca dentro de la imagen"); return; }
+    // Flood-fill con threshold adaptativo
+    const {mask, count} = floodFill(sx, sy, 35);
+    if(count < 20){ samStatus("⚠️ No se detectó pieza clara. Intenta tocar más al centro."); return; }
+    // Extraer contorno
+    const contour = maskToContour(mask, _segW, _segH, sx, sy);
+    if(!contour || contour.length<3){ samStatus("⚠️ No se detectó contorno claro."); return; }
+    // Convertir de coords segCanvas a coords canvas display
+    const scX=imgDispW/_segW, scY=imgDispH/_segH;
+    const points=contour.map(pt=>({x:pt.x*scX, y:pt.y*scY}));
+    const id=Date.now();
+    const color=COLORS[annotations.length%COLORS.length];
+    annotations.push({id,clase:currentClase,type:"polygon",points,color,checked:true,qty:null,fromSam:true});
+    redraw(); renderAnnoList(); updateButtons();
+    if(arrumeMode){ bumpArrume(); samStatus(`🔗 +1 ${currentClase} (${arrumeCount}) · Toca otra pieza`); }
+    else { samStatus(`✅ Pieza segmentada · Toca otra o cambia herramienta`); showQtyPrompt(id); }
+  }catch(err){
+    console.error("Auto-seg:",err);
+    samStatus(`❌ Error: ${(err.message||err).toString().slice(0,80)}`);
+  }
+}
+
 // ── Redraw ────────────────────────────────────────────────────────────────────
 function redraw(){
   const ctx=canvas.getContext("2d");
   ctx.clearRect(0,0,canvas.width,canvas.height);
-
-  // Anotaciones guardadas
   annotations.forEach(a=>{
     if(!a.checked) return;
     ctx.strokeStyle=a.color; ctx.lineWidth=2.5; ctx.globalAlpha=1;
-
     if(a.type==="bbox"){
       const b=a.bbox;
-      // Sombra
       ctx.fillStyle="rgba(0,0,0,0.25)";
       ctx.fillRect(0,0,canvas.width,b.y);
       ctx.fillRect(0,b.y+b.h,canvas.width,canvas.height-b.y-b.h);
@@ -983,7 +966,6 @@ function redraw(){
       drawCorners(ctx,b.x,b.y,b.w,b.h,a.color);
       drawLabel(ctx,a.clase,b.x,b.y,a.color);
       if(a.isQty){ drawQtyBox(ctx,a,b.x,b.y,b.w,b.h); }
-
     } else if(a.type==="polygon"){
       const pts=a.points;
       ctx.beginPath(); ctx.moveTo(pts[0].x,pts[0].y);
@@ -994,15 +976,11 @@ function redraw(){
       drawLabel(ctx,a.clase,pts[0].x,pts[0].y,a.color);
     }
   });
-
-  // BBox en progreso
   if(bboxCurrent&&bboxDrawing){
     ctx.strokeStyle="rgba(255,255,255,.8)"; ctx.lineWidth=2; ctx.setLineDash([6,3]);
     ctx.strokeRect(bboxCurrent.x,bboxCurrent.y,bboxCurrent.w,bboxCurrent.h);
     ctx.setLineDash([]);
   }
-
-  // Esquinero en progreso (preview de L)
   if(cornerState){
     const pts=cornerPolygonPoints();
     if(pts){
@@ -1014,9 +992,6 @@ function redraw(){
       pts.forEach(p=>{ ctx.beginPath(); ctx.arc(p.x,p.y,4,0,Math.PI*2); ctx.fillStyle="#f59e0b"; ctx.fill(); });
     }
   }
-
-
-  // Polígono en progreso
   if(polyPoints.length){
     ctx.strokeStyle="rgba(255,255,255,.9)"; ctx.lineWidth=2; ctx.setLineDash([5,3]);
     ctx.beginPath(); ctx.moveTo(polyPoints[0].x,polyPoints[0].y);
@@ -1029,7 +1004,6 @@ function redraw(){
     });
   }
 }
-
 function drawCorners(ctx,x,y,w,h,color){
   const cs=12; ctx.strokeStyle=color; ctx.lineWidth=4;
   [[x,y],[x+w,y],[x,y+h],[x+w,y+h]].forEach(([cx,cy])=>{
@@ -1054,187 +1028,6 @@ function drawQtyBox(ctx,a,bx,by,bw,bh){
   ctx.textAlign="left"; ctx.textBaseline="alphabetic";
 }
 
-// ── SAM (Segment Anything vía transformers.js) ──────────────────────────────
-function samStatus(msg,show=true){
-  const el=document.getElementById("sam-status");
-  if(!el) return;
-  el.style.display=show?"block":"none";
-  if(show) el.innerHTML=msg;
-}
-async function ensureSamReady(){
-  if(!selectedFile){ samStatus("📷 Toma una foto primero para activar SAM"); return; }
-  if(samLoading){ return; }
-  if(samModel && samInputs && samEmbeddings){ samStatus("✅ SAM listo · Toca una pieza",true); return; }
-  samLoading=true;
-  try{
-    if(!samModel){
-      samStatus("⏳ Cargando SAM (~40MB, solo primera vez)…");
-      const mod=await import("https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.0.2");
-      window._tf=mod;
-      samStatus("⏳ Inicializando modelo (fp32, sin WebGPU)…");
-      // fp16 se cuelga en muchos móviles sin WebGPU: usar fp32 directo. Timeout de 90s para no quedar "Cargando" infinito.
-      const loadModel=mod.SamModel.from_pretrained("Xenova/slimsam-77-uniform");
-      const timeout=new Promise((_,rej)=>setTimeout(()=>rej(new Error("timeout carga modelo (90s)")),90000));
-      samModel=await Promise.race([loadModel,timeout]);
-      samProcessor=await mod.AutoProcessor.from_pretrained("Xenova/slimsam-77-uniform");
-    }
-    if(!samInputs || !samEmbeddings){
-      samStatus("⏳ Analizando imagen…");
-      const mod=window._tf;
-      const img=document.getElementById("bbox-img");
-      let raw;
-      try{
-        raw=await mod.RawImage.fromURL(img.src);
-      }catch(e1){
-        // Fallback: blob:/objectURL a veces falla silenciosamente en fromURL → re-render por canvas
-        samStatus("⏳ Reintentando lectura de imagen (canvas)…");
-        const cv=document.createElement("canvas");
-        cv.width=img.naturalWidth; cv.height=img.naturalHeight;
-        cv.getContext("2d").drawImage(img,0,0);
-        const blob=await new Promise(r=>cv.toBlob(r,"image/png"));
-        raw=await mod.RawImage.fromBlob(blob);
-      }
-      samInputs=await samProcessor(raw);
-      samEmbeddings=await samModel.get_image_embeddings(samInputs);
-    }
-    samStatus("✅ SAM listo · Toca una pieza dentro del arrume");
-  }catch(err){
-    console.error("SAM error:",err);
-    samModel=null; samInputs=null; samEmbeddings=null; // permitir reintento limpio
-    samStatus(`❌ SAM no disponible: ${(err.message||err).toString().slice(0,120)} · Toca la imagen para reintentar`);
-  }finally{ samLoading=false; }
-}
-
-async function samTap(e){
-  if(!checkClase()) return;
-  if(!samModel || !samEmbeddings){ await ensureSamReady(); if(!samEmbeddings) return; }
-  const p=getPos(e);
-  // Coord en pixeles nativos de la imagen
-  const nx=p.x*(imgNatW/imgDispW), ny=p.y*(imgNatH/imgDispH);
-  samStatus("⏳ Segmentando…");
-  try{
-    const mod=window._tf;
-    const reshaped=samInputs.reshaped_input_sizes[0];
-    // Punto en coords reshaped
-    const rx=nx*(reshaped[1]/imgNatW), ry=ny*(reshaped[0]/imgNatH);
-    const input_points=new mod.Tensor("float32", new Float32Array([rx,ry]), [1,1,1,2]);
-    const input_labels=new mod.Tensor("int64", new BigInt64Array([1n]), [1,1,1]);
-    const outputs=await samModel({...samEmbeddings, input_points, input_labels});
-    const masks=await samProcessor.post_process_masks(outputs.pred_masks, samInputs.original_sizes, samInputs.reshaped_input_sizes);
-    const mask=masks[0]; // Tensor shape [1, num_masks, H, W]
-    // Elegir la máscara con mejor iou_score
-    const iouScores=outputs.iou_scores?.data || [1,1,1];
-    let bestIdx=0, bestScore=-1;
-    for(let i=0;i<iouScores.length;i++){ if(iouScores[i]>bestScore){bestScore=iouScores[i]; bestIdx=i;} }
-    const maskData=mask.data; // Uint8/BigInt64/Bool array
-    const H=mask.dims[mask.dims.length-2], W=mask.dims[mask.dims.length-1];
-    const offset=bestIdx*H*W;
-    // Extraer contorno, anclado al punto que el usuario tocó (nx,ny están en píxeles nativos,
-    // que es el mismo espacio que la máscara post-procesada por post_process_masks)
-    const poly=maskToPolygon(maskData, offset, W, H, nx, ny);
-    if(!poly || poly.length<3){ samStatus("⚠️ No se detectó pieza clara. Intenta tocar más al centro.",true); return; }
-    // Convertir de coords imagen nativa a coords canvas (display)
-    const scXinv=imgDispW/imgNatW, scYinv=imgDispH/imgNatH;
-    const points=poly.map(pt=>({x:pt.x*scXinv, y:pt.y*scYinv}));
-    const id=Date.now();
-    const color=COLORS[annotations.length%COLORS.length];
-    annotations.push({id,clase:currentClase,type:"polygon",points,color,checked:true,qty:null,fromSam:true});
-    redraw(); renderAnnoList(); updateButtons();
-    if(arrumeMode){ bumpArrume(); samStatus(`🔗 +1 ${currentClase} (${arrumeCount}) · Toca otra pieza`); }
-    else { samStatus(`✅ Pieza segmentada · Toca otra o cambia herramienta`); showQtyPrompt(id); }
-  }catch(err){
-    console.error("SAM tap:",err);
-    samStatus(`❌ Error: ${(err.message||err).toString().slice(0,80)}`);
-  }
-}
-
-// Buscar el píxel activo más cercano a un punto (búsqueda en anillos expandiéndose)
-function nearestActivePixel(bin, W, H, tx, ty, maxR){
-  tx=Math.round(tx); ty=Math.round(ty);
-  maxR=maxR||Math.max(W,H);
-  if(tx>=0&&tx<W&&ty>=0&&ty<H&&bin[ty*W+tx]) return {x:tx,y:ty};
-  for(let r=1;r<=maxR;r++){
-    for(let dx=-r;dx<=r;dx++){
-      for(let dy=-r;dy<=r;dy++){
-        if(Math.max(Math.abs(dx),Math.abs(dy))!==r) continue;
-        const x=tx+dx, y=ty+dy;
-        if(x>=0&&x<W&&y>=0&&y<H&&bin[y*W+x]) return {x,y};
-      }
-    }
-  }
-  return null;
-}
-
-// Extraer contorno de máscara binaria + Douglas-Peucker
-// tapX/tapY: coordenadas del toque del usuario en el mismo espacio de píxeles que la máscara (W×H)
-function maskToPolygon(data, offset, W, H, tapX, tapY){
-  // Estrategia: trazar contorno del blob que SÍ contiene (o está más cerca de) el punto tocado,
-  // en vez de tomar el primer píxel activo top-left de toda la máscara (eso hacía que, si la
-  // máscara traía ruido u otras regiones, se dibujara el contorno de una pieza distinta a la tocada).
-  const bin=new Uint8Array(W*H);
-  // v puede ser Number (Uint8Array/Float32) o BigInt (BigInt64). `!==0n` da true para 0-Number ⇒ activaba TODOS los píxeles.
-  for(let i=0;i<W*H;i++){ const v=data[offset+i]; bin[i]=v?1:0; }
-  let sx=-1, sy=-1;
-  if(tapX!=null && tapY!=null){
-    const near=nearestActivePixel(bin, W, H, tapX, tapY, 80);
-    if(near){ sx=near.x; sy=near.y; }
-  }
-  if(sx<0){
-    for(let y=0;y<H && sx<0;y++){
-      for(let x=0;x<W;x++){ if(bin[y*W+x]){ sx=x; sy=y; break; } }
-    }
-  }
-  if(sx<0) return null;
-  // Moore-neighbor contour tracing
-  const dirs=[[1,0],[1,1],[0,1],[-1,1],[-1,0],[-1,-1],[0,-1],[1,-1]];
-  const contour=[]; let cx=sx, cy=sy, prevDir=6;
-  const maxSteps=W*H*2; let steps=0;
-  while(steps++<maxSteps){
-    contour.push({x:cx,y:cy});
-    let found=false;
-    for(let i=0;i<8;i++){
-      const d=(prevDir+6+i)%8;
-      const nx=cx+dirs[d][0], ny=cy+dirs[d][1];
-      if(nx>=0 && nx<W && ny>=0 && ny<H && bin[ny*W+nx]){
-        cx=nx; cy=ny; prevDir=(d+4)%8; found=true; break;
-      }
-    }
-    if(!found) break;
-    if(cx===sx && cy===sy && contour.length>2) break;
-    if(contour.length>4000) break;
-  }
-  if(contour.length<8) return null;
-  // Simplificar con Douglas-Peucker
-  const eps=Math.max(2, Math.min(W,H)*0.005);
-  return douglasPeucker(contour, eps);
-}
-function douglasPeucker(pts, eps){
-  if(pts.length<3) return pts;
-  const first=0, last=pts.length-1;
-  const keep=new Uint8Array(pts.length); keep[first]=1; keep[last]=1;
-  const stack=[[first,last]];
-  while(stack.length){
-    const [a,b]=stack.pop();
-    let maxD=0, idx=-1;
-    const ax=pts[a].x, ay=pts[a].y, bx=pts[b].x, by=pts[b].y;
-    const dx=bx-ax, dy=by-ay, len=Math.hypot(dx,dy)||1;
-    for(let i=a+1;i<b;i++){
-      const d=Math.abs((pts[i].x-ax)*dy - (pts[i].y-ay)*dx)/len;
-      if(d>maxD){ maxD=d; idx=i; }
-    }
-    if(maxD>eps && idx>0){ keep[idx]=1; stack.push([a,idx]); stack.push([idx,b]); }
-  }
-  const out=[];
-  for(let i=0;i<pts.length;i++) if(keep[i]) out.push(pts[i]);
-  // Limitar a máx 80 puntos
-  if(out.length>80){
-    const step=Math.ceil(out.length/80);
-    return out.filter((_,i)=>i%step===0);
-  }
-  return out;
-}
-
-// ── Verificar clase antes de dibujar ─────────────────────────────────────────
 function checkClase(){
   if(!currentClase){ showToast("⚠️ Selecciona una clase primero","err"); return false; }
   return true;
@@ -1285,8 +1078,7 @@ function showQtyPrompt(annoId){
     </div>
     <div class="fp-body">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
-        <input type="number" id="qty-input" placeholder="Cantidad" min="1" max="999"
-          style="flex:1;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-size:16px;outline:none;margin:0">
+        <input type="number" id="qty-input" placeholder="Cantidad" min="1" max="999" style="flex:1;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-size:16px;outline:none;margin:0">
         <span style="font-size:12px;color:var(--steel)">piezas</span>
       </div>
       <div style="display:flex;gap:6px">
@@ -1299,17 +1091,13 @@ function showQtyPrompt(annoId){
   makeDraggable(div, document.getElementById("qty-head"));
   setTimeout(()=>document.getElementById("qty-input")?.focus(),100);
 }
-function skipQty(){
-  const p=document.getElementById("qty-prompt"); if(p) p.remove();
-  showToast(`✅ Anotación añadida`,"ok");
-}
+function skipQty(){ const p=document.getElementById("qty-prompt"); if(p) p.remove(); showToast(`✅ Anotación añadida`,"ok"); }
 function addQty(annoId){
   const qty=parseInt(document.getElementById("qty-input")?.value);
   const p=document.getElementById("qty-prompt"); if(p) p.remove();
   const anno=annotations.find(a=>a.id===annoId);
   if(!anno||!qty||qty<1){ showToast("✅ Añadida sin cantidad","ok"); return; }
   anno.qty=qty; anno.isArrume=true;
-  // Crear anotación QTY automática
   const qtyId=Date.now()+1;
   let qtyBbox;
   if(anno.type==="bbox"){
@@ -1391,7 +1179,7 @@ function closeCatModal(e){ if(e.target===document.getElementById("cat-modal-bg")
 function closeCatModalDirect(){ document.getElementById("cat-modal-bg").classList.remove("show"); }
 function renderCatModalFams(){
   const w=document.getElementById("cat-modal-families"); w.innerHTML="";
-  ["ALL","PM","PB","EI"].forEach(f=>{const b=document.createElement("div");b.className="fam-btn"+(f===catModalFam?" active":"");b.textContent=f==="ALL"?"Todas":f;b.onclick=()=>{catModalFam=f;renderCatModalFams();renderCatModal(document.getElementById("cat-modal-search").value);};w.appendChild(b);});
+  FAMILIES.forEach(f=>{const b=document.createElement("div");b.className="fam-btn"+(f===catModalFam?" active":"");b.textContent=f==="ALL"?"Todas":f;b.onclick=()=>{catModalFam=f;renderCatModalFams();renderCatModal(document.getElementById("cat-modal-search").value);};w.appendChild(b);});
 }
 function renderCatModal(q){
   const list=document.getElementById("cat-modal-list"); list.innerHTML="";
@@ -1404,7 +1192,7 @@ function renderCatModal(q){
 renderCatModalFams(); renderCatModal("");
 function renderCatalogPage(q){
   const fw=document.getElementById("cat-main-families"); fw.innerHTML="";
-  ["ALL","PM","PB","EI"].forEach(f=>{const b=document.createElement("div");b.className="fam-btn"+(f===catPageFam?" active":"");b.textContent=f==="ALL"?"Todas":f;b.onclick=()=>{catPageFam=f;renderCatalogPage(document.getElementById("cat-main-search").value);};fw.appendChild(b);});
+  FAMILIES.forEach(f=>{const b=document.createElement("div");b.className="fam-btn"+(f===catPageFam?" active":"");b.textContent=f==="ALL"?"Todas":f;b.onclick=()=>{catPageFam=f;renderCatalogPage(document.getElementById("cat-main-search").value);};fw.appendChild(b);});
   const g=document.getElementById("cat-main-grid"); g.innerHTML="";
   CATALOG.filter(c=>(catPageFam==="ALL"||c.family===catPageFam)&&(!q||c.code.toLowerCase().includes(q.toLowerCase()))).slice(0,80).forEach(c=>{
     const card=document.createElement("div"); card.className="ref-card";
@@ -1422,77 +1210,55 @@ async function uploadAll(){
   if(!apiKey){showToast("⚠️ Ingresa tu API Key","err");return;}
   if(!selectedFile){showToast("⚠️ Selecciona imagen","err");return;}
   if(!checked.length){showToast("⚠️ Marca al menos una anotación","err");return;}
-
   const btn=document.getElementById("btn-upload"), btnR=document.getElementById("btn-review");
   btn.disabled=true; btnR.disabled=true; btn.innerHTML="⏳ Subiendo…"; btn.classList.add("loading");
   const pw=document.getElementById("prog-wrap"), pb=document.getElementById("prog-bar");
   pw.classList.add("show"); pb.style.width="15%";
-
   const logId=Date.now();
   const ext=selectedFile.name.split(".").pop()||"jpg";
   const baseName=checked.filter(a=>!a.isQty).map(a=>a.clase).join("_")+"_"+logId+"."+ext;
   const previewUrl=URL.createObjectURL(selectedFile);
-
   try{
     const b64=await fileToB64(selectedFile);
     pb.style.width="40%";
-
-    // Subir imagen
-    const upRes=await fetch(`https://api.roboflow.com/dataset/${PROJECT}/upload?api_key=${apiKey}&name=${encodeURIComponent(baseName)}&split=${split}`,
-      {method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:b64.split(",")[1]});
+    const upRes=await fetchWithTimeout(`https://api.roboflow.com/dataset/${PROJECT}/upload?api_key=${apiKey}&name=${encodeURIComponent(baseName)}&split=${split}`,
+      {method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:b64.split(",")[1]}, 30000);
     const upData=await upRes.json();
     if(!upRes.ok||upData.error) throw new Error(upData.error||`HTTP ${upRes.status}`);
     pb.style.width="65%";
     const imageId=upData.id||"";
-
-    // Construir anotaciones para Roboflow
     if(imageId){
       const scX=imgNatW/imgDispW, scY=imgNatH/imgDispH;
       const annoPayload={width:imgNatW,height:imgNatH,boxes:[]};
-
       checked.forEach(a=>{
         if(a.type==="bbox"){
           const b=a.bbox;
-          annoPayload.boxes.push({
-            label:a.clase,
-            x:(b.x+b.w/2)*scX/imgNatW,
-            y:(b.y+b.h/2)*scY/imgNatH,
-            w:b.w*scX/imgNatW,
-            h:b.h*scY/imgNatH,
-          });
+          annoPayload.boxes.push({label:a.clase,x:(b.x+b.w/2)*scX/imgNatW,y:(b.y+b.h/2)*scY/imgNatH,w:b.w*scX/imgNatW,h:b.h*scY/imgNatH});
         } else if(a.type==="polygon"){
-          // Roboflow acepta polígonos como puntos normalizados
-          annoPayload.boxes.push({
-            label:a.clase,
-            points:a.points.map(p=>({x:p.x*scX/imgNatW,y:p.y*scY/imgNatH})),
-          });
+          annoPayload.boxes.push({label:a.clase,points:a.points.map(p=>({x:p.x*scX/imgNatW,y:p.y*scY/imgNatH}))});
         }
       });
-
-      const annoRes=await fetch(`https://api.roboflow.com/dataset/${PROJECT}/annotate/${imageId}?api_key=${apiKey}&name=${encodeURIComponent(baseName)}`,
-        {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(annoPayload)});
+      const annoRes=await fetchWithTimeout(`https://api.roboflow.com/dataset/${PROJECT}/annotate/${imageId}?api_key=${apiKey}&name=${encodeURIComponent(baseName)}`,
+        {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(annoPayload)}, 30000);
       const annoData=await annoRes.json();
       if(annoData.error) console.warn("Anotación:",annoData.error);
     }
-
     pb.style.width="100%";
     sessionCount++; totalCount++; okCount++;
     localStorage.setItem("rf_total",totalCount); localStorage.setItem("rf_ok",okCount);
     document.getElementById("cnt-session").textContent=sessionCount;
     document.getElementById("cnt-total").textContent=totalCount;
     document.getElementById("cnt-ok").textContent=okCount;
-
     const entry={id:logId,url:previewUrl,annos:checked.map(a=>({clase:a.clase,color:a.color,type:a.type})),split,ok:true,file:selectedFile,imageId};
     uploadLog.unshift(entry); addLogItem(entry);
     checked.filter(a=>!a.isQty).forEach(a=>addReciente(a.clase));
-    // Actualizar contador por clase (cuenta 1 imagen por clase única, no por bbox)
     const uniqueClasses=[...new Set(checked.filter(a=>!a.isQty).map(a=>a.clase))];
     uniqueClasses.forEach(c=>{ classCounts[c]=(classCounts[c]||0)+1; });
     localStorage.setItem("rf_class_counts",JSON.stringify(classCounts));
     renderClassStats();
+    updateMemoryFromUpload(checked);
     showToast(`✅ ${checked.length} anotación(es) → Dataset`,"ok");
     resetAll();
-
   }catch(err){
     pb.style.background="var(--danger)";
     uploadLog.unshift({id:logId,url:previewUrl,annos:checked.map(a=>({clase:a.clase,color:a.color})),split,ok:false,error:err.message,file:selectedFile});
@@ -1505,32 +1271,24 @@ async function uploadAll(){
     updateButtons();
   }
 }
-
 function fileToB64(f){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=()=>rej(new Error("Error"));r.readAsDataURL(f);});}
-
 function discardPhoto(){
   if(!selectedFile){ return; }
   const nAnnos=annotations.length;
-  const msg=nAnnos
-    ? `¿Descartar esta foto y sus ${nAnnos} anotación(es)? Podrás tomar o cargar otra de inmediato.`
-    : "¿Descartar esta foto y tomar o cargar otra?";
+  const msg=nAnnos?`¿Descartar esta foto y sus ${nAnnos} anotación(es)? Podrás tomar o cargar otra de inmediato.`:"¿Descartar esta foto y tomar o cargar otra?";
   if(!confirm(msg)) return;
   resetAll();
   showToast("🗑️ Foto descartada · elige cámara o galería","ok");
 }
-
 function resetAll(){
   selectedFile=null; annotations=[]; bboxCurrent=null; bboxDrawing=false;
-  cancelPolygon();
+  cancelPolygon(); cornerCancel();
   document.getElementById("capture-zone").classList.remove("has-img");
   document.getElementById("bbox-section").style.display="none";
   document.getElementById("annos-card").style.display="none";
   document.getElementById("file-input-cam").value=""; document.getElementById("file-input-gal").value="";
   const ctx=canvas.getContext("2d"); ctx.clearRect(0,0,canvas.width,canvas.height);
-  // SAM: limpiar embeddings (pero conservar modelo cargado)
-  samInputs=null; samEmbeddings=null;
   samStatus("",false);
-  // Arrume: reset contador (pero conservar modo activo)
   arrumeCount=0;
   const ac=document.getElementById("arrume-counter"); if(ac) ac.textContent="×0";
   updateButtons();
@@ -1559,7 +1317,6 @@ function addLogItem(entry){
     </div>`;
   list.insertBefore(item,list.firstChild);
 }
-
 async function retryEntry(id){
   const apiKey=document.getElementById("api-key").value.trim();
   const entry=uploadLog.find(e=>e.id===id);
@@ -1568,8 +1325,8 @@ async function retryEntry(id){
   try{
     const b64=await fileToB64(entry.file);
     const name=(entry.annos||[]).map(a=>a.clase).join("_")+"_retry_"+Date.now()+".jpg";
-    const res=await fetch(`https://api.roboflow.com/dataset/${PROJECT}/upload?api_key=${apiKey}&name=${encodeURIComponent(name)}&split=${entry.split}`,
-      {method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:b64.split(",")[1]});
+    const res=await fetchWithTimeout(`https://api.roboflow.com/dataset/${PROJECT}/upload?api_key=${apiKey}&name=${encodeURIComponent(name)}&split=${entry.split}`,
+      {method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:b64.split(",")[1]}, 30000);
     const data=await res.json();
     if(!res.ok||data.error) throw new Error(data.error||`HTTP ${res.status}`);
     entry.ok=true; entry.imageId=data.id||"";
@@ -1580,7 +1337,6 @@ async function retryEntry(id){
     showToast("✅ Reintento exitoso","ok");
   }catch(err){showToast(`❌ ${err.message.slice(0,50)}`,"err");}
 }
-
 async function deleteEntry(id){
   const apiKey=document.getElementById("api-key").value.trim();
   const entry=uploadLog.find(e=>e.id===id);
@@ -1593,7 +1349,15 @@ async function deleteEntry(id){
   if(!list.children.length) list.innerHTML='<p style="color:var(--steel);font-size:13px;text-align:center;padding:20px">Las subidas aparecerán aquí</p>';
   showToast("🗑️ Eliminada","ok");
 }
-
+function downloadApp(){
+  const html=document.documentElement.outerHTML;
+  const blob=new Blob(['<!DOCTYPE html>\n'+html],{type:'text/html'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url; a.download='UNISPAN-Dataset-v11.html'; document.body.appendChild(a); a.click();
+  document.body.removeChild(a); URL.revokeObjectURL(url);
+  showToast("⬇ Archivo descargado","ok");
+}
 function showToast(msg,type){const t=document.getElementById("toast");t.textContent=msg;t.className=`toast ${type} show`;setTimeout(()=>t.classList.remove("show"),2800);}
 
 // ── Estadísticas por clase ────────────────────────────────────────────────────
@@ -1632,7 +1396,7 @@ function resetStats(){
 renderClassStats();
 
 // ══════════════════════════════════════════════════════════════════════════════
-// AGENTE EXPERTO — Base de conocimiento local sobre paneles formaleta UNISPAN
+// AGENTE EXPERTO — Base de conocimiento local
 // ══════════════════════════════════════════════════════════════════════════════
 const EXPERT_KB=[
  {t:"Lámina (cara de contacto)",k:["lamina","lámina","cara","contacto","superficie","acero","espesor","chapa"],
@@ -1690,7 +1454,6 @@ function expertUser(txt){
 function expertSay(topic){ document.getElementById("expert-input").value=topic; expertAsk(); }
 function normTxt(s){ return s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,""); }
 function memoryContextForAI(){
-  // Resumen compacto de imgMemory + última observación IA para dar contexto al chat
   if(!imgMemory.length) return "Memoria vacía (aún no se ha capturado ninguna imagen).";
   const byClass={};
   imgMemory.forEach(e=>e.classes.forEach(c=>{ byClass[c]=(byClass[c]||0)+1; }));
@@ -1712,15 +1475,9 @@ async function askAIExpertFallback(question){
   const kbBrief=EXPERT_KB.map(e=>`• ${e.t}`).join("\n");
   const sys=`Eres el agente experto UNISPAN. Sabes de láminas, bridas, platinas, refuerzos (transversal, estructural, brida), ángulos EI/EE, perforaciones (inicio 25mm, paso 50mm ⇒ n=medida/50), y de identificar piezas por perforaciones frontales (ancho) y laterales (largo).\nCatálogo real:\n${catalogSummaryForPrompt()}\nTemas conocidos internamente:\n${kbBrief}\nEstado actual de la captura de este usuario:\n${ctx}\nResponde en español, breve y práctico (máx 6 líneas), usando <b> para lo clave. Si la pregunta se refiere a "la foto actual" o "lo que capturé", usa la observación IA de arriba. Si no hay datos suficientes, dilo.`;
   try{
-    const res=await fetch("https://api.openai.com/v1/chat/completions",{
-      method:"POST",
-      headers:{"Content-Type":"application/json","Authorization":"Bearer "+key},
-      body:JSON.stringify({
-        model:"gpt-4o-mini",
-        messages:[{role:"system",content:sys},{role:"user",content:question}],
-        max_tokens:350,
-      }),
-    });
+    const res=await fetchWithTimeout("https://api.openai.com/v1/chat/completions",
+      {method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+key},
+      body:JSON.stringify({model:"gpt-4o-mini",messages:[{role:"system",content:sys},{role:"user",content:question}],max_tokens:350})}, 15000);
     const data=await res.json();
     if(!res.ok) throw new Error(data.error?.message||`HTTP ${res.status}`);
     return data.choices?.[0]?.message?.content||null;
@@ -1740,7 +1497,6 @@ async function expertAsk(){
     e.k.forEach(k=>{ if(qn.includes(normTxt(k))) s+=6; });
     return {e,s};
   }).sort((a,b)=>b.s-a.s);
-  // Palabras que fuerzan uso de memoria/IA (contexto), aunque haya match en KB
   const wantsContext=/\b(foto|imagen|captur|actual|memoria|analic|reciente|ultim|últim|qu[eé] tom|qu[eé] veo|reconoc)/i.test(q);
   const hasKey=!!(document.getElementById("openai-key")?.value||"").trim();
   if(scored[0].s===0 || wantsContext){
@@ -1766,7 +1522,6 @@ async function expertAsk(){
 }
 
 // ── Calculadora perforaciones ⇄ medidas ──────────────────────────────────────
-// Regla UNISPAN: inicio 25 mm, paso 50 mm ⇒ n = medida / 50
 const PITCH=50, START=25;
 const STD_W=[600,500,450,400,350,300,270,250,230,200,150,120,100,90,80];
 const STD_L=[2400,1200,900,800,750,600];
@@ -1799,30 +1554,25 @@ function calcFromCounts(){
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
-// MEMORIA + ANÁLISIS IA — Aprende de cada imagen y observa estructura
+// MEMORIA + ANÁLISIS IA
 // ══════════════════════════════════════════════════════════════════════════════
 const savedOpenAIKey=localStorage.getItem("openai_key");
 if(savedOpenAIKey) { const el=document.getElementById("openai-key"); if(el) el.value=savedOpenAIKey; }
 document.addEventListener("blur",e=>{ if(e.target?.id==="openai-key") localStorage.setItem("openai_key",e.target.value.trim()); },true);
 
-// Registro básico automático al cargar imagen: aspecto, tamaño, nitidez (blur var)
 let _lastMemoryEntry=null;
 function recordMemory(img,file){
   const w=img.naturalWidth, h=img.naturalHeight;
   const aspect=+(w/h).toFixed(3);
   const entry={
-    id:Date.now(),
-    filename:file?.name||"cam",
-    w,h,aspect,
+    id:Date.now(), filename:file?.name||"cam", w,h,aspect,
     orientation: aspect>1.2?"horizontal":aspect<0.83?"vertical":"cuadrada",
-    classes:[], qty:null, blur:null,
-    note:"", aiObs:null,
+    classes:[], qty:null, blur:null, note:"", aiObs:null,
     date:new Date().toISOString(),
   };
   imgMemory.unshift(entry); if(imgMemory.length>200) imgMemory.length=200;
   _lastMemoryEntry=entry; saveMemory();
 }
-// Al confirmar upload, enriquecer la última entrada con las clases anotadas
 function updateMemoryFromUpload(checkedAnnos){
   if(!_lastMemoryEntry) return;
   const clsList=[...new Set(checkedAnnos.filter(a=>!a.isQty).map(a=>a.clase))];
@@ -1830,29 +1580,6 @@ function updateMemoryFromUpload(checkedAnnos){
   _lastMemoryEntry.qty=checkedAnnos.find(a=>a.qty)?.qty||null;
   saveMemory();
 }
-// Hook al upload existente: parche liviano
-const _origUploadAll=window.uploadAll;
-// (uploadAll ya está definido arriba; le añadimos gancho via wrap después)
-
-// Blur ya calcula variance; capturamos el número en un data-attr
-const _origAnalyzeBlur=analyzeBlur;
-analyzeBlur=function(img){
-  try{
-    const S=180, c=document.createElement("canvas"); c.width=S; c.height=S;
-    const g=c.getContext("2d"); g.drawImage(img,0,0,S,S);
-    const d=g.getImageData(0,0,S,S).data;
-    const lum=new Float32Array(S*S);
-    for(let i=0;i<S*S;i++) lum[i]=0.299*d[i*4]+0.587*d[i*4+1]+0.114*d[i*4+2];
-    let sum=0,sum2=0,n=0;
-    for(let y=1;y<S-1;y++) for(let x=1;x<S-1;x++){
-      const i=y*S+x; const v=-lum[i-S]-lum[i-1]+4*lum[i]-lum[i+1]-lum[i+S];
-      sum+=v; sum2+=v*v; n++;
-    }
-    const variance=(sum2/n)-(sum/n)**2;
-    if(_lastMemoryEntry){ _lastMemoryEntry.blur=Math.round(variance); saveMemory(); }
-  }catch(_){}
-  return _origAnalyzeBlur(img);
-};
 
 async function analyzeCurrentWithAI(){
   const key=(document.getElementById("openai-key")?.value||"").trim();
@@ -1860,11 +1587,9 @@ async function analyzeCurrentWithAI(){
   out.style.display="block";
   if(!selectedFile){ out.textContent="⚠️ Carga una imagen primero (Cámara o Galería)."; return; }
   if(!key){
-    // Modo offline: describir la imagen con datos que ya tenemos
     const e=_lastMemoryEntry;
     if(!e){ out.textContent="⚠️ Sin datos aún."; return; }
-    out.innerHTML=`
-      <b>Observación local (sin IA):</b><br>
+    out.innerHTML=`<b>Observación local (sin IA):</b><br>
       • Dimensiones: ${e.w}×${e.h} px · aspecto ${e.aspect} (${e.orientation})<br>
       • Nitidez (var. Laplaciano): ${e.blur??"?"} ${e.blur>180?"✅ nítida":e.blur>80?"⚠️ media":"❌ borrosa"}<br>
       • Clases anotadas hasta ahora: ${e.classes.length?e.classes.join(", "):"(ninguna)"}<br>
@@ -1875,43 +1600,28 @@ async function analyzeCurrentWithAI(){
   out.innerHTML="⏳ Analizando con gpt-4o-mini…";
   try{
     const b64=await fileToB64(selectedFile);
-    const prompt=`Eres un experto en formaletas metálicas UNISPAN (acero 3mm). Este es tu catálogo REAL de referencias — cualquier medida que estimes debe encajar (o acercarse) a uno de estos valores, no inventes medidas fuera de rango:
+    const prompt=`Eres un experto en formaletas metálicas UNISPAN (acero 3mm). Catálogo REAL:
 ${catalogSummaryForPrompt()}
 
-Reglas de identificación UNISPAN (úsalas para razonar, no las repitas en la respuesta):
-- La lámina es la cara lisa sin perforaciones; las perforaciones van en las bridas (marco perimetral, franja de ~55-65mm).
-- Perforaciones: inicio a 25mm del borde, paso de 50mm entre centros. Nº perforaciones = (medida_mm - 25) / 50.
-- Bridas cortas (frontales) → definen el ANCHO. Bridas largas (laterales) → definen el LARGO.
-- Doblez central en la lámina ⇒ es un esquinero (familia EI).
-- Familia PM: anchos 300-600mm. Familia PB: anchos 80-270mm. Familia EI: siempre 150×150mm de ala.
+Reglas UNISPAN:
+- Perforaciones: inicio 25mm, paso 50mm. N = (medida_mm - 25) / 50.
+- Bridas cortas → ANCHO. Bridas largas → LARGO.
+- Doblez central ⇒ esquinero (EI/EE).
+- PM: 300-600mm. PB: 80-270mm. EI/EE: 150×150mm.
 
-Analiza esta foto de un panel formaleta y devuelve:
-1) Tipo probable (PM panel principal / PB básico / EI esquinero interior / EE exterior / accesorio)
-2) Estructura visible: lámina, bridas, platinas, refuerzos transversales/estructurales
-3) Perforaciones frontales y laterales contadas (cuenta real si son visibles y nítidas, si no, aproxima)
-4) Medidas: ancho × largo (mm) calculadas con la fórmula de perforaciones, o tu mejor estimación visual si no se pueden contar
-5) Anomalías: perforaciones en la lámina, daños, reparaciones
-6) Calidad de la foto para dataset (nítida / borrosa / ángulo / iluminación)
-Responde SOLO en JSON compacto (sin texto extra): {"tipo":"","familia":"PM|PB|EI|EE|ACCESORIO","estructura":"","frontales":0,"laterales":0,"ancho_mm":0,"largo_mm":0,"anomalias":"","calidad_foto":"","confianza":0.0}`;
-    const res=await fetch("https://api.openai.com/v1/chat/completions",{
-      method:"POST",
-      headers:{"Content-Type":"application/json","Authorization":"Bearer "+key},
-      body:JSON.stringify({
-        model:"gpt-4o-mini",
-        messages:[{role:"user",content:[
-          {type:"text",text:prompt},
-          {type:"image_url",image_url:{url:b64}}
-        ]}],
-        max_tokens:400,
-      }),
-    });
+Analiza esta foto y devuelve SOLO JSON:
+{"tipo":"","familia":"PM|PB|EI|EE|ACCESORIO","estructura":"","frontales":0,"laterales":0,"ancho_mm":0,"largo_mm":0,"anomalias":"","calidad_foto":"","confianza":0.0}`;
+    const res=await fetchWithTimeout("https://api.openai.com/v1/chat/completions",
+      {method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+key},
+      body:JSON.stringify({model:"gpt-4o-mini",
+        messages:[{role:"user",content:[{type:"text",text:prompt},{type:"image_url",image_url:{url:b64}}]}],
+        max_tokens:400})}, 20000);
     const data=await res.json();
     if(!res.ok) throw new Error(data.error?.message||`HTTP ${res.status}`);
     const raw=data.choices?.[0]?.message?.content||"";
     let parsed=null;
     try{ const m=raw.match(/\{[\s\S]*\}/); if(m) parsed=JSON.parse(m[0]); }catch(_){}
     if(parsed){
-      // Validar/ajustar contra el catálogo real en vez de confiar en texto libre del modelo
       const fam=(parsed.familia||"").toUpperCase().trim();
       const match=["PM","PB","EI","EE"].includes(fam)?nearestCatalogMatch(fam,parsed.largo_mm,parsed.ancho_mm):null;
       parsed.referencia_validada=match?match.code:null;
@@ -1922,19 +1632,18 @@ Responde SOLO en JSON compacto (sin texto extra): {"tipo":"","familia":"PM|PB|EI
       const refHtml = parsed.referencia_validada
         ? (parsed.distancia_catalogo_mm<=25
             ? `<span style="color:var(--ok);font-family:monospace">${parsed.referencia_validada}</span> ✅`
-            : `<span style="color:var(--amber);font-family:monospace">${parsed.referencia_validada}</span> ⚠️ (no calza exacto, medida más cercana en catálogo)`)
+            : `<span style="color:var(--amber);font-family:monospace">${parsed.referencia_validada}</span> ⚠️ (medida más cercana en catálogo)`)
         : `<span style="color:var(--danger)">sin match en catálogo</span>`;
       const html=`<b style="color:var(--amber)">🤖 Análisis IA:</b><br>
         • <b>Tipo:</b> ${parsed.tipo||"?"} (familia ${parsed.familia||"?"})<br>
-        • <b>Referencia validada contra catálogo:</b> ${refHtml}<br>
+        • <b>Referencia validada:</b> ${refHtml}<br>
         • <b>Estructura:</b> ${parsed.estructura||"?"}<br>
         • <b>Perforaciones:</b> ${parsed.frontales||"?"} frontales · ${parsed.laterales||"?"} laterales<br>
-        • <b>Medidas estimadas por IA:</b> ${parsed.ancho_mm||"?"} × ${parsed.largo_mm||"?"} mm<br>
+        • <b>Medidas estimadas:</b> ${parsed.ancho_mm||"?"} × ${parsed.largo_mm||"?"} mm<br>
         • <b>Anomalías:</b> ${parsed.anomalias||"ninguna"}<br>
         • <b>Foto:</b> ${parsed.calidad_foto||"?"} · confianza ${((parsed.confianza||0)*100).toFixed(0)}%<br>
-        <span style="color:var(--steel);font-size:10px">Guardado en memoria — ahora puedes preguntar al experto sobre esta pieza.</span>`;
+        <span style="color:var(--steel);font-size:10px">Guardado en memoria.</span>`;
       out.innerHTML=html;
-      // Publicar en el hilo del experto para que "recuerde" lo que acaba de ver
       if(document.getElementById("expert-chat")){ expertInit(); expertBot(`📸 Acabo de analizar una foto: ${html}`); }
     } else {
       out.innerHTML=`<b>🤖 Análisis IA (texto):</b><br><pre style="white-space:pre-wrap;font-size:11px">${raw}</pre>`;
@@ -1949,7 +1658,6 @@ function showMemorySummary(){
   const out=document.getElementById("ai-analysis-out");
   out.style.display="block";
   if(!imgMemory.length){ out.innerHTML="📭 Aún no hay imágenes en memoria."; return; }
-  // Agregar por clase
   const byClass={};
   imgMemory.forEach(e=>e.classes.forEach(c=>{
     if(!byClass[c]) byClass[c]={n:0,aspects:[],blurs:[]};
@@ -1978,26 +1686,6 @@ function clearMemory(){
   const out=document.getElementById("ai-analysis-out");
   out.style.display="block"; out.textContent="🗑️ Memoria borrada.";
 }
-
-// Enriquecer la memoria cuando se sube (parche al uploadAll existente)
-(function(){
-  const origUp=window.uploadAll;
-  window.uploadAll=async function(){
-    const checkedBefore=annotations.filter(a=>a.checked);
-    const r=await origUp.apply(this,arguments);
-    updateMemoryFromUpload(checkedBefore);
-    return r;
-  };
-})();
-
-// Ampliar chips del experto con temas de memoria
-setTimeout(()=>{
-  const chips=document.getElementById("expert-chips");
-  if(chips && !chips.dataset.v10){
-    chips.dataset.v10="1";
-    // Se rellenan en expertInit; nada más que hacer aquí
-  }
-},100);
 </script>
 </body>
 </html>
