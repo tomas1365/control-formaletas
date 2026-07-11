@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#0a1628">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>UNISPAN — Captura Dataset v9</title>
+<title>UNISPAN — Captura Dataset v10</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;touch-action:manipulation;}
 :root{--bg:#0a1628;--surface:#102a43;--surface2:#1a3a5c;--border:rgba(99,125,152,0.25);--amber:#f59e0b;--steel:#627d98;--text:#e2e8f0;--text2:#94a3b8;--ok:#22c55e;--danger:#ef4444;--radius:14px;}
@@ -55,6 +55,7 @@ input[type="password"]{letter-spacing:2px;}
 .blur-warn{background:rgba(239,68,68,.12);border:1.5px solid rgba(239,68,68,.4);color:#fca5a5;padding:9px 11px;border-radius:10px;font-size:12px;margin-top:8px;display:flex;align-items:center;gap:8px;}
 .blur-warn.ok{background:rgba(34,197,94,.1);border-color:rgba(34,197,94,.3);color:#86efac;}
 .blur-warn .x{margin-left:auto;cursor:pointer;font-size:16px;}
+.blur-warn-discard{cursor:pointer;text-decoration:underline;font-weight:700;white-space:nowrap;}
 
 /* Class stats */
 .stat-row{display:flex;justify-content:space-between;align-items:center;padding:7px 10px;background:var(--bg);border-radius:8px;font-size:12px;margin-bottom:4px;}
@@ -186,7 +187,7 @@ input[type="password"]{letter-spacing:2px;}
 
 <header>
   <div class="logo">U</div>
-  <div><h1>UNISPAN Dataset v9</h1><p>Esquinero + Galería + Memoria IA</p></div>
+  <div><h1>UNISPAN Dataset v10</h1><p>Esquinero + Galería + Memoria IA + Descarte de foto</p></div>
 </header>
 
 <div class="tabs">
@@ -286,6 +287,9 @@ input[type="password"]{letter-spacing:2px;}
     <input type="file" id="file-input-cam" accept="image/*" capture="environment">
     <input type="file" id="file-input-gal" accept="image/*" multiple>
     <div id="bbox-section" style="display:none">
+      <div class="btn-row" style="margin-bottom:8px">
+        <button class="btn btn-danger btn-sm" style="flex:1" onclick="discardPhoto()">🗑️ Descartar y tomar/cargar otra</button>
+      </div>
       <div class="zoom-viewport" id="zoom-viewport">
         <div class="bbox-wrap" id="bbox-wrap">
           <img id="bbox-img" class="bbox-img" alt="">
@@ -301,6 +305,7 @@ input[type="password"]{letter-spacing:2px;}
       </div>
       <div class="blur-warn" id="blur-warn" style="display:none">
         <span id="blur-warn-txt"></span>
+        <span id="blur-warn-action"></span>
         <span class="x" onclick="document.getElementById('blur-warn').style.display='none'">✕</span>
       </div>
       <div class="poly-toolbar" id="poly-toolbar" style="display:none">
@@ -462,6 +467,34 @@ const CATALOG=[];
 [2400,1200,900,800,750,600].forEach(l=>[600,550,500,450,420,400,380,350,320,300].forEach(a=>CATALOG.push({code:`PM-${l}x${a}`,family:"PM",spec:`${l}×${a}mm`})));
 [2400,1200,900,800,750,600].forEach(l=>[270,250,230,200,150,120,100,90,80].forEach(a=>CATALOG.push({code:`PB-${l}x${a}`,family:"PB",spec:`${l}×${a}mm`})));
 [2400,1200,900,800,600].forEach(l=>CATALOG.push({code:`EI-${l}x150x150`,family:"EI",spec:`${l}×150×150mm`}));
+
+// Texto compacto del catálogo para dar contexto real al modelo de IA (grounding)
+function catalogSummaryForPrompt(){
+  const byFam={};
+  CATALOG.forEach(c=>{
+    if(!byFam[c.family]) byFam[c.family]={largos:new Set(),anchos:new Set()};
+    const m=c.spec.match(/^(\d+)×(\d+)/);
+    if(m){ byFam[c.family].largos.add(+m[1]); byFam[c.family].anchos.add(+m[2]); }
+  });
+  return Object.entries(byFam).map(([fam,d])=>
+    `${fam}: largos válidos {${[...d.largos].sort((a,b)=>a-b).join(",")}} mm × anchos válidos {${[...d.anchos].sort((a,b)=>a-b).join(",")}} mm`
+  ).join("\n");
+}
+
+// Dado family/ancho/largo estimados, buscar la referencia real más cercana en CATALOG
+function nearestCatalogMatch(family, largo_mm, ancho_mm){
+  const cands=CATALOG.filter(c=>c.family===family);
+  if(!cands.length) return null;
+  let best=null, bestD=Infinity;
+  cands.forEach(c=>{
+    const m=c.spec.match(/^(\d+)×(\d+)/);
+    if(!m) return;
+    const l=+m[1], a=+m[2];
+    const d=Math.abs(l-(largo_mm||0))+Math.abs(a-(ancho_mm||0));
+    if(d<bestD){ bestD=d; best=c; }
+  });
+  return best?{...best, distancia_mm:bestD}:null;
+}
 
 const COLORS=["#f59e0b","#3b82f6","#a855f7","#22c55e","#ef4444","#06b6d4","#f97316","#84cc16","#ec4899","#14b8a6"];
 const PROJECT="reconocimiento-de-piezas-rllp1";
@@ -632,16 +665,20 @@ function analyzeBlur(img){
     const mean=sum/n, variance=(sum2/n)-mean*mean;
     const w=document.getElementById("blur-warn");
     const t=document.getElementById("blur-warn-txt");
+    const act=document.getElementById("blur-warn-action");
     w.classList.remove("ok");
     if(variance<80){
       w.style.display="flex";
-      t.innerHTML=`⚠️ <b>Foto borrosa</b> (nitidez ${variance.toFixed(0)}). Considera repetir la toma.`;
+      t.innerHTML=`⚠️ <b>Foto borrosa</b> (nitidez ${variance.toFixed(0)}).`;
+      act.innerHTML=`<span class="blur-warn-discard" onclick="discardPhoto()">🗑️ Descartar y repetir</span>`;
     } else if(variance<180){
       w.style.display="flex";
       t.innerHTML=`⚠️ Nitidez media (${variance.toFixed(0)}). Aceptable, pero mejor sería más clara.`;
+      act.innerHTML=`<span class="blur-warn-discard" onclick="discardPhoto()">🗑️ Repetir</span>`;
     } else {
       w.style.display="flex"; w.classList.add("ok");
       t.innerHTML=`✅ Foto nítida (${variance.toFixed(0)}).`;
+      act.innerHTML="";
       setTimeout(()=>{ if(w.classList.contains("ok")) w.style.display="none"; },2500);
     }
   }catch(_){}
@@ -1078,8 +1115,9 @@ async function samTap(e){
     const maskData=mask.data; // Uint8/BigInt64/Bool array
     const H=mask.dims[mask.dims.length-2], W=mask.dims[mask.dims.length-1];
     const offset=bestIdx*H*W;
-    // Extraer contorno
-    const poly=maskToPolygon(maskData, offset, W, H);
+    // Extraer contorno, anclado al punto que el usuario tocó (nx,ny están en píxeles nativos,
+    // que es el mismo espacio que la máscara post-procesada por post_process_masks)
+    const poly=maskToPolygon(maskData, offset, W, H, nx, ny);
     if(!poly || poly.length<3){ samStatus("⚠️ No se detectó pieza clara. Intenta tocar más al centro.",true); return; }
     // Convertir de coords imagen nativa a coords canvas (display)
     const scXinv=imgDispW/imgNatW, scYinv=imgDispH/imgNatH;
@@ -1096,16 +1134,40 @@ async function samTap(e){
   }
 }
 
+// Buscar el píxel activo más cercano a un punto (búsqueda en anillos expandiéndose)
+function nearestActivePixel(bin, W, H, tx, ty, maxR){
+  tx=Math.round(tx); ty=Math.round(ty);
+  maxR=maxR||Math.max(W,H);
+  if(tx>=0&&tx<W&&ty>=0&&ty<H&&bin[ty*W+tx]) return {x:tx,y:ty};
+  for(let r=1;r<=maxR;r++){
+    for(let dx=-r;dx<=r;dx++){
+      for(let dy=-r;dy<=r;dy++){
+        if(Math.max(Math.abs(dx),Math.abs(dy))!==r) continue;
+        const x=tx+dx, y=ty+dy;
+        if(x>=0&&x<W&&y>=0&&y<H&&bin[y*W+x]) return {x,y};
+      }
+    }
+  }
+  return null;
+}
+
 // Extraer contorno de máscara binaria + Douglas-Peucker
-function maskToPolygon(data, offset, W, H){
-  // Encontrar componente conexo (flood fill desde el pixel más "denso" cerca del tap)
-  // Estrategia simple: trazar contorno del blob completo usando Moore neighborhood
+// tapX/tapY: coordenadas del toque del usuario en el mismo espacio de píxeles que la máscara (W×H)
+function maskToPolygon(data, offset, W, H, tapX, tapY){
+  // Estrategia: trazar contorno del blob que SÍ contiene (o está más cerca de) el punto tocado,
+  // en vez de tomar el primer píxel activo top-left de toda la máscara (eso hacía que, si la
+  // máscara traía ruido u otras regiones, se dibujara el contorno de una pieza distinta a la tocada).
   const bin=new Uint8Array(W*H);
   for(let i=0;i<W*H;i++){ const v=data[offset+i]; bin[i]=(v && v!==0n)?1:0; }
-  // Encontrar primer pixel activo (top-left del blob más grande — bastante bien para SAM que da una sola máscara)
   let sx=-1, sy=-1;
-  for(let y=0;y<H && sx<0;y++){
-    for(let x=0;x<W;x++){ if(bin[y*W+x]){ sx=x; sy=y; break; } }
+  if(tapX!=null && tapY!=null){
+    const near=nearestActivePixel(bin, W, H, tapX, tapY, 80);
+    if(near){ sx=near.x; sy=near.y; }
+  }
+  if(sx<0){
+    for(let y=0;y<H && sx<0;y++){
+      for(let x=0;x<W;x++){ if(bin[y*W+x]){ sx=x; sy=y; break; } }
+    }
   }
   if(sx<0) return null;
   // Moore-neighbor contour tracing
@@ -1431,6 +1493,17 @@ async function uploadAll(){
 
 function fileToB64(f){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=()=>rej(new Error("Error"));r.readAsDataURL(f);});}
 
+function discardPhoto(){
+  if(!selectedFile){ return; }
+  const nAnnos=annotations.length;
+  const msg=nAnnos
+    ? `¿Descartar esta foto y sus ${nAnnos} anotación(es)? Podrás tomar o cargar otra de inmediato.`
+    : "¿Descartar esta foto y tomar o cargar otra?";
+  if(!confirm(msg)) return;
+  resetAll();
+  showToast("🗑️ Foto descartada · elige cámara o galería","ok");
+}
+
 function resetAll(){
   selectedFile=null; annotations=[]; bboxCurrent=null; bboxDrawing=false;
   cancelPolygon();
@@ -1736,14 +1809,24 @@ async function analyzeCurrentWithAI(){
   out.innerHTML="⏳ Analizando con gpt-4o-mini…";
   try{
     const b64=await fileToB64(selectedFile);
-    const prompt=`Eres un experto en formaletas UNISPAN. Analiza esta foto de un panel formaleta y describe brevemente:
+    const prompt=`Eres un experto en formaletas metálicas UNISPAN (acero 3mm). Este es tu catálogo REAL de referencias — cualquier medida que estimes debe encajar (o acercarse) a uno de estos valores, no inventes medidas fuera de rango:
+${catalogSummaryForPrompt()}
+
+Reglas de identificación UNISPAN (úsalas para razonar, no las repitas en la respuesta):
+- La lámina es la cara lisa sin perforaciones; las perforaciones van en las bridas (marco perimetral, franja de ~55-65mm).
+- Perforaciones: inicio a 25mm del borde, paso de 50mm entre centros. Nº perforaciones = (medida_mm - 25) / 50.
+- Bridas cortas (frontales) → definen el ANCHO. Bridas largas (laterales) → definen el LARGO.
+- Doblez central en la lámina ⇒ es un esquinero (familia EI).
+- Familia PM: anchos 300-600mm. Familia PB: anchos 80-270mm. Familia EI: siempre 150×150mm de ala.
+
+Analiza esta foto de un panel formaleta y devuelve:
 1) Tipo probable (PM panel principal / PB básico / EI esquinero interior / EE exterior / accesorio)
-2) Estructura visible: lámina, bridas (marco perimetral), platinas, refuerzos transversales/estructurales
-3) Perforaciones frontales (bridas cortas) y laterales (bridas largas) si son contables — cuenta aproximada
-4) Estimación de medidas: ancho × longitud (mm) según perforaciones (inicio 25 mm, paso 50 mm, n=medida/50)
+2) Estructura visible: lámina, bridas, platinas, refuerzos transversales/estructurales
+3) Perforaciones frontales y laterales contadas (cuenta real si son visibles y nítidas, si no, aproxima)
+4) Medidas: ancho × largo (mm) calculadas con la fórmula de perforaciones, o tu mejor estimación visual si no se pueden contar
 5) Anomalías: perforaciones en la lámina, daños, reparaciones
 6) Calidad de la foto para dataset (nítida / borrosa / ángulo / iluminación)
-Responde en JSON compacto: {"tipo":"","estructura":"","frontales":0,"laterales":0,"ancho_mm":0,"largo_mm":0,"referencia_sugerida":"","anomalias":"","calidad_foto":"","confianza":0.0}`;
+Responde SOLO en JSON compacto (sin texto extra): {"tipo":"","familia":"PM|PB|EI|EE|ACCESORIO","estructura":"","frontales":0,"laterales":0,"ancho_mm":0,"largo_mm":0,"anomalias":"","calidad_foto":"","confianza":0.0}`;
     const res=await fetch("https://api.openai.com/v1/chat/completions",{
       method:"POST",
       headers:{"Content-Type":"application/json","Authorization":"Bearer "+key},
@@ -1761,13 +1844,26 @@ Responde en JSON compacto: {"tipo":"","estructura":"","frontales":0,"laterales":
     const raw=data.choices?.[0]?.message?.content||"";
     let parsed=null;
     try{ const m=raw.match(/\{[\s\S]*\}/); if(m) parsed=JSON.parse(m[0]); }catch(_){}
+    if(parsed){
+      // Validar/ajustar contra el catálogo real en vez de confiar en texto libre del modelo
+      const fam=(parsed.familia||"").toUpperCase().trim();
+      const match=["PM","PB","EI"].includes(fam)?nearestCatalogMatch(fam,parsed.largo_mm,parsed.ancho_mm):null;
+      parsed.referencia_validada=match?match.code:null;
+      parsed.distancia_catalogo_mm=match?match.distancia_mm:null;
+    }
     if(_lastMemoryEntry){ _lastMemoryEntry.aiObs=parsed||raw; saveMemory(); }
     if(parsed){
+      const refHtml = parsed.referencia_validada
+        ? (parsed.distancia_catalogo_mm<=25
+            ? `<span style="color:var(--ok);font-family:monospace">${parsed.referencia_validada}</span> ✅`
+            : `<span style="color:var(--amber);font-family:monospace">${parsed.referencia_validada}</span> ⚠️ (no calza exacto, medida más cercana en catálogo)`)
+        : `<span style="color:var(--danger)">sin match en catálogo</span>`;
       out.innerHTML=`<b style="color:var(--amber)">🤖 Análisis IA:</b><br>
-        • <b>Tipo:</b> ${parsed.tipo||"?"} ${parsed.referencia_sugerida?` → <span style="color:var(--amber);font-family:monospace">${parsed.referencia_sugerida}</span>`:""}<br>
+        • <b>Tipo:</b> ${parsed.tipo||"?"} (familia ${parsed.familia||"?"})<br>
+        • <b>Referencia validada contra catálogo:</b> ${refHtml}<br>
         • <b>Estructura:</b> ${parsed.estructura||"?"}<br>
         • <b>Perforaciones:</b> ${parsed.frontales||"?"} frontales · ${parsed.laterales||"?"} laterales<br>
-        • <b>Medidas estimadas:</b> ${parsed.ancho_mm||"?"} × ${parsed.largo_mm||"?"} mm<br>
+        • <b>Medidas estimadas por IA:</b> ${parsed.ancho_mm||"?"} × ${parsed.largo_mm||"?"} mm<br>
         • <b>Anomalías:</b> ${parsed.anomalias||"ninguna"}<br>
         • <b>Foto:</b> ${parsed.calidad_foto||"?"} · confianza ${((parsed.confianza||0)*100).toFixed(0)}%<br>
         <span style="color:var(--steel);font-size:10px">Guardado en memoria para consulta posterior.</span>`;
@@ -1827,8 +1923,8 @@ function clearMemory(){
 // Ampliar chips del experto con temas de memoria
 setTimeout(()=>{
   const chips=document.getElementById("expert-chips");
-  if(chips && !chips.dataset.v9){
-    chips.dataset.v9="1";
+  if(chips && !chips.dataset.v10){
+    chips.dataset.v10="1";
     // Se rellenan en expertInit; nada más que hacer aquí
   }
 },100);
