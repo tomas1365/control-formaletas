@@ -1,12 +1,11 @@
 <!DOCTYPE html>
-<html lang="es">
-<head>
+<html lang="es"><head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#0a1628">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>UNISPAN — Captura Dataset v13</title>
+<title>UNISPAN — Dataset v14</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;touch-action:manipulation;}
 :root{--bg:#0a1628;--surface:#102a43;--surface2:#1a3a5c;--border:rgba(99,125,152,0.25);--amber:#f59e0b;--steel:#627d98;--text:#e2e8f0;--text2:#94a3b8;--ok:#22c55e;--danger:#ef4444;--radius:14px;}
@@ -148,12 +147,15 @@ input[type="password"]{letter-spacing:2px;}
 .corner-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin:6px 0;}
 .corner-btn{padding:6px;border-radius:6px;border:1.5px solid var(--border);background:var(--bg);color:var(--text2);font-size:11px;font-weight:600;cursor:pointer;}
 .corner-btn.active{border-color:var(--amber);background:rgba(245,158,11,.15);color:var(--amber);}
+/* SAM overlay highlight */
+.sam-highlight-ring{position:absolute;pointer-events:none;border:3px solid var(--amber);border-radius:50%;transform:translate(-50%,-50%);animation:samPulse .5s ease-out forwards;}
+@keyframes samPulse{0%{opacity:1;width:24px;height:24px;}100%{opacity:0;width:80px;height:80px;}}
 </style>
 </head>
 <body>
 <header>
   <div class="logo">U</div>
-  <div style="flex:1"><h1>UNISPAN Dataset v13</h1><p>Auto-segmento + analisis local sin claves + descarga</p></div>
+  <div style="flex:1"><h1>UNISPAN Dataset v14</h1><p>SAM preciso · Agente sin claves · Análisis catálogo · Descarga</p></div>
   <button class="btn btn-sm" style="background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.2);flex:none;padding:10px 14px" onclick="downloadApp()">⬇ Descargar</button>
 </header>
 <div class="tabs">
@@ -170,9 +172,9 @@ input[type="password"]{letter-spacing:2px;}
     <div class="counter-item"><div class="counter-num" id="cnt-ok" style="color:var(--ok)">0</div><div class="counter-lbl">Exitosas</div></div>
   </div>
   <div class="card">
-    <div class="card-title">⚙️ Configuración</div>
-    <label>API Key Roboflow</label>
-    <input type="password" id="api-key" placeholder="rf_xxxxxxxxxxxxxx" autocomplete="off">
+    <div class="card-title">⚙️ Configuración Roboflow (opcional)</div>
+    <label>API Key Roboflow <span style="color:var(--steel);font-size:10px">(solo para subir al dataset)</span></label>
+    <input type="password" id="api-key" placeholder="rf_xxxxxxxxxxxxxx (opcional)" autocomplete="off">
     <label>Split destino</label>
     <select id="split"><option value="train">Train</option><option value="valid">Valid</option><option value="test">Test</option></select>
   </div>
@@ -197,13 +199,13 @@ input[type="password"]{letter-spacing:2px;}
       <div class="tool-btn" id="tool-sam" onclick="setTool('sam')"><span class="tool-icon">🎯</span><span>Auto</span></div>
     </div>
     <div class="tool-hint" id="tool-hint-bbox">Toca y arrastra para dibujar un rectángulo</div>
-    <div class="tool-hint" id="tool-hint-corner" style="display:none">📐 Arrastra para el rectángulo base · luego ajusta el brazo del esquinero con los deslizadores flotantes</div>
+    <div class="tool-hint" id="tool-hint-corner" style="display:none">📐 Arrastra para el rectángulo base · luego ajusta el brazo del esquinero</div>
     <div class="tool-hint" id="tool-hint-polygon" style="display:none">Toca para agregar puntos · Doble toque para cerrar</div>
-    <div class="tool-hint" id="tool-hint-sam" style="display:none">🎯 Toca una pieza: la app traza su contorno automaticamente por color/borde. Sin descargas, funciona offline.</div>
+    <div class="tool-hint" id="tool-hint-sam" style="display:none">🎯 Toca exactamente sobre la pieza: contorno se dibuja sobre ella. Sin claves, funciona offline.</div>
     <div id="sam-status" style="display:none;font-size:11px;color:var(--amber);margin-top:6px;padding:6px 10px;background:rgba(245,158,11,.08);border-radius:8px;text-align:center"></div>
     <label style="display:flex;align-items:center;gap:10px;margin-top:10px;padding:10px;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;cursor:pointer" for="arrume-toggle">
       <input type="checkbox" id="arrume-toggle" onchange="toggleArrume(this.checked)" style="width:18px;height:18px;margin:0;accent-color:var(--amber)">
-      <div style="flex:1"><div style="font-size:13px;font-weight:700;color:var(--text)">🔗 Modo Arrume</div><div style="font-size:10px;color:var(--steel)">Mantiene la clase activa y dibuja varias piezas iguales sin reabrir catálogo</div></div>
+      <div style="flex:1"><div style="font-size:13px;font-weight:700;color:var(--text)">🔗 Modo Arrume</div><div style="font-size:10px;color:var(--steel)">Mantiene la clase activa y dibuja varias piezas iguales</div></div>
       <span id="arrume-counter" style="display:none;font-family:monospace;font-weight:800;color:var(--amber);font-size:16px">×0</span>
     </label>
   </div>
@@ -218,7 +220,7 @@ input[type="password"]{letter-spacing:2px;}
       </div>
     </div>
     <input type="file" id="file-input-cam" accept="image/*" capture="environment">
-    <input type="file" id="file-input-gal" accept="image/*" multiple>
+    <input type="file" id="file-input-gal" accept="image/*" multiple="">
     <div id="bbox-section" style="display:none">
       <div class="btn-row" style="margin-bottom:8px"><button class="btn btn-danger btn-sm" style="flex:1" onclick="discardPhoto()">🗑️ Descartar y tomar/cargar otra</button></div>
       <div class="zoom-viewport" id="zoom-viewport"><div class="bbox-wrap" id="bbox-wrap"><img id="bbox-img" class="bbox-img" alt=""><canvas id="bbox-canvas"></canvas></div></div>
@@ -244,20 +246,20 @@ input[type="password"]{letter-spacing:2px;}
   </div>
   <div class="card">
     <div class="card-title" style="display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick="toggleStats()">
-      <span>📊 Balance del dataset <span id="stats-total" style="color:var(--amber);font-weight:800">0</span></span>
+      <span>📊 Balance del dataset <span id="stats-total" style="color:var(--amber);font-weight:800">(0 img · 0 clases)</span></span>
       <span id="stats-caret" style="font-size:14px;color:var(--steel)">▼</span>
     </div>
     <div id="stats-body" style="display:none">
-      <div style="font-size:11px;color:var(--steel);margin-bottom:8px">Meta inicial: <b style="color:var(--amber)">30 img/clase</b> (varios ángulos). Se ampliará tras el primer entrenamiento.</div>
-      <div id="stats-list"></div>
+      <div style="font-size:11px;color:var(--steel);margin-bottom:8px">Meta inicial: <b style="color:var(--amber)">30 img/clase</b></div>
+      <div id="stats-list"><div style="color:var(--steel);font-size:12px;text-align:center;padding:14px">Sin datos aún.</div></div>
       <div class="btn-row" style="margin-top:8px"><button class="btn btn-ghost btn-sm" onclick="resetStats()">🗑️ Reiniciar contador</button></div>
     </div>
   </div>
   <div class="prog-wrap" id="prog-wrap"><div class="prog-bar" id="prog-bar"></div></div>
   <div class="btn-row">
     <button class="btn btn-ghost btn-sm" onclick="resetAll()" style="flex:none;padding:13px 16px">🔄</button>
-    <button class="btn btn-amber" id="btn-review" onclick="openReview()" disabled>👁️ Revisar</button>
-    <button class="btn btn-up" id="btn-upload" onclick="uploadAll()" disabled>⬆️ Subir</button>
+    <button class="btn btn-amber" id="btn-review" onclick="openReview()" disabled="">👁️ Revisar</button>
+    <button class="btn btn-up" id="btn-upload" onclick="uploadAll()" disabled="">⬆️ Subir</button>
   </div>
 </div>
 <div class="page" id="page-historial">
@@ -273,8 +275,8 @@ input[type="password"]{letter-spacing:2px;}
 </div>
 <div class="page" id="page-experto">
   <div class="card">
-    <div class="card-title">🎓 Agente Experto UNISPAN</div>
-    <div style="font-size:12px;color:var(--steel);margin-bottom:10px">Consulta sobre láminas, bridas, platinas, refuerzos, perforaciones y estructura de las paneles formaletas. Toca un tema o escribe tu pregunta.</div>
+    <div class="card-title">🎓 Agente Experto UNISPAN <span style="font-size:10px;color:var(--ok);font-weight:400;text-transform:none">● Sin claves · 100% local</span></div>
+    <div style="font-size:12px;color:var(--steel);margin-bottom:10px">Consulta sobre láminas, bridas, platinas, refuerzos, perforaciones y estructura de paneles. Analiza imágenes directamente del catálogo.</div>
     <div style="background:#0b1220;border:1px solid #334;border-radius:10px;padding:10px;margin-bottom:10px">
       <div style="font-size:12px;color:var(--amber);font-weight:700;margin-bottom:8px">🧮 Calculadora de perforaciones</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:12px">
@@ -286,19 +288,17 @@ input[type="password"]{letter-spacing:2px;}
       <div id="calc-out" style="margin-top:8px;padding:8px;background:#1a2130;border-radius:8px;font-size:12px;color:#cbd5e1;text-align:center">Ingresa medidas o conteos · inicio 25 mm · paso 50 mm</div>
     </div>
     <div style="background:#0b1220;border:1px solid #334;border-radius:10px;padding:10px;margin-bottom:10px">
-      <div style="font-size:12px;color:var(--amber);font-weight:700;margin-bottom:8px">🧠 Análisis local y memoria</div>
-      <div style="font-size:11px;color:var(--steel);margin-bottom:8px">El agente analiza cada imagen localmente: detecta contornos, cuenta perforaciones, estima medidas y referencia del catálogo. <b>Sin API keys requeridas.</b> Opcional: pega una API key de OpenAI para análisis visual profundo con gpt-4o-mini.</div>
-      <label style="font-size:11px;color:var(--steel)">API Key OpenAI (opcional)</label>
-      <input type="password" id="openai-key" placeholder="sk-..." autocomplete="off" style="width:100%;padding:8px;border-radius:8px;border:1px solid #334;background:#0f1520;color:#eee;margin-bottom:6px">
+      <div style="font-size:12px;color:var(--amber);font-weight:700;margin-bottom:4px">🧠 Análisis de imagen — <span style="color:var(--ok);font-weight:400">sin API key</span></div>
+      <div style="font-size:11px;color:var(--steel);margin-bottom:8px">El agente analiza la imagen localmente: detecta contornos, cuenta perforaciones, cruza con el catálogo completo y da la referencia UNISPAN. <b>No requiere ninguna clave.</b></div>
       <div class="btn-row" style="gap:6px">
         <button class="btn btn-amber btn-sm" onclick="analyzeCurrentWithAI()">🔍 Analizar imagen</button>
-        <button class="btn btn-ok btn-sm" onclick="runPhysicalProof()">🧪 Prueba física</button>
+        <button class="btn btn-ok btn-sm" onclick="runPhysicalProof()">🧪 Auto-detectar piezas</button>
         <button class="btn btn-ghost btn-sm" onclick="showMemorySummary()">📊 Ver memoria</button>
         <button class="btn btn-danger btn-sm" onclick="clearMemory()" style="flex:none;padding:8px 10px">🗑️</button>
       </div>
       <label style="display:flex;align-items:center;gap:8px;margin-top:8px;color:var(--steel);font-size:11px;cursor:pointer">
         <input type="checkbox" id="auto-ai-toggle" onchange="toggleAutoPhysical(this.checked)" style="width:16px;height:16px;margin:0;accent-color:var(--amber)">
-        Auto-reconocer pieza y cantidad al cargar/tomar foto
+        Auto-reconocer pieza al cargar/tomar foto
       </label>
       <div id="physical-proof-out" style="margin-top:8px;padding:8px;background:#0f1520;border-radius:8px;font-size:11px;color:#cbd5e1;display:none"></div>
       <div id="ai-analysis-out" style="margin-top:8px;padding:8px;background:#1a2130;border-radius:8px;font-size:11px;color:#cbd5e1;display:none"></div>
@@ -309,7 +309,7 @@ input[type="password"]{letter-spacing:2px;}
       <input type="text" id="expert-input" placeholder="Ej: ¿cómo identifico un PM por perforaciones?" style="flex:1;padding:12px;border-radius:10px;border:1px solid #334;background:#0f1520;color:#eee" onkeydown="if(event.key==='Enter')expertAsk()">
       <button class="btn btn-amber btn-sm" onclick="expertAsk()">Enviar</button>
     </div>
-    <div style="font-size:10px;color:var(--steel);margin-top:8px">💡 Base de conocimiento local · funciona sin conexión · sin claves</div>
+    <div style="font-size:10px;color:var(--steel);margin-top:8px">💡 Base de conocimiento local · funciona sin conexión · sin claves API</div>
   </div>
 </div>
 </main>
@@ -317,8 +317,8 @@ input[type="password"]{letter-spacing:2px;}
   <div class="modal">
     <div class="modal-title"><span>Seleccionar clase</span><span class="modal-close" onclick="closeCatModalDirect()">✕</span></div>
     <div class="cat-search"><span class="ico">🔍</span><input type="text" id="cat-modal-search" placeholder="Buscar..." oninput="renderCatModal(this.value)" style="margin-bottom:8px;padding-left:36px"></div>
-    <div class="cat-families" id="cat-modal-families"></div>
-    <div class="cat-list" id="cat-modal-list"></div>
+    <div class="cat-families" id="cat-modal-families"><div class="fam-btn active">Todas</div><div class="fam-btn">PM</div><div class="fam-btn">PB</div><div class="fam-btn">EI</div><div class="fam-btn">EE</div></div>
+    <div class="cat-list" id="cat-modal-list"><div class="cat-item"><div onclick="setClase('PM-2400x600')"><div class="ci-code">PM-2400x600</div><div class="ci-spec">2400×600mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-2400x600')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-2400x550')"><div class="ci-code">PM-2400x550</div><div class="ci-spec">2400×550mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-2400x550')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-2400x500')"><div class="ci-code">PM-2400x500</div><div class="ci-spec">2400×500mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-2400x500')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-2400x450')"><div class="ci-code">PM-2400x450</div><div class="ci-spec">2400×450mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-2400x450')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-2400x420')"><div class="ci-code">PM-2400x420</div><div class="ci-spec">2400×420mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-2400x420')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-2400x400')"><div class="ci-code">PM-2400x400</div><div class="ci-spec">2400×400mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-2400x400')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-2400x380')"><div class="ci-code">PM-2400x380</div><div class="ci-spec">2400×380mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-2400x380')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-2400x350')"><div class="ci-code">PM-2400x350</div><div class="ci-spec">2400×350mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-2400x350')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-2400x320')"><div class="ci-code">PM-2400x320</div><div class="ci-spec">2400×320mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-2400x320')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-2400x300')"><div class="ci-code">PM-2400x300</div><div class="ci-spec">2400×300mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-2400x300')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-1200x600')"><div class="ci-code">PM-1200x600</div><div class="ci-spec">1200×600mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-1200x600')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-1200x550')"><div class="ci-code">PM-1200x550</div><div class="ci-spec">1200×550mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-1200x550')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-1200x500')"><div class="ci-code">PM-1200x500</div><div class="ci-spec">1200×500mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-1200x500')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-1200x450')"><div class="ci-code">PM-1200x450</div><div class="ci-spec">1200×450mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-1200x450')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-1200x420')"><div class="ci-code">PM-1200x420</div><div class="ci-spec">1200×420mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-1200x420')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-1200x400')"><div class="ci-code">PM-1200x400</div><div class="ci-spec">1200×400mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-1200x400')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-1200x380')"><div class="ci-code">PM-1200x380</div><div class="ci-spec">1200×380mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-1200x380')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-1200x350')"><div class="ci-code">PM-1200x350</div><div class="ci-spec">1200×350mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-1200x350')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-1200x320')"><div class="ci-code">PM-1200x320</div><div class="ci-spec">1200×320mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-1200x320')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-1200x300')"><div class="ci-code">PM-1200x300</div><div class="ci-spec">1200×300mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-1200x300')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-900x600')"><div class="ci-code">PM-900x600</div><div class="ci-spec">900×600mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-900x600')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-900x550')"><div class="ci-code">PM-900x550</div><div class="ci-spec">900×550mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-900x550')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-900x500')"><div class="ci-code">PM-900x500</div><div class="ci-spec">900×500mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-900x500')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-900x450')"><div class="ci-code">PM-900x450</div><div class="ci-spec">900×450mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-900x450')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-900x420')"><div class="ci-code">PM-900x420</div><div class="ci-spec">900×420mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-900x420')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-900x400')"><div class="ci-code">PM-900x400</div><div class="ci-spec">900×400mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-900x400')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-900x380')"><div class="ci-code">PM-900x380</div><div class="ci-spec">900×380mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-900x380')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-900x350')"><div class="ci-code">PM-900x350</div><div class="ci-spec">900×350mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-900x350')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-900x320')"><div class="ci-code">PM-900x320</div><div class="ci-spec">900×320mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-900x320')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-900x300')"><div class="ci-code">PM-900x300</div><div class="ci-spec">900×300mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-900x300')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-800x600')"><div class="ci-code">PM-800x600</div><div class="ci-spec">800×600mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-800x600')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-800x550')"><div class="ci-code">PM-800x550</div><div class="ci-spec">800×550mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-800x550')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-800x500')"><div class="ci-code">PM-800x500</div><div class="ci-spec">800×500mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-800x500')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-800x450')"><div class="ci-code">PM-800x450</div><div class="ci-spec">800×450mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-800x450')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-800x420')"><div class="ci-code">PM-800x420</div><div class="ci-spec">800×420mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-800x420')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-800x400')"><div class="ci-code">PM-800x400</div><div class="ci-spec">800×400mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-800x400')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-800x380')"><div class="ci-code">PM-800x380</div><div class="ci-spec">800×380mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-800x380')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-800x350')"><div class="ci-code">PM-800x350</div><div class="ci-spec">800×350mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-800x350')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-800x320')"><div class="ci-code">PM-800x320</div><div class="ci-spec">800×320mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-800x320')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-800x300')"><div class="ci-code">PM-800x300</div><div class="ci-spec">800×300mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-800x300')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-750x600')"><div class="ci-code">PM-750x600</div><div class="ci-spec">750×600mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-750x600')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-750x550')"><div class="ci-code">PM-750x550</div><div class="ci-spec">750×550mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-750x550')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-750x500')"><div class="ci-code">PM-750x500</div><div class="ci-spec">750×500mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-750x500')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-750x450')"><div class="ci-code">PM-750x450</div><div class="ci-spec">750×450mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-750x450')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-750x420')"><div class="ci-code">PM-750x420</div><div class="ci-spec">750×420mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-750x420')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-750x400')"><div class="ci-code">PM-750x400</div><div class="ci-spec">750×400mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-750x400')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-750x380')"><div class="ci-code">PM-750x380</div><div class="ci-spec">750×380mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-750x380')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-750x350')"><div class="ci-code">PM-750x350</div><div class="ci-spec">750×350mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-750x350')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-750x320')"><div class="ci-code">PM-750x320</div><div class="ci-spec">750×320mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-750x320')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-750x300')"><div class="ci-code">PM-750x300</div><div class="ci-spec">750×300mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-750x300')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-600x600')"><div class="ci-code">PM-600x600</div><div class="ci-spec">600×600mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-600x600')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-600x550')"><div class="ci-code">PM-600x550</div><div class="ci-spec">600×550mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-600x550')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-600x500')"><div class="ci-code">PM-600x500</div><div class="ci-spec">600×500mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-600x500')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-600x450')"><div class="ci-code">PM-600x450</div><div class="ci-spec">600×450mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-600x450')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-600x420')"><div class="ci-code">PM-600x420</div><div class="ci-spec">600×420mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-600x420')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-600x400')"><div class="ci-code">PM-600x400</div><div class="ci-spec">600×400mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-600x400')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-600x380')"><div class="ci-code">PM-600x380</div><div class="ci-spec">600×380mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-600x380')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-600x350')"><div class="ci-code">PM-600x350</div><div class="ci-spec">600×350mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-600x350')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-600x320')"><div class="ci-code">PM-600x320</div><div class="ci-spec">600×320mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-600x320')">📋</span></div><div class="cat-item"><div onclick="setClase('PM-600x300')"><div class="ci-code">PM-600x300</div><div class="ci-spec">600×300mm</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('PM-600x300')">📋</span></div></div>
   </div>
 </div>
 <div class="modal-bg" id="review-modal-bg" onclick="closeReviewModal(event)">
@@ -331,43 +331,55 @@ input[type="password"]{letter-spacing:2px;}
 </div>
 <div class="toast" id="toast"></div>
 <script>
-// ── Catálogo ──────────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════
+// CATÁLOGO COMPLETO UNISPAN
+// ═══════════════════════════════════════════════════════════════════
 const CATALOG=[];
-[2400,1200,900,800,750,600].forEach(l=>[600,550,500,450,420,400,380,350,320,300].forEach(a=>CATALOG.push({code:`PM-${l}x${a}`,family:"PM",spec:`${l}×${a}mm`})));
-[2400,1200,900,800,750,600].forEach(l=>[270,250,230,200,150,120,100,90,80].forEach(a=>CATALOG.push({code:`PB-${l}x${a}`,family:"PB",spec:`${l}×${a}mm`})));
-[2400,1200,900,800,600].forEach(l=>CATALOG.push({code:`EI-${l}x150x150`,family:"EI",spec:`${l}×150×150mm`}));
-[2400,1200,900,800,600].forEach(l=>CATALOG.push({code:`EE-${l}x150x150`,family:"EE",spec:`${l}×150×150mm`}));
+[2400,1200,900,800,750,600].forEach(l=>[600,550,500,450,420,400,380,350,320,300].forEach(a=>CATALOG.push({code:`PM-${l}x${a}`,family:"PM",spec:`${l}×${a}mm`,largo:l,ancho:a})));
+[2400,1200,900,800,750,600].forEach(l=>[270,250,230,200,150,120,100,90,80].forEach(a=>CATALOG.push({code:`PB-${l}x${a}`,family:"PB",spec:`${l}×${a}mm`,largo:l,ancho:a})));
+[2400,1200,900,800,600].forEach(l=>CATALOG.push({code:`EI-${l}x150x150`,family:"EI",spec:`${l}×150×150mm`,largo:l,ancho:150}));
+[2400,1200,900,800,600].forEach(l=>CATALOG.push({code:`EE-${l}x150x150`,family:"EE",spec:`${l}×150×150mm`,largo:l,ancho:150}));
 
-function catalogSummaryForPrompt(){
-  const byFam={};
-  CATALOG.forEach(c=>{
-    if(!byFam[c.family]) byFam[c.family]={largos:new Set(),anchos:new Set()};
-    const m=c.spec.match(/^(\d+)×(\d+)/);
-    if(m){ byFam[c.family].largos.add(+m[1]); byFam[c.family].anchos.add(+m[2]); }
-  });
-  return Object.entries(byFam).map(([fam,d])=>
-    `${fam}: largos {${[...d.largos].sort((a,b)=>a-b).join(",")}} mm × anchos {${[d.anchos].sort((a,b)=>a-b).join(",")}} mm`
-  ).join("\n");
-}
+// Mapa rápido código→entrada
+const CATALOG_MAP={};
+CATALOG.forEach(c=>{ CATALOG_MAP[c.code.toUpperCase()]=c; });
 
+// Tabla de perforaciones estándar
+const PERF_TABLE={
+  ancho:{600:12,550:11,500:10,450:9,420:8,400:8,380:8,350:7,320:6,300:6,270:5,250:5,230:5,200:4,150:3,120:2,100:2,90:2,80:2},
+  largo:{2400:48,1200:24,900:18,800:16,750:15,600:12}
+};
+// Inverso: perforaciones → medida
+const PERF_INV_ANCHO={};  Object.entries(PERF_TABLE.ancho).forEach(([mm,n])=>{ if(!PERF_INV_ANCHO[n]) PERF_INV_ANCHO[n]=+mm; });
+const PERF_INV_LARGO={};  Object.entries(PERF_TABLE.largo).forEach(([mm,n])=>{ if(!PERF_INV_LARGO[n]) PERF_INV_LARGO[n]=+mm; });
+const STD_ANCHOS=Object.keys(PERF_TABLE.ancho).map(Number).sort((a,b)=>b-a);
+const STD_LARGOS=Object.keys(PERF_TABLE.largo).map(Number).sort((a,b)=>b-a);
+
+function familyFor(w){ if(w>=300&&w<=600) return "PM"; if(w>=80&&w<=270) return "PB"; return "?"; }
+function nearest(v,arr){ return arr.reduce((a,b)=>Math.abs(b-v)<Math.abs(a-v)?b:a); }
 function nearestCatalogMatch(family, largo_mm, ancho_mm){
   const cands=CATALOG.filter(c=>c.family===family);
   if(!cands.length) return null;
   let best=null, bestD=Infinity;
   cands.forEach(c=>{
-    const m=c.spec.match(/^(\d+)×(\d+)/);
-    if(!m) return;
-    const l=+m[1], a=+m[2];
-    const d=Math.abs(l-(largo_mm||0))+Math.abs(a-(ancho_mm||0));
+    const d=Math.abs(c.largo-(largo_mm||0))+Math.abs(c.ancho-(ancho_mm||0));
     if(d<bestD){ bestD=d; best=c; }
   });
   return best?{...best, distancia_mm:bestD}:null;
+}
+function catalogSummaryForPrompt(){
+  return `PM: largos {2400,1200,900,800,750,600}mm × anchos {600,550,500,450,420,400,380,350,320,300}mm
+PB: largos {2400,1200,900,800,750,600}mm × anchos {270,250,230,200,150,120,100,90,80}mm
+EI/EE: largos {2400,1200,900,800,600}mm × 150×150mm
+Regla: frontales=ancho/50 | laterales=largo/50 | inicio=25mm | paso=50mm`;
 }
 
 const COLORS=["#f59e0b","#3b82f6","#a855f7","#22c55e","#ef4444","#06b6d4","#f97316","#84cc16","#ec4899","#14b8a6"];
 const PROJECT="reconocimiento-de-piezas-rllp1";
 
-// ── Estado global ─────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════
+// ESTADO GLOBAL
+// ═══════════════════════════════════════════════════════════════════
 let currentClase="", selectedFile=null;
 let sessionCount=0, totalCount=+localStorage.getItem("rf_total")||0, okCount=+localStorage.getItem("rf_ok")||0;
 let recientes=JSON.parse(localStorage.getItem("rf_recientes")||"[]");
@@ -379,53 +391,38 @@ let catModalMode="select", catReassignId=null;
 let zoomScale=1, zoomTx=0, zoomTy=0;
 let pinchState=null;
 let activeTool="bbox";
-
-// ── Modo Arrume ──────────────────────────────────────────────────────────────
 let arrumeMode=false, arrumeCount=0;
-function toggleArrume(on){
-  arrumeMode=on; arrumeCount=0;
-  const c=document.getElementById("arrume-counter");
-  c.style.display=on?"inline-block":"none";
-  c.textContent="×0";
-  if(on && !currentClase) showToast("⚠️ Selecciona una clase primero para el arrume","err");
-  else if(on) showToast(`🔗 Arrume ON: ${currentClase||"?"}`,"ok");
-}
-function bumpArrume(){
-  if(!arrumeMode) return;
-  arrumeCount++;
-  document.getElementById("arrume-counter").textContent="×"+arrumeCount;
-}
-
 let bboxDrawing=false, bboxStart={x:0,y:0}, bboxCurrent=null;
 let polyPoints=[], polyDrawing=false, polyPreview=null;
 let cornerState=null, cornerDrawing=false, cornerBaseStart=null;
 let imgNatW=0, imgNatH=0, imgDispW=0, imgDispH=0;
-
+let _segCanvas=null, _segCtx=null, _segData=null, _segW=0, _segH=0;
 let imgMemory=JSON.parse(localStorage.getItem("rf_img_memory")||"[]");
-function saveMemory(){ try{ localStorage.setItem("rf_img_memory",JSON.stringify(imgMemory.slice(0,200))); }catch(_){} }
-
 let physicalProofs=JSON.parse(localStorage.getItem("rf_physical_proofs")||"[]");
 let autoPhysicalOn=localStorage.getItem("rf_auto_physical")!=="0";
+let _lastMemoryEntry=null;
+
+function saveMemory(){ try{ localStorage.setItem("rf_img_memory",JSON.stringify(imgMemory.slice(0,200))); }catch(_){} }
+function savePhysicalProofs(){ try{ localStorage.setItem("rf_physical_proofs",JSON.stringify(physicalProofs.slice(0,80))); }catch(_){} }
+
 const _autoPhysicalToggle=document.getElementById("auto-ai-toggle");
 if(_autoPhysicalToggle) _autoPhysicalToggle.checked=autoPhysicalOn;
-function savePhysicalProofs(){ try{ localStorage.setItem("rf_physical_proofs",JSON.stringify(physicalProofs.slice(0,80))); }catch(_){} }
-function toggleAutoPhysical(on){ autoPhysicalOn=!!on; localStorage.setItem("rf_auto_physical",autoPhysicalOn?"1":"0"); showToast(autoPhysicalOn?"🧪 Auto-reconocimiento ON":"🧪 Auto-reconocimiento OFF", autoPhysicalOn?"ok":""); }
-function setPhysicalStatus(html,show=true){ const el=document.getElementById("physical-proof-out"); if(!el) return; el.style.display=show?"block":"none"; if(show) el.innerHTML=html; }
 
-const savedKey=localStorage.getItem("rf_api_key");
-if(savedKey) document.getElementById("api-key").value=savedKey;
+const savedRfKey=localStorage.getItem("rf_api_key");
+if(savedRfKey) document.getElementById("api-key").value=savedRfKey;
 document.getElementById("api-key").addEventListener("blur",()=>localStorage.setItem("rf_api_key",document.getElementById("api-key").value.trim()));
 document.getElementById("cnt-total").textContent=totalCount;
 document.getElementById("cnt-ok").textContent=okCount;
 
-// ── fetch con timeout ─────────────────────────────────────────────────────────
-function fetchWithTimeout(url, opts, ms=15000){
+function fetchWithTimeout(url,opts,ms=15000){
   const ctrl=new AbortController();
-  const timer=setTimeout(()=>ctrl.abort(), ms);
-  return fetch(url, {...opts, signal:ctrl.signal}).finally(()=>clearTimeout(timer));
+  const timer=setTimeout(()=>ctrl.abort(),ms);
+  return fetch(url,{...opts,signal:ctrl.signal}).finally(()=>clearTimeout(timer));
 }
+function safeHtml(s){ return String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c])); }
+function showToast(msg,type){const t=document.getElementById("toast");t.textContent=msg;t.className=`toast ${type} show`;setTimeout(()=>t.classList.remove("show"),2800);}
 
-// ── Tabs ──────────────────────────────────────────────────────────────────────
+// ─── Tabs ────────────────────────────────────────────────────────
 function switchTab(n){
   document.querySelectorAll(".tab").forEach((t,i)=>t.classList.toggle("active",["captura","historial","catalogo","experto"][i]===n));
   document.querySelectorAll(".page").forEach(p=>p.classList.toggle("active",p.id==="page-"+n));
@@ -433,7 +430,7 @@ function switchTab(n){
   if(n==="experto") expertInit();
 }
 
-// ── Herramienta ───────────────────────────────────────────────────────────────
+// ─── Herramienta ─────────────────────────────────────────────────
 function setTool(t){
   activeTool=t;
   ["bbox","corner","polygon","sam"].forEach(k=>{
@@ -442,17 +439,30 @@ function setTool(t){
   });
   bboxCurrent=null; bboxDrawing=false;
   cancelPolygon(); cornerCancel();
-  if(t==="sam") samStatus("✅ Auto-segmento listo · Toca una pieza",true);
+  if(t==="sam") samStatus("✅ Toca exactamente sobre la pieza a segmentar",true);
 }
 
-// ── Clase ─────────────────────────────────────────────────────────────────────
+// ─── Arrume ──────────────────────────────────────────────────────
+function toggleArrume(on){
+  arrumeMode=on; arrumeCount=0;
+  const c=document.getElementById("arrume-counter");
+  c.style.display=on?"inline-block":"none"; c.textContent="×0";
+  if(on && !currentClase) showToast("⚠️ Selecciona una clase primero","err");
+  else if(on) showToast(`🔗 Arrume ON: ${currentClase||"?"}`,"ok");
+}
+function bumpArrume(){
+  if(!arrumeMode) return;
+  arrumeCount++;
+  document.getElementById("arrume-counter").textContent="×"+arrumeCount;
+}
+
+// ─── Clase ───────────────────────────────────────────────────────
 function setClase(code){
   if(catModalMode==="reassign" && catReassignId!=null){
     const a=annotations.find(x=>x.id===catReassignId);
     if(a){ a.clase=code; renderAnnoList(); redraw(); showToast(`✏️ Clase → ${code}`,"ok"); }
     catModalMode="select"; catReassignId=null;
-    closeCatModalDirect(); addReciente(code);
-    return;
+    closeCatModalDirect(); addReciente(code); return;
   }
   currentClase=code;
   document.getElementById("clase-custom").value=code;
@@ -460,22 +470,9 @@ function setClase(code){
   d.textContent="✏️ Clase activa: "+code; d.style.display="block";
   addReciente(code); closeCatModalDirect();
 }
-function reassignClass(id){
-  catModalMode="reassign"; catReassignId=id;
-  openCatModal();
-  setTimeout(()=>{ const t=document.querySelector("#cat-modal-bg .modal-title span:first-child"); if(t) t.textContent="Reasignar clase a esta anotación"; },50);
-}
-function onCustomInput(v){
-  currentClase=v.trim().toUpperCase();
-  const d=document.getElementById("current-clase-display");
-  if(v){d.textContent="✏️ Clase activa: "+currentClase;d.style.display="block";}
-  else d.style.display="none";
-}
-function addReciente(code){
-  recientes=[code,...recientes.filter(r=>r!==code)].slice(0,8);
-  localStorage.setItem("rf_recientes",JSON.stringify(recientes));
-  renderRecientes();
-}
+function reassignClass(id){ catModalMode="reassign"; catReassignId=id; openCatModal(); setTimeout(()=>{ const t=document.querySelector("#cat-modal-bg .modal-title span:first-child"); if(t) t.textContent="Reasignar clase"; },50); }
+function onCustomInput(v){ currentClase=v.trim().toUpperCase(); const d=document.getElementById("current-clase-display"); if(v){d.textContent="✏️ Clase activa: "+currentClase;d.style.display="block";}else d.style.display="none"; }
+function addReciente(code){ recientes=[code,...recientes.filter(r=>r!==code)].slice(0,8); localStorage.setItem("rf_recientes",JSON.stringify(recientes)); renderRecientes(); }
 function renderRecientes(){
   const g=document.getElementById("recientes-grid"); g.innerHTML="";
   recientes.forEach(c=>{const b=document.createElement("div");b.className="quick-btn"+(c===currentClase?" active":"");b.textContent=c;b.onclick=()=>setClase(c);g.appendChild(b);});
@@ -483,7 +480,7 @@ function renderRecientes(){
 }
 renderRecientes();
 
-// ── File ──────────────────────────────────────────────────────────────────────
+// ─── Archivo ─────────────────────────────────────────────────────
 function loadFile(f){
   if(!f) return;
   selectedFile=f; annotations=[];
@@ -505,123 +502,61 @@ function loadFile(f){
   renderAnnoList(); updateButtons();
 }
 function scheduleAutoPhysicalProof(){
-  if(!selectedFile || !autoPhysicalOn) return;
-  setPhysicalStatus("🧪 Foto cargada · preparando auto-reconocimiento local…");
-  setTimeout(()=>{ if(selectedFile && autoPhysicalOn) runPhysicalProof({auto:true}); },650);
+  if(!selectedFile||!autoPhysicalOn) return;
+  setPhysicalStatus("🧪 Foto cargada · preparando auto-reconocimiento…");
+  setTimeout(()=>{ if(selectedFile&&autoPhysicalOn) runPhysicalProof({auto:true}); },700);
 }
+function toggleAutoPhysical(on){ autoPhysicalOn=!!on; localStorage.setItem("rf_auto_physical",autoPhysicalOn?"1":"0"); showToast(autoPhysicalOn?"🧪 Auto-reconocimiento ON":"🧪 OFF",autoPhysicalOn?"ok":""); }
+function setPhysicalStatus(html,show=true){ const el=document.getElementById("physical-proof-out"); if(!el) return; el.style.display=show?"block":"none"; if(show) el.innerHTML=html; }
 document.getElementById("file-input-cam").addEventListener("change",e=>loadFile(e.target.files[0]));
 document.getElementById("file-input-gal").addEventListener("change",e=>loadFile(e.target.files[0]));
 
-// ── Blur detection ────────────────────────────────────────────────────────────
+// ─── Blur ────────────────────────────────────────────────────────
 function analyzeBlur(img){
   try{
-    const S=220; const c=document.createElement("canvas");
-    c.width=S; c.height=S;
+    const S=220; const c=document.createElement("canvas"); c.width=S; c.height=S;
     const g=c.getContext("2d"); g.drawImage(img,0,0,S,S);
     const d=g.getImageData(0,0,S,S).data;
     const lum=new Float32Array(S*S);
     for(let i=0;i<S*S;i++) lum[i]=0.299*d[i*4]+0.587*d[i*4+1]+0.114*d[i*4+2];
-    let sum=0, sum2=0, n=0;
-    for(let y=1;y<S-1;y++){
-      for(let x=1;x<S-1;x++){
-        const i=y*S+x;
-        const v=-lum[i-S]-lum[i-1]+4*lum[i]-lum[i+1]-lum[i+S];
-        sum+=v; sum2+=v*v; n++;
-      }
-    }
+    let sum=0,sum2=0,n=0;
+    for(let y=1;y<S-1;y++) for(let x=1;x<S-1;x++){ const i=y*S+x; const v=-lum[i-S]-lum[i-1]+4*lum[i]-lum[i+1]-lum[i+S]; sum+=v; sum2+=v*v; n++; }
     const mean=sum/n, variance=(sum2/n)-mean*mean;
-    const w=document.getElementById("blur-warn");
-    const t=document.getElementById("blur-warn-txt");
-    const act=document.getElementById("blur-warn-action");
+    const w=document.getElementById("blur-warn"); const t=document.getElementById("blur-warn-txt"); const act=document.getElementById("blur-warn-action");
     w.classList.remove("ok");
     if(_lastMemoryEntry){ _lastMemoryEntry.blur=Math.round(variance); saveMemory(); }
-    if(variance<80){
-      w.style.display="flex";
-      t.innerHTML=`⚠️ <b>Foto borrosa</b> (nitidez ${variance.toFixed(0)}).`;
-      act.innerHTML=`<span class="blur-warn-discard" onclick="discardPhoto()">🗑️ Descartar y repetir</span>`;
-    } else if(variance<180){
-      w.style.display="flex";
-      t.innerHTML=`⚠️ Nitidez media (${variance.toFixed(0)}). Aceptable, pero mejor sería más clara.`;
-      act.innerHTML=`<span class="blur-warn-discard" onclick="discardPhoto()">🗑️ Repetir</span>`;
-    } else {
-      w.style.display="flex"; w.classList.add("ok");
-      t.innerHTML=`✅ Foto nítida (${variance.toFixed(0)}).`;
-      act.innerHTML="";
-      setTimeout(()=>{ if(w.classList.contains("ok")) w.style.display="none"; },2500);
-    }
+    if(variance<80){ w.style.display="flex"; t.innerHTML=`⚠️ <b>Foto borrosa</b> (nitidez ${variance.toFixed(0)}).`; act.innerHTML=`<span class="blur-warn-discard" onclick="discardPhoto()">🗑️ Descartar</span>`; }
+    else if(variance<180){ w.style.display="flex"; t.innerHTML=`⚠️ Nitidez media (${variance.toFixed(0)}).`; act.innerHTML=`<span class="blur-warn-discard" onclick="discardPhoto()">🗑️ Repetir</span>`; }
+    else { w.style.display="flex"; w.classList.add("ok"); t.innerHTML=`✅ Foto nítida (${variance.toFixed(0)}).`; act.innerHTML=""; setTimeout(()=>{ if(w.classList.contains("ok")) w.style.display="none"; },2500); }
   }catch(_){}
 }
 
-// ── Canvas init ───────────────────────────────────────────────────────────────
+// ─── Canvas ───────────────────────────────────────────────────────
 const canvas=document.getElementById("bbox-canvas");
-function initCanvas(){
-  const img=document.getElementById("bbox-img");
-  imgDispW=img.offsetWidth; imgDispH=img.offsetHeight;
-  canvas.width=imgDispW; canvas.height=imgDispH;
-  redraw();
-}
+function initCanvas(){ const img=document.getElementById("bbox-img"); imgDispW=img.offsetWidth; imgDispH=img.offsetHeight; canvas.width=imgDispW; canvas.height=imgDispH; redraw(); }
 function getPos(e){
   const rect=canvas.getBoundingClientRect();
   const t=e.touches?e.touches[0]:e;
-  return{
-    x:Math.max(0,Math.min(canvas.width,(t.clientX-rect.left)*(canvas.width/rect.width))),
-    y:Math.max(0,Math.min(canvas.height,(t.clientY-rect.top)*(canvas.height/rect.height)))
-  };
+  return{ x:Math.max(0,Math.min(canvas.width,(t.clientX-rect.left)*(canvas.width/rect.width))), y:Math.max(0,Math.min(canvas.height,(t.clientY-rect.top)*(canvas.height/rect.height))) };
 }
 window.addEventListener("resize",()=>{ if(selectedFile) initCanvas(); });
 
-// ── Zoom / Pan ────────────────────────────────────────────────────────────────
-function applyZoom(){
-  const w=document.getElementById("bbox-wrap");
-  w.style.transform=`translate(${zoomTx}px,${zoomTy}px) scale(${zoomScale})`;
-  const lbl=document.getElementById("zoom-lbl"); if(lbl) lbl.textContent=zoomScale.toFixed(1)+"×";
-}
+// ─── Zoom ─────────────────────────────────────────────────────────
+function applyZoom(){ const w=document.getElementById("bbox-wrap"); w.style.transform=`translate(${zoomTx}px,${zoomTy}px) scale(${zoomScale})`; const lbl=document.getElementById("zoom-lbl"); if(lbl) lbl.textContent=zoomScale.toFixed(1)+"×"; }
 function zoomReset(){ zoomScale=1; zoomTx=0; zoomTy=0; applyZoom(); }
-function zoomBy(factor){
-  const vp=document.getElementById("zoom-viewport"); if(!vp) return;
-  const r=vp.getBoundingClientRect(); const cx=r.width/2, cy=r.height/2;
-  zoomAt(zoomScale*factor, cx, cy);
-}
-function zoomAt(newScale,cx,cy){
-  newScale=Math.max(1,Math.min(6,newScale));
-  const kx=(cx-zoomTx)/zoomScale, ky=(cy-zoomTy)/zoomScale;
-  zoomScale=newScale;
-  zoomTx=cx-kx*zoomScale;
-  zoomTy=cy-ky*zoomScale;
-  clampPan();
-  applyZoom();
-}
-function clampPan(){
-  const vp=document.getElementById("zoom-viewport"); if(!vp) return;
-  const r=vp.getBoundingClientRect();
-  const cW=r.width*zoomScale, cH=r.height*zoomScale;
-  const minX=r.width-cW, minY=r.height-cH;
-  if(zoomScale<=1){ zoomTx=0; zoomTy=0; return; }
-  zoomTx=Math.min(0,Math.max(minX,zoomTx));
-  zoomTy=Math.min(0,Math.max(minY,zoomTy));
-}
-function touchDist(t1,t2){ const dx=t1.clientX-t2.clientX, dy=t1.clientY-t2.clientY; return Math.hypot(dx,dy); }
-function touchMid(t1,t2,vpRect){ return {x:(t1.clientX+t2.clientX)/2-vpRect.left, y:(t1.clientY+t2.clientY)/2-vpRect.top}; }
+function zoomBy(factor){ const vp=document.getElementById("zoom-viewport"); if(!vp) return; const r=vp.getBoundingClientRect(); zoomAt(zoomScale*factor,r.width/2,r.height/2); }
+function zoomAt(newScale,cx,cy){ newScale=Math.max(1,Math.min(6,newScale)); const kx=(cx-zoomTx)/zoomScale, ky=(cy-zoomTy)/zoomScale; zoomScale=newScale; zoomTx=cx-kx*zoomScale; zoomTy=cy-ky*zoomScale; clampPan(); applyZoom(); }
+function clampPan(){ const vp=document.getElementById("zoom-viewport"); if(!vp) return; const r=vp.getBoundingClientRect(); const cW=r.width*zoomScale, cH=r.height*zoomScale; if(zoomScale<=1){ zoomTx=0; zoomTy=0; return; } zoomTx=Math.min(0,Math.max(r.width-cW,zoomTx)); zoomTy=Math.min(0,Math.max(r.height-cH,zoomTy)); }
+function touchDist(t1,t2){ return Math.hypot(t1.clientX-t2.clientX,t1.clientY-t2.clientY); }
+function touchMid(t1,t2,vpRect){ return{x:(t1.clientX+t2.clientX)/2-vpRect.left,y:(t1.clientY+t2.clientY)/2-vpRect.top}; }
 
-// ── Eventos canvas ───────────────────────────────────────────────────────────
-function pointerDown_(e){
-  if(activeTool==="bbox") bboxStart_(e);
-  else if(activeTool==="corner") cornerStart_(e);
-  else if(activeTool==="polygon") polyTap(e);
-  else if(activeTool==="sam") samTap(e);
-}
-function pointerMove_(e){
-  if(activeTool==="bbox") bboxMove_(e);
-  else if(activeTool==="corner") cornerMove_(e);
-  else if(activeTool==="polygon") polyMove_(e);
-}
-function pointerUp_(e){
-  if(activeTool==="bbox") bboxEnd_(e);
-  else if(activeTool==="corner") cornerEnd_(e);
-}
-canvas.addEventListener("mousedown", e=>{ e.preventDefault(); pointerDown_(e); },{passive:false});
-canvas.addEventListener("mousemove", e=>{ e.preventDefault(); pointerMove_(e); },{passive:false});
-canvas.addEventListener("mouseup",   e=>{ e.preventDefault(); pointerUp_(e); },{passive:false});
+// ─── Eventos canvas ───────────────────────────────────────────────
+function pointerDown_(e){ if(activeTool==="bbox") bboxStart_(e); else if(activeTool==="corner") cornerStart_(e); else if(activeTool==="polygon") polyTap(e); else if(activeTool==="sam") samTap(e); }
+function pointerMove_(e){ if(activeTool==="bbox") bboxMove_(e); else if(activeTool==="corner") cornerMove_(e); else if(activeTool==="polygon") polyMove_(e); }
+function pointerUp_(e){ if(activeTool==="bbox") bboxEnd_(e); else if(activeTool==="corner") cornerEnd_(e); }
+canvas.addEventListener("mousedown",e=>{ e.preventDefault(); pointerDown_(e); },{passive:false});
+canvas.addEventListener("mousemove",e=>{ e.preventDefault(); pointerMove_(e); },{passive:false});
+canvas.addEventListener("mouseup",e=>{ e.preventDefault(); pointerUp_(e); },{passive:false});
 canvas.addEventListener("touchstart",e=>{
   e.preventDefault();
   if(e.touches.length===2){
@@ -629,84 +564,47 @@ canvas.addEventListener("touchstart",e=>{
     const vp=document.getElementById("zoom-viewport").getBoundingClientRect();
     const mid=touchMid(e.touches[0],e.touches[1],vp);
     pinchState={d0:touchDist(e.touches[0],e.touches[1]),s0:zoomScale,cx:mid.x,cy:mid.y,tx0:zoomTx,ty0:zoomTy,mx0:mid.x,my0:mid.y};
-    redraw();
-  } else { pointerDown_(e); }
+  } else pointerDown_(e);
 },{passive:false});
-canvas.addEventListener("touchmove", e=>{
+canvas.addEventListener("touchmove",e=>{
   e.preventDefault();
-  if(pinchState && e.touches.length===2){
+  if(pinchState&&e.touches.length===2){
     const vp=document.getElementById("zoom-viewport").getBoundingClientRect();
-    const d=touchDist(e.touches[0],e.touches[1]);
-    const mid=touchMid(e.touches[0],e.touches[1],vp);
-    const newScale=Math.max(1,Math.min(6, pinchState.s0*(d/pinchState.d0)));
+    const d=touchDist(e.touches[0],e.touches[1]); const mid=touchMid(e.touches[0],e.touches[1],vp);
+    const newScale=Math.max(1,Math.min(6,pinchState.s0*(d/pinchState.d0)));
     const kx=(pinchState.cx-pinchState.tx0)/pinchState.s0, ky=(pinchState.cy-pinchState.ty0)/pinchState.s0;
-    zoomScale=newScale;
-    zoomTx=pinchState.cx-kx*zoomScale + (mid.x-pinchState.mx0);
-    zoomTy=pinchState.cy-ky*zoomScale + (mid.y-pinchState.my0);
-    clampPan(); applyZoom();
-    return;
+    zoomScale=newScale; zoomTx=pinchState.cx-kx*zoomScale+(mid.x-pinchState.mx0); zoomTy=pinchState.cy-ky*zoomScale+(mid.y-pinchState.my0);
+    clampPan(); applyZoom(); return;
   }
   pointerMove_(e);
 },{passive:false});
-canvas.addEventListener("touchend",  e=>{
-  e.preventDefault();
- if(pinchState && e.touches.length<2){ pinchState=null; return; }
-  pointerUp_(e);
-},{passive:false});
-canvas.addEventListener("dblclick",  e=>{ e.preventDefault(); if(activeTool==="polygon") closePolygon(); });
+canvas.addEventListener("touchend",e=>{ e.preventDefault(); if(pinchState&&e.touches.length<2){ pinchState=null; return; } pointerUp_(e); },{passive:false});
+canvas.addEventListener("dblclick",e=>{ e.preventDefault(); if(activeTool==="polygon") closePolygon(); });
 
-// ── BBox ──────────────────────────────────────────────────────────────────────
-function bboxStart_(e){
-  if(!checkClase()) return;
-  const p=getPos(e); bboxDrawing=true; bboxStart=p; bboxCurrent=null;
-}
-function bboxMove_(e){
-  if(!bboxDrawing) return;
-  const p=getPos(e);
-  bboxCurrent={x:Math.min(bboxStart.x,p.x),y:Math.min(bboxStart.y,p.y),w:Math.abs(p.x-bboxStart.x),h:Math.abs(p.y-bboxStart.y)};
-  redraw();
-}
+// ─── BBox ─────────────────────────────────────────────────────────
+function bboxStart_(e){ if(!checkClase()) return; const p=getPos(e); bboxDrawing=true; bboxStart=p; bboxCurrent=null; }
+function bboxMove_(e){ if(!bboxDrawing) return; const p=getPos(e); bboxCurrent={x:Math.min(bboxStart.x,p.x),y:Math.min(bboxStart.y,p.y),w:Math.abs(p.x-bboxStart.x),h:Math.abs(p.y-bboxStart.y)}; redraw(); }
 function bboxEnd_(e){
   bboxDrawing=false;
   if(bboxCurrent&&bboxCurrent.w>15&&bboxCurrent.h>15){
-    const id=Date.now();
-    const color=COLORS[annotations.length%COLORS.length];
+    const id=Date.now(); const color=COLORS[annotations.length%COLORS.length];
     annotations.push({id,clase:currentClase,type:"bbox",bbox:{...bboxCurrent},color,checked:true,qty:null});
     bboxCurrent=null; redraw(); renderAnnoList(); updateButtons();
     if(arrumeMode){ bumpArrume(); showToast(`🔗 +1 ${currentClase} (${arrumeCount})`,"ok"); }
-    else showQtyPrompt(id);
+    else showQtyPromptAt(id, bboxCurrent||annotations[annotations.length-1]?.bbox);
   } else { bboxCurrent=null; redraw(); }
 }
 
-// ── Esquinero (L-shape) ──────────────────────────────────────────────────────
-function cornerStart_(e){
-  if(!checkClase()) return;
-  const p=getPos(e); cornerDrawing=true; cornerBaseStart=p;
-  cornerState=null;
-}
-function cornerMove_(e){
-  if(!cornerDrawing) return;
-  const p=getPos(e);
-  const b={x:Math.min(cornerBaseStart.x,p.x),y:Math.min(cornerBaseStart.y,p.y),w:Math.abs(p.x-cornerBaseStart.x),h:Math.abs(p.y-cornerBaseStart.y)};
-  cornerState={base:b, corner:"TR", armW:Math.round(b.w*0.4), armH:Math.round(b.h*0.4)};
-  redraw();
-}
-function cornerEnd_(e){
-  cornerDrawing=false;
-  if(!cornerState || cornerState.base.w<20 || cornerState.base.h<20){ cornerState=null; redraw(); return; }
-  openCornerPanel();
-  redraw();
-}
-function cornerCancel(){
-  cornerState=null; cornerDrawing=false;
-  const p=document.getElementById("corner-panel"); if(p) p.remove();
-  redraw();
-}
+// ─── Esquinero ────────────────────────────────────────────────────
+function cornerStart_(e){ if(!checkClase()) return; const p=getPos(e); cornerDrawing=true; cornerBaseStart=p; cornerState=null; }
+function cornerMove_(e){ if(!cornerDrawing) return; const p=getPos(e); const b={x:Math.min(cornerBaseStart.x,p.x),y:Math.min(cornerBaseStart.y,p.y),w:Math.abs(p.x-cornerBaseStart.x),h:Math.abs(p.y-cornerBaseStart.y)}; cornerState={base:b,corner:"TR",armW:Math.round(b.w*0.4),armH:Math.round(b.h*0.4)}; redraw(); }
+function cornerEnd_(e){ cornerDrawing=false; if(!cornerState||cornerState.base.w<20||cornerState.base.h<20){ cornerState=null; redraw(); return; } openCornerPanel(); redraw(); }
+function cornerCancel(){ cornerState=null; cornerDrawing=false; const p=document.getElementById("corner-panel"); if(p) p.remove(); redraw(); }
 function cornerPolygonPoints(){
   if(!cornerState) return null;
-  const {base:b, corner:c, armW:aw, armH:ah} = cornerState;
+  const {base:b,corner:c,armW:aw,armH:ah}=cornerState;
   const W=Math.min(aw,b.w-4), H=Math.min(ah,b.h-4);
-  const TL={x:b.x,y:b.y}, TR={x:b.x+b.w,y:b.y}, BR={x:b.x+b.w,y:b.y+b.h}, BL={x:b.x,y:b.y+b.h};
+  const TL={x:b.x,y:b.y},TR={x:b.x+b.w,y:b.y},BR={x:b.x+b.w,y:b.y+b.h},BL={x:b.x,y:b.y+b.h};
   if(c==="TR") return [TL,{x:b.x+b.w-W,y:b.y},{x:b.x+b.w-W,y:b.y+H},{x:b.x+b.w,y:b.y+H},BR,BL];
   if(c==="TL") return [{x:b.x+W,y:b.y},TR,BR,BL,{x:b.x,y:b.y+H},{x:b.x+W,y:b.y+H}];
   if(c==="BR") return [TL,TR,{x:b.x+b.w,y:b.y+b.h-H},{x:b.x+b.w-W,y:b.y+b.h-H},{x:b.x+b.w-W,y:b.y+b.h},BL];
@@ -715,59 +613,27 @@ function cornerPolygonPoints(){
 }
 function openCornerPanel(){
   const ex=document.getElementById("corner-panel"); if(ex) ex.remove();
-  const b=cornerState.base;
-  const maxW=Math.floor(b.w-4), maxH=Math.floor(b.h-4);
-  const div=document.createElement("div");
-  div.id="corner-panel"; div.className="float-panel";
-  div.innerHTML=`
-    <div class="fp-head" id="cp-head">
-      <span style="flex:1">📐 Esquinero — ajusta brazo</span>
-      <button class="fp-btn" onclick="document.getElementById('corner-panel').classList.toggle('min')" title="Minimizar">▁</button>
-      <button class="fp-btn" onclick="cornerCancel()" title="Cancelar">✕</button>
-    </div>
-    <div class="fp-body">
-      <div style="font-size:10px;color:var(--steel);margin-bottom:6px">Esquina recortada:</div>
-      <div class="corner-grid">
-        <button class="corner-btn" data-c="TL" onclick="cornerSetCorner('TL')">↖ Sup-Izq</button>
-        <button class="corner-btn active" data-c="TR" onclick="cornerSetCorner('TR')">↗ Sup-Der</button>
-        <button class="corner-btn" data-c="BL" onclick="cornerSetCorner('BL')">↙ Inf-Izq</button>
-        <button class="corner-btn" data-c="BR" onclick="cornerSetCorner('BR')">↘ Inf-Der</button>
-      </div>
-      <div class="slider-row"><label>Brazo ancho</label><input type="range" id="cp-w" min="4" max="${maxW}" value="${cornerState.armW}" oninput="cornerSetArm('w',this.value)"><span class="val" id="cp-w-v">${cornerState.armW}</span></div>
-      <div class="slider-row"><label>Brazo alto</label><input type="range" id="cp-h" min="4" max="${maxH}" value="${cornerState.armH}" oninput="cornerSetArm('h',this.value)"><span class="val" id="cp-h-v">${cornerState.armH}</span></div>
-      <div class="btn-row" style="margin-top:8px">
-        <button class="btn btn-ghost btn-sm" onclick="cornerCancel()">Cancelar</button>
-        <button class="btn btn-amber btn-sm" onclick="cornerConfirm()">✅ Guardar</button>
-      </div>
-    </div>`;
-  document.body.appendChild(div);
-  makeDraggable(div, document.getElementById("cp-head"));
+  const b=cornerState.base; const maxW=Math.floor(b.w-4), maxH=Math.floor(b.h-4);
+  const div=document.createElement("div"); div.id="corner-panel"; div.className="float-panel";
+  div.innerHTML=`<div class="fp-head" id="cp-head"><span style="flex:1">📐 Esquinero</span><button class="fp-btn" onclick="document.getElementById('corner-panel').classList.toggle('min')">▁</button><button class="fp-btn" onclick="cornerCancel()">✕</button></div>
+    <div class="fp-body"><div class="corner-grid"><button class="corner-btn" data-c="TL" onclick="cornerSetCorner('TL')">↖ Sup-Izq</button><button class="corner-btn active" data-c="TR" onclick="cornerSetCorner('TR')">↗ Sup-Der</button><button class="corner-btn" data-c="BL" onclick="cornerSetCorner('BL')">↙ Inf-Izq</button><button class="corner-btn" data-c="BR" onclick="cornerSetCorner('BR')">↘ Inf-Der</button></div>
+    <div class="slider-row"><label>Brazo ancho</label><input type="range" id="cp-w" min="4" max="${maxW}" value="${cornerState.armW}" oninput="cornerSetArm('w',this.value)"><span class="val" id="cp-w-v">${cornerState.armW}</span></div>
+    <div class="slider-row"><label>Brazo alto</label><input type="range" id="cp-h" min="4" max="${maxH}" value="${cornerState.armH}" oninput="cornerSetArm('h',this.value)"><span class="val" id="cp-h-v">${cornerState.armH}</span></div>
+    <div class="btn-row" style="margin-top:8px"><button class="btn btn-ghost btn-sm" onclick="cornerCancel()">Cancelar</button><button class="btn btn-amber btn-sm" onclick="cornerConfirm()">✅ Guardar</button></div></div>`;
+  document.body.appendChild(div); makeDraggable(div,document.getElementById("cp-head"));
 }
-function cornerSetCorner(c){
-  if(!cornerState) return;
-  cornerState.corner=c;
-  document.querySelectorAll("#corner-panel .corner-btn").forEach(b=>b.classList.toggle("active",b.dataset.c===c));
-  redraw();
-}
-function cornerSetArm(k,v){
-  if(!cornerState) return;
-  v=parseInt(v);
-  if(k==="w"){ cornerState.armW=v; document.getElementById("cp-w-v").textContent=v; }
-  else { cornerState.armH=v; document.getElementById("cp-h-v").textContent=v; }
-  redraw();
-}
+function cornerSetCorner(c){ if(!cornerState) return; cornerState.corner=c; document.querySelectorAll("#corner-panel .corner-btn").forEach(b=>b.classList.toggle("active",b.dataset.c===c)); redraw(); }
+function cornerSetArm(k,v){ if(!cornerState) return; v=parseInt(v); if(k==="w"){ cornerState.armW=v; document.getElementById("cp-w-v").textContent=v; } else { cornerState.armH=v; document.getElementById("cp-h-v").textContent=v; } redraw(); }
 function cornerConfirm(){
   const pts=cornerPolygonPoints(); if(!pts){ cornerCancel(); return; }
-  const id=Date.now();
-  const color=COLORS[annotations.length%COLORS.length];
+  const id=Date.now(); const color=COLORS[annotations.length%COLORS.length];
   annotations.push({id,clase:currentClase,type:"polygon",points:pts,color,checked:true,qty:null,fromCorner:true});
   cornerCancel(); renderAnnoList(); updateButtons();
   if(arrumeMode){ bumpArrume(); showToast(`🔗 +1 ${currentClase} (${arrumeCount})`,"ok"); }
-  else showQtyPrompt(id);
+  else showQtyPromptAt(id, null);
 }
-
-function makeDraggable(el, handle){
-  let sx=0, sy=0, ox=0, oy=0, dragging=false;
+function makeDraggable(el,handle){
+  let sx=0,sy=0,ox=0,oy=0,dragging=false;
   const start=(cx,cy)=>{ dragging=true; sx=cx; sy=cy; const r=el.getBoundingClientRect(); ox=r.left; oy=r.top; el.style.left=ox+"px"; el.style.top=oy+"px"; el.style.right="auto"; };
   const move=(cx,cy)=>{ if(!dragging) return; el.style.left=(ox+cx-sx)+"px"; el.style.top=Math.max(4,oy+cy-sy)+"px"; };
   const end=()=>{ dragging=false; };
@@ -779,55 +645,40 @@ function makeDraggable(el, handle){
   window.addEventListener("touchend",end);
 }
 
-// ── Polygon ───────────────────────────────────────────────────────────────────
+// ─── Polygon ──────────────────────────────────────────────────────
 let lastTapTime=0;
 function polyTap(e){
   if(!checkClase()) return;
   const now=Date.now();
   if(now-lastTapTime<300){ closePolygon(); lastTapTime=0; return; }
   lastTapTime=now;
-  const p=getPos(e);
-  polyPoints.push(p); polyDrawing=true;
+  const p=getPos(e); polyPoints.push(p); polyDrawing=true;
   document.getElementById("poly-toolbar").style.display="flex";
   document.getElementById("poly-pts-count").textContent=polyPoints.length+" punto"+(polyPoints.length!==1?"s":"");
   redraw();
 }
-function polyMove_(e){
-  if(!polyDrawing||!polyPoints.length) return;
-  const p=getPos(e); polyPreview=p; redraw();
-}
+function polyMove_(e){ if(!polyDrawing||!polyPoints.length) return; polyPreview=getPos(e); redraw(); }
 function closePolygon(){
-  if(polyPoints.length<3){ showToast("⚠️ Mínimo 3 puntos para cerrar","err"); return; }
-  const id=Date.now();
-  const color=COLORS[annotations.length%COLORS.length];
+  if(polyPoints.length<3){ showToast("⚠️ Mínimo 3 puntos","err"); return; }
+  const id=Date.now(); const color=COLORS[annotations.length%COLORS.length];
   annotations.push({id,clase:currentClase,type:"polygon",points:[...polyPoints],color,checked:true,qty:null});
   cancelPolygon(); redraw(); renderAnnoList(); updateButtons();
   if(arrumeMode){ bumpArrume(); showToast(`🔗 +1 ${currentClase} (${arrumeCount})`,"ok"); }
-  else showQtyPrompt(id);
+  else showQtyPromptAt(id,null);
 }
-function cancelPolygon(){
-  polyPoints=[]; polyDrawing=false; polyPreview=null;
-  document.getElementById("poly-toolbar").style.display="none";
-  redraw();
-}
+function cancelPolygon(){ polyPoints=[]; polyDrawing=false; polyPreview=null; document.getElementById("poly-toolbar").style.display="none"; redraw(); }
 
-// ── Auto-segmento (flood-fill, reemplaza SAM) ──────────────────────────────────
-function samStatus(msg,show=true){
-  const el=document.getElementById("sam-status");
-  if(!el) return;
-  el.style.display=show?"block":"none";
-  if(show) el.innerHTML=msg;
-}
-
-let _segCanvas=null, _segCtx=null, _segData=null, _segW=0, _segH=0;
+// ═══════════════════════════════════════════════════════════════════
+// SAM MEJORADO: contorno preciso sobre la pieza tocada
+// ═══════════════════════════════════════════════════════════════════
+function samStatus(msg,show=true){ const el=document.getElementById("sam-status"); if(!el) return; el.style.display=show?"block":"none"; if(show) el.innerHTML=msg; }
 
 function ensureSegCanvas(){
   const img=document.getElementById("bbox-img");
   if(!img||!img.naturalWidth) return false;
-  const maxDim=400;
-  const sc=Math.min(1, maxDim/Math.max(img.naturalWidth, img.naturalHeight));
-  _segW=Math.round(img.naturalWidth*sc);
-  _segH=Math.round(img.naturalHeight*sc);
+  const maxDim=600; // mayor resolución para mejor detección
+  const sc=Math.min(1,maxDim/Math.max(img.naturalWidth,img.naturalHeight));
+  _segW=Math.round(img.naturalWidth*sc); _segH=Math.round(img.naturalHeight*sc);
   if(!_segCanvas){ _segCanvas=document.createElement("canvas"); _segCtx=_segCanvas.getContext("2d"); }
   _segCanvas.width=_segW; _segCanvas.height=_segH;
   _segCtx.drawImage(img,0,0,_segW,_segH);
@@ -837,10 +688,18 @@ function ensureSegCanvas(){
 
 function colorDist(r1,g1,b1,r2,g2,b2){ return Math.sqrt((r1-r2)**2+(g1-g2)**2+(b1-b2)**2); }
 
-function floodFill(startX, startY, threshold){
+// Flood-fill adaptativo: usa tolerancia variable según la varianza local
+function floodFill(startX,startY,threshold){
   const W=_segW, H=_segH, data=_segData;
   const idx0=(startY*W+startX)*4;
   const sr=data[idx0], sg=data[idx0+1], sb=data[idx0+2];
+  // Muestra color promedio en parche 5×5 para robustez
+  let rSum=0,gSum=0,bSum=0,cnt=0;
+  for(let dy=-2;dy<=2;dy++) for(let dx=-2;dx<=2;dx++){
+    const nx=startX+dx, ny=startY+dy;
+    if(nx>=0&&nx<W&&ny>=0&&ny<H){ const i=(ny*W+nx)*4; rSum+=data[i]; gSum+=data[i+1]; bSum+=data[i+2]; cnt++; }
+  }
+  const mr=rSum/cnt, mg=gSum/cnt, mb=bSum/cnt;
   const visited=new Uint8Array(W*H);
   const mask=new Uint8Array(W*H);
   const stack=[[startX,startY]];
@@ -852,120 +711,169 @@ function floodFill(startX, startY, threshold){
     if(visited[pi]) continue;
     visited[pi]=1;
     const di=pi*4;
-    if(colorDist(data[di],data[di+1],data[di+2], sr,sg,sb) > threshold) continue;
+    if(colorDist(data[di],data[di+1],data[di+2],mr,mg,mb)>threshold) continue;
     mask[pi]=1; count++;
-    if(count > W*H*0.5) break;
+    if(count>W*H*0.6) break;
     stack.push([x+1,y],[x-1,y],[x,y+1],[x,y-1]);
   }
-  return {mask, count};
+  return {mask,count};
 }
 
-function nearestActivePixel(bin, W, H, tx, ty, maxR){
+function nearestActivePixel(bin,W,H,tx,ty,maxR){
   maxR=maxR||Math.max(W,H);
-  if(tx>=0&&tx<W&&ty>=0&&ty<H&&bin[ty*W+tx]) return {x:tx,y:ty};
+  if(tx>=0&&tx<W&&ty>=0&&ty<H&&bin[ty*W+tx]) return{x:tx,y:ty};
   for(let r=1;r<=maxR;r++){
-    for(let dx=-r;dx<=r;dx++){
-      for(let dy=-r;dy<=r;dy++){
-        if(Math.max(Math.abs(dx),Math.abs(dy))!==r) continue;
-        const x=tx+dx, y=ty+dy;
-        if(x>=0&&x<W&&y>=0&&y<H&&bin[y*W+x]) return {x,y};
-      }
+    for(let dx=-r;dx<=r;dx++) for(let dy=-r;dy<=r;dy++){
+      if(Math.max(Math.abs(dx),Math.abs(dy))!==r) continue;
+      const x=tx+dx,y=ty+dy;
+      if(x>=0&&x<W&&y>=0&&y<H&&bin[y*W+x]) return{x,y};
     }
   }
   return null;
 }
 
-function maskToContour(mask, W, H, tapX, tapY){
-  let sx=-1, sy=-1;
-  if(tapX!=null){
-    const near=nearestActivePixel(mask, W, H, Math.round(tapX), Math.round(tapY), 80);
-    if(near){ sx=near.x; sy=near.y; }
+// Extrae el componente conectado más grande que contenga el punto tocado
+function extractLargestConnectedComponent(mask,W,H,tapX,tapY){
+  const visited=new Uint8Array(W*H);
+  let bestComp=null, bestSize=0;
+  // Primero probar con el componente que contiene el punto tocado
+  const seedX=Math.round(tapX), seedY=Math.round(tapY);
+  const near=nearestActivePixel(mask,W,H,seedX,seedY,30);
+  if(near){
+    const comp=bfsMask(mask,visited,W,H,near.x,near.y);
+    if(comp.size>20) return comp.pixels;
   }
-  if(sx<0){
-    for(let y=0;y<H&&sx<0;y++) for(let x=0;x<W;x++){ if(mask[y*W+x]){ sx=x; sy=y; break; } }
+  // Fallback: componente más grande
+  for(let y=0;y<H;y+=2) for(let x=0;x<W;x+=2){
+    if(mask[y*W+x]&&!visited[y*W+x]){
+      const comp=bfsMask(mask,visited,W,H,x,y);
+      if(comp.size>bestSize){ bestSize=comp.size; bestComp=comp; }
+    }
   }
+  return bestComp?bestComp.pixels:null;
+}
+
+function bfsMask(mask,visited,W,H,sx,sy){
+  const stack=[[sx,sy]]; const pixels=new Uint8Array(W*H); let size=0;
+  while(stack.length){
+    const [x,y]=stack.pop();
+    if(x<0||x>=W||y<0||y>=H) continue;
+    const pi=y*W+x;
+    if(visited[pi]||!mask[pi]) continue;
+    visited[pi]=1; pixels[pi]=1; size++;
+    if(size>W*H*0.7) break;
+    stack.push([x+1,y],[x-1,y],[x,y+1],[x,y-1]);
+  }
+  return{pixels,size};
+}
+
+function maskToContour(mask,W,H,tapX,tapY){
+  // Obtener solo el componente conectado que el usuario tocó
+  const comp=extractLargestConnectedComponent(mask,W,H,tapX,tapY);
+  if(!comp) return null;
+  // Encontrar punto de inicio del contorno (borde del componente)
+  let sx=-1,sy=-1;
+  const near=nearestActivePixel(comp,W,H,Math.round(tapX),Math.round(tapY),W);
+  if(near){ sx=near.x; sy=near.y; }
+  if(sx<0){ for(let y=0;y<H&&sx<0;y++) for(let x=0;x<W;x++){ if(comp[y*W+x]){ sx=x; sy=y; break; } } }
   if(sx<0) return null;
   const dirs=[[1,0],[1,1],[0,1],[-1,1],[-1,0],[-1,-1],[0,-1],[1,-1]];
-  const contour=[]; let cx=sx, cy=sy, prevDir=6;
+  const contour=[]; let cx=sx,cy=sy,prevDir=6;
   const maxSteps=W*H*2; let steps=0;
   while(steps++<maxSteps){
     contour.push({x:cx,y:cy});
     let found=false;
     for(let i=0;i<8;i++){
       const d=(prevDir+6+i)%8;
-      const nx=cx+dirs[d][0], ny=cy+dirs[d][1];
-      if(nx>=0&&nx<W&&ny>=0&&ny<H&&mask[ny*W+nx]){
-        cx=nx; cy=ny; prevDir=(d+4)%8; found=true; break;
-      }
+      const nx=cx+dirs[d][0],ny=cy+dirs[d][1];
+      if(nx>=0&&nx<W&&ny>=0&&ny<H&&comp[ny*W+nx]){ cx=nx; cy=ny; prevDir=(d+4)%8; found=true; break; }
     }
     if(!found) break;
     if(cx===sx&&cy===sy&&contour.length>2) break;
-    if(contour.length>4000) break;
+    if(contour.length>6000) break;
   }
   if(contour.length<8) return null;
-  const eps=Math.max(2, Math.min(W,H)*0.01);
-  return douglasPeucker(contour, eps);
+  const eps=Math.max(2,Math.min(W,H)*0.008);
+  return douglasPeucker(contour,eps);
 }
 
-function douglasPeucker(pts, eps){
+function douglasPeucker(pts,eps){
   if(pts.length<3) return pts;
-  const first=0, last=pts.length-1;
-  const keep=new Uint8Array(pts.length); keep[first]=1; keep[last]=1;
-  const stack=[[first,last]];
+  const keep=new Uint8Array(pts.length); keep[0]=1; keep[pts.length-1]=1;
+  const stack=[[0,pts.length-1]];
   while(stack.length){
     const [a,b]=stack.pop();
-    let maxD=0, idx=-1;
-    const ax=pts[a].x, ay=pts[a].y, bx=pts[b].x, by=pts[b].y;
-    const dx=bx-ax, dy=by-ay, len=Math.hypot(dx,dy)||1;
+    let maxD=0,idx=-1;
+    const ax=pts[a].x,ay=pts[a].y,bx=pts[b].x,by=pts[b].y;
+    const dx=bx-ax,dy=by-ay,len=Math.hypot(dx,dy)||1;
     for(let i=a+1;i<b;i++){
-      const d=Math.abs((pts[i].x-ax)*dy - (pts[i].y-ay)*dx)/len;
+      const d=Math.abs((pts[i].x-ax)*dy-(pts[i].y-ay)*dx)/len;
       if(d>maxD){ maxD=d; idx=i; }
     }
-    if(maxD>eps && idx>0){ keep[idx]=1; stack.push([a,idx]); stack.push([idx,b]); }
+    if(maxD>eps&&idx>0){ keep[idx]=1; stack.push([a,idx],[idx,b]); }
   }
   const out=[];
   for(let i=0;i<pts.length;i++) if(keep[i]) out.push(pts[i]);
-  if(out.length>80){ const step=Math.ceil(out.length/80); return out.filter((_,i)=>i%step===0); }
+  if(out.length>100){ const step=Math.ceil(out.length/100); return out.filter((_,i)=>i%step===0); }
   return out;
 }
 
-function polygonArea(pts){
-  if(!pts||pts.length<3) return 0;
-  let a=0; for(let i=0;i<pts.length;i++){ const p=pts[i], q=pts[(i+1)%pts.length]; a+=p.x*q.y-q.x*p.y; }
-  return Math.abs(a)/2;
+// Pulso visual en el punto tocado
+function showTapRipple(canvasX,canvasY){
+  const vp=document.getElementById("zoom-viewport");
+  if(!vp) return;
+  const vpRect=vp.getBoundingClientRect();
+  const canvRect=canvas.getBoundingClientRect();
+  const scaleX=canvRect.width/canvas.width, scaleY=canvRect.height/canvas.height;
+  const screenX=canvRect.left+canvasX*scaleX-vpRect.left;
+  const screenY=canvRect.top+canvasY*scaleY-vpRect.top;
+  const ring=document.createElement("div");
+  ring.className="sam-highlight-ring";
+  ring.style.cssText=`left:${screenX}px;top:${screenY}px;`;
+  vp.appendChild(ring);
+  setTimeout(()=>ring.remove(),600);
 }
 
 async function samTap(e){
   if(!selectedFile){ showToast("⚠️ Toma o carga una foto primero","err"); return; }
-  samStatus("⏳ Segmentando…");
+  samStatus("⏳ Segmentando pieza…");
+  const p=getPos(e);
+  // Mostrar pulso visual en el punto exacto tocado
+  showTapRipple(p.x,p.y);
   try{
     if(!ensureSegCanvas()){ samStatus("❌ No se pudo procesar la imagen"); return; }
-    const p=getPos(e);
     const sx=Math.round(p.x*(_segW/imgDispW));
     const sy=Math.round(p.y*(_segH/imgDispH));
     if(sx<0||sx>=_segW||sy<0||sy>=_segH){ samStatus("⚠️ Toca dentro de la imagen"); return; }
-    const {mask, count} = floodFill(sx, sy, 35);
-    if(count < 20){ samStatus("⚠️ No se detectó pieza clara. Intenta tocar más al centro."); return; }
-    const contour = maskToContour(mask, _segW, _segH, sx, sy);
-    if(!contour || contour.length<3){ samStatus("⚠️ No se detectó contorno claro."); return; }
+    // Intentar con tolerancia adaptativa (30 → 45 → 55)
+    let mask=null, count=0;
+    for(const thr of [30,42,55]){
+      const res=floodFill(sx,sy,thr);
+      if(res.count>=25){ mask=res.mask; count=res.count; break; }
+    }
+    if(!mask||count<25){ samStatus("⚠️ No se detectó pieza. Intenta tocar más al centro de la pieza."); return; }
+    const contour=maskToContour(mask,_segW,_segH,sx,sy);
+    if(!contour||contour.length<3){ samStatus("⚠️ Contorno no claro. Prueba en área con más contraste."); return; }
     const scX=imgDispW/_segW, scY=imgDispH/_segH;
-    const points=contour.map(pt=>({x:pt.x*scX, y:pt.y*scY}));
-    const id=Date.now();
-    const color=COLORS[annotations.length%COLORS.length];
+    const points=contour.map(pt=>({x:pt.x*scX,y:pt.y*scY}));
+    // Verificar que el contorno cubre el punto tocado (corrección de posición)
+    const bboxPts={minX:Math.min(...points.map(p=>p.x)),maxX:Math.max(...points.map(p=>p.x)),minY:Math.min(...points.map(p=>p.y)),maxY:Math.max(...points.map(p=>p.y))};
+    const id=Date.now(); const color=COLORS[annotations.length%COLORS.length];
     const clase=resolveClaseForAnnotation();
     const pending=!currentClase;
-    annotations.push({id,clase,type:"polygon",points,color,checked:true,qty:null,fromSam:true,pendingAutoClass:pending});
+    annotations.push({id,clase,type:"polygon",points,color,checked:true,qty:null,fromSam:true,pendingAutoClass:pending,_bbox:bboxPts});
     redraw(); renderAnnoList(); updateButtons();
     if(arrumeMode){ bumpArrume(); samStatus(`🔗 +1 ${clase} (${arrumeCount}) · toca otra pieza`); }
-    else { samStatus(`✅ Pieza marcada · ${pending?"identificando…":"toca otra o revisa"}`); }
-    if(pending) classifyAnnotationLocal(id); else if(!arrumeMode) showQtyPrompt(id);
+    else{ samStatus(`✅ Contorno trazado sobre pieza · ${pending?"identificando…":"toca otra o revisa"}`); }
+    if(pending) classifyAnnotationLocal(id);
+    else if(!arrumeMode) showQtyPromptAt(id,bboxPts);
   }catch(err){
     console.error("Auto-seg:",err);
     samStatus(`❌ Error: ${(err.message||err).toString().slice(0,80)}`);
   }
 }
 
-// ── Redraw ────────────────────────────────────────────────────────────────────
+// ─── Redraw ───────────────────────────────────────────────────────
 function redraw(){
   const ctx=canvas.getContext("2d");
   ctx.clearRect(0,0,canvas.width,canvas.height);
@@ -974,7 +882,7 @@ function redraw(){
     ctx.strokeStyle=a.color; ctx.lineWidth=2.5; ctx.globalAlpha=1;
     if(a.type==="bbox"){
       const b=a.bbox;
-      ctx.fillStyle="rgba(0,0,0,0.25)";
+      ctx.fillStyle="rgba(0,0,0,0.2)";
       ctx.fillRect(0,0,canvas.width,b.y);
       ctx.fillRect(0,b.y+b.h,canvas.width,canvas.height-b.y-b.h);
       ctx.fillRect(0,b.y,b.x,b.h);
@@ -982,15 +890,18 @@ function redraw(){
       ctx.strokeRect(b.x,b.y,b.w,b.h);
       drawCorners(ctx,b.x,b.y,b.w,b.h,a.color);
       drawLabel(ctx,a.clase,b.x,b.y,a.color);
-      if(a.isQty){ drawQtyBox(ctx,a,b.x,b.y,b.w,b.h); }
     } else if(a.type==="polygon"){
       const pts=a.points;
       ctx.beginPath(); ctx.moveTo(pts[0].x,pts[0].y);
       pts.forEach(p=>ctx.lineTo(p.x,p.y)); ctx.closePath();
-      ctx.fillStyle=a.color+"33"; ctx.fill();
-      ctx.stroke();
-      pts.forEach(p=>{ ctx.beginPath(); ctx.arc(p.x,p.y,4,0,Math.PI*2); ctx.fillStyle=a.color; ctx.fill(); });
-      drawLabel(ctx,a.clase,pts[0].x,pts[0].y,a.color);
+      ctx.fillStyle=a.color+"2a"; ctx.fill(); ctx.stroke();
+      // Solo dibujar vértices si son pocos (no en SAM con muchos puntos)
+      if(pts.length<=30) pts.forEach(p=>{ ctx.beginPath(); ctx.arc(p.x,p.y,3,0,Math.PI*2); ctx.fillStyle=a.color; ctx.fill(); });
+      // Label en el centroide de la pieza
+      const cx=pts.reduce((s,p)=>s+p.x,0)/pts.length;
+      const cy=pts.reduce((s,p)=>s+p.y,0)/pts.length;
+      const minY=Math.min(...pts.map(p=>p.y));
+      drawLabel(ctx,a.clase,cx-ctx.measureText(a.clase).width/2-5,minY,a.color);
     }
   });
   if(bboxCurrent&&bboxDrawing){
@@ -1015,84 +926,57 @@ function redraw(){
     polyPoints.forEach(p=>ctx.lineTo(p.x,p.y));
     if(polyPreview) ctx.lineTo(polyPreview.x,polyPreview.y);
     ctx.stroke(); ctx.setLineDash([]);
-    polyPoints.forEach((p,i)=>{
-      ctx.beginPath(); ctx.arc(p.x,p.y,i===0?6:4,0,Math.PI*2);
-      ctx.fillStyle=i===0?"#f59e0b":"#fff"; ctx.fill();
-    });
+    polyPoints.forEach((p,i)=>{ ctx.beginPath(); ctx.arc(p.x,p.y,i===0?6:4,0,Math.PI*2); ctx.fillStyle=i===0?"#f59e0b":"#fff"; ctx.fill(); });
   }
 }
-function drawCorners(ctx,x,y,w,h,color){
-  const cs=12; ctx.strokeStyle=color; ctx.lineWidth=4;
-  [[x,y],[x+w,y],[x,y+h],[x+w,y+h]].forEach(([cx,cy])=>{
-    const dx=cx===x?1:-1, dy=cy===y?1:-1;
-    ctx.beginPath(); ctx.moveTo(cx+dx*cs,cy); ctx.lineTo(cx,cy); ctx.lineTo(cx,cy+dy*cs); ctx.stroke();
-  });
-}
+function drawCorners(ctx,x,y,w,h,color){ const cs=12; ctx.strokeStyle=color; ctx.lineWidth=4; [[x,y],[x+w,y],[x,y+h],[x+w,y+h]].forEach(([cx,cy])=>{ const dx=cx===x?1:-1,dy=cy===y?1:-1; ctx.beginPath(); ctx.moveTo(cx+dx*cs,cy); ctx.lineTo(cx,cy); ctx.lineTo(cx,cy+dy*cs); ctx.stroke(); }); }
 function drawLabel(ctx,text,x,y,color){
   ctx.font="bold 12px -apple-system,sans-serif";
   const tw=ctx.measureText(text).width;
-  const lx=x, ly=Math.max(20,y-4);
-  ctx.fillStyle=color; ctx.fillRect(lx,ly-16,tw+10,20);
+  const lx=Math.max(0,Math.min(canvas.width-tw-12,x));
+  const ly=Math.max(18,y-4);
+  ctx.fillStyle=color+"dd"; ctx.fillRect(lx,ly-16,tw+10,20);
   ctx.fillStyle="#000"; ctx.fillText(text,lx+5,ly-2);
 }
-function drawQtyBox(ctx,a,bx,by,bw,bh){
-  const num=a.clase.replace("QTY-","");
-  const qw=Math.min(50,bw*0.25), qh=Math.min(28,bh*0.2);
-  ctx.fillStyle="#22c55ecc"; ctx.fillRect(bx+4,by+4,qw,qh);
-  ctx.fillStyle="#fff"; ctx.font=`bold ${Math.min(qh*.7,18)}px -apple-system,sans-serif`;
-  ctx.textAlign="center"; ctx.textBaseline="middle";
-  ctx.fillText(num,bx+4+qw/2,by+4+qh/2);
-  ctx.textAlign="left"; ctx.textBaseline="alphabetic";
-}
+function checkClase(){ if(!currentClase){ showToast("⚠️ Selecciona una clase primero","err"); return false; } return true; }
 
-function checkClase(){
-  if(!currentClase){ showToast("⚠️ Selecciona una clase primero","err"); return false; }
-  return true;
-}
-
-// ── Lista de anotaciones ──────────────────────────────────────────────────────
+// ─── Lista anotaciones ────────────────────────────────────────────
 function renderAnnoList(){
-  const list=document.getElementById("anno-list");
-  const card=document.getElementById("annos-card");
-  const title=document.getElementById("annos-title");
+  const list=document.getElementById("anno-list"); const card=document.getElementById("annos-card"); const title=document.getElementById("annos-title");
   if(!annotations.length){ card.style.display="none"; return; }
-  card.style.display="block";
-  title.textContent=`📦 Anotaciones (${annotations.length})`;
+  card.style.display="block"; title.textContent=`📦 Anotaciones (${annotations.length})`;
   list.innerHTML="";
   annotations.forEach(a=>{
     const item=document.createElement("div"); item.className="anno-item";
     const qtyBadge=a.qty?`<span style="background:rgba(34,197,94,.2);color:var(--ok);border:1px solid rgba(34,197,94,.3);border-radius:6px;padding:2px 7px;font-size:10px;font-weight:700">×${a.qty}</span>`:"";
-    const typeIcon=a.type==="polygon"?"🔷":"⬜";
-    const qtyTag=a.isQty?`<span style="color:var(--ok);font-size:10px">📦</span>`:"";
-    item.innerHTML=`
-      <div class="anno-color" style="background:${a.color}"></div>
-      <span class="anno-label" onclick="reassignClass(${a.id})" style="cursor:pointer;text-decoration:underline;text-decoration-style:dotted;text-underline-offset:3px" title="Cambiar clase">${a.clase}</span>
-      <span class="anno-type">${typeIcon} ${a.type==="polygon"?"Polígono":"BBox"}</span>
-      ${qtyBadge}${qtyTag}
-      <span class="anno-check ${a.checked?"checked":"unchecked"}" onclick="toggleAnno(${a.id})">${a.checked?"✅":"☐"}</span>
+    item.innerHTML=`<div class="anno-color" style="background:${a.color}"></div>
+      <span class="anno-label" onclick="reassignClass(${a.id})" style="cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px" title="Cambiar clase">${a.clase}</span>
+      <span class="anno-type">${a.type==="polygon"?"🔷 Polígono":"⬜ BBox"}</span>
+      ${qtyBadge}
+      <span class="anno-check" onclick="toggleAnno(${a.id})">${a.checked?"✅":"☐"}</span>
       <span class="anno-del" onclick="deleteAnno(${a.id})">🗑️</span>`;
     list.appendChild(item);
   });
 }
 function toggleAnno(id){ const a=annotations.find(x=>x.id===id); if(a){a.checked=!a.checked;renderAnnoList();redraw();} }
 function deleteAnno(id){ annotations=annotations.filter(x=>x.id!==id); renderAnnoList(); redraw(); updateButtons(); }
-function updateButtons(){
-  const has=annotations.some(a=>a.checked);
-  document.getElementById("btn-review").disabled=!has;
-  document.getElementById("btn-upload").disabled=!has;
+function updateButtons(){ const has=annotations.some(a=>a.checked); document.getElementById("btn-review").disabled=!has; document.getElementById("btn-upload").disabled=!has; }
+
+// ═══════════════════════════════════════════════════════════════════
+// QTY PROMPT: aparece cerca de la anotación (no en posición fija)
+// ═══════════════════════════════════════════════════════════════════
+function annotationBounds(a){
+  if(!a) return null;
+  if(a.type==="bbox") return{...a.bbox};
+  if(a._bbox) return{x:a._bbox.minX,y:a._bbox.minY,w:a._bbox.maxX-a._bbox.minX,h:a._bbox.maxY-a._bbox.minY};
+  if(a.type==="polygon"&&a.points?.length){ const xs=a.points.map(p=>p.x),ys=a.points.map(p=>p.y); return{x:Math.min(...xs),y:Math.min(...ys),w:Math.max(...xs)-Math.min(...xs),h:Math.max(...ys)-Math.min(...ys)}; }
+  return null;
 }
 
-// ── QTY prompt ────────────────────────────────────────────────────────────────
-function showQtyPrompt(annoId){
+function showQtyPromptAt(annoId, bboxHint){
   const ex=document.getElementById("qty-prompt"); if(ex) ex.remove();
-  const div=document.createElement("div"); div.id="qty-prompt"; div.className="float-panel";
-  div.style.width="280px";
-  div.innerHTML=`
-    <div class="fp-head" id="qty-head">
-      <span style="flex:1">📦 ¿Cuántas piezas?</span>
-      <button class="fp-btn" onclick="document.getElementById('qty-prompt').classList.toggle('min')" title="Minimizar">▁</button>
-      <button class="fp-btn" onclick="skipQty()" title="Cerrar">✕</button>
-    </div>
+  const div=document.createElement("div"); div.id="qty-prompt"; div.className="float-panel"; div.style.width="270px";
+  div.innerHTML=`<div class="fp-head" id="qty-head"><span style="flex:1">📦 ¿Cuántas piezas?</span><button class="fp-btn" onclick="document.getElementById('qty-prompt').classList.toggle('min')">▁</button><button class="fp-btn" onclick="skipQty()">✕</button></div>
     <div class="fp-body">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
         <input type="number" id="qty-input" placeholder="Cantidad" min="1" max="999" style="flex:1;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-size:16px;outline:none;margin:0">
@@ -1102,110 +986,90 @@ function showQtyPrompt(annoId){
         <button onclick="skipQty()" style="flex:1;padding:9px;border-radius:8px;border:1.5px solid var(--border);background:var(--surface);color:var(--text2);font-size:12px;font-weight:600;cursor:pointer">Sin cantidad</button>
         <button onclick="addQty(${annoId})" style="flex:1;padding:9px;border-radius:8px;border:none;background:var(--amber);color:#0a1628;font-size:12px;font-weight:700;cursor:pointer">✅ Agregar</button>
       </div>
-      <div style="font-size:10px;color:var(--steel);margin-top:6px;text-align:center">☝️ Arrastra el título para mover</div>
+      <div style="font-size:10px;color:var(--steel);margin-top:6px;text-align:center">☝️ Arrastra para mover</div>
     </div>`;
   document.body.appendChild(div);
-  makeDraggable(div, document.getElementById("qty-head"));
+  // Posicionar cerca de la anotación en pantalla
+  const anno=annotations.find(a=>a.id===annoId);
+  const b=bboxHint||(anno?annotationBounds(anno):null);
+  if(b){
+    const canvRect=canvas.getBoundingClientRect();
+    const vp=document.getElementById("zoom-viewport");
+    const vpRect=vp?vp.getBoundingClientRect():canvRect;
+    const scX=canvRect.width/canvas.width, scY=canvRect.height/canvas.height;
+    // Centro X de la anotación en pantalla
+    const annoScreenX=canvRect.left+(b.x+b.w/2)*scX;
+    const annoScreenY=canvRect.top+(b.y+b.h)*scY+8; // debajo de la anotación
+    const panelW=270, panelH=130;
+    let left=Math.max(8,Math.min(window.innerWidth-panelW-8, annoScreenX-panelW/2));
+    let top=Math.min(window.innerHeight-panelH-8, annoScreenY);
+    if(top<70) top=canvRect.top+b.y*scY-panelH-8; // encima si no cabe debajo
+    div.style.left=left+"px"; div.style.top=Math.max(70,top)+"px"; div.style.right="auto";
+  }
+  makeDraggable(div,document.getElementById("qty-head"));
   setTimeout(()=>document.getElementById("qty-input")?.focus(),100);
 }
-function skipQty(){ const p=document.getElementById("qty-prompt"); if(p) p.remove(); showToast(`✅ Anotación añadida`,"ok"); }
+function showQtyPrompt(annoId){ showQtyPromptAt(annoId,null); } // compatibilidad
+function skipQty(){ const p=document.getElementById("qty-prompt"); if(p) p.remove(); showToast("✅ Anotación añadida","ok"); }
 function addQty(annoId){
   const qty=parseInt(document.getElementById("qty-input")?.value);
   const p=document.getElementById("qty-prompt"); if(p) p.remove();
   const anno=annotations.find(a=>a.id===annoId);
   if(!anno||!qty||qty<1){ showToast("✅ Añadida sin cantidad","ok"); return; }
   anno.qty=qty; anno.isArrume=true;
-  const qtyId=Date.now()+1;
-  let qtyBbox;
-  if(anno.type==="bbox"){
-    const b=anno.bbox;
-    qtyBbox={x:b.x+4,y:b.y+4,w:Math.min(60,b.w*.25),h:Math.min(30,b.h*.2)};
-  } else {
-    const xs=anno.points.map(p=>p.x), ys=anno.points.map(p=>p.y);
-    qtyBbox={x:Math.min(...xs)+4,y:Math.min(...ys)+4,w:60,h:30};
+  const b=annotationBounds(anno);
+  if(b){
+    const qtyId=Date.now()+1;
+    annotations.push({id:qtyId,clase:`QTY-${qty}`,type:"bbox",bbox:{x:b.x+4,y:b.y+4,w:Math.min(60,b.w*.25),h:Math.min(30,b.h*.2)},color:"#22c55e",checked:true,isQty:true,parentId:annoId});
   }
-  annotations.push({id:qtyId,clase:`QTY-${qty}`,type:"bbox",bbox:qtyBbox,color:"#22c55e",checked:true,isQty:true,parentId:annoId});
   redraw(); renderAnnoList(); updateButtons();
-  showToast(`✅ ${anno.clase} × ${qty} piezas`,"ok");
+  showToast(`✅ ${anno.clase} × ${qty}`,"ok");
+}
+function addQtyBadgeForAnnotation(anno,qty){
+  qty=Math.max(1,Math.round(+qty||1));
+  anno.qty=qty; anno.isArrume=qty>1;
+  const old=annotations.find(x=>x.isQty&&x.parentId===anno.id);
+  if(old){ old.clase=`QTY-${qty}`; return; }
+  const b=annotationBounds(anno); if(!b) return;
+  annotations.push({id:Date.now()+Math.floor(Math.random()*999),clase:`QTY-${qty}`,type:"bbox",bbox:{x:b.x+4,y:b.y+4,w:Math.min(64,b.w*.28),h:Math.min(32,b.h*.22)},color:"#22c55e",checked:true,isQty:true,parentId:anno.id});
 }
 
-// ── Review modal ──────────────────────────────────────────────────────────────
+// ─── Review ───────────────────────────────────────────────────────
 function openReview(){
-  const img=document.getElementById("bbox-img");
-  const rImg=document.getElementById("review-img");
-  rImg.src=img.src;
-  rImg.onload=()=>drawReviewCanvas();
-  if(rImg.complete) drawReviewCanvas();
+  const img=document.getElementById("bbox-img"); const rImg=document.getElementById("review-img");
+  rImg.src=img.src; rImg.onload=()=>drawReviewCanvas(); if(rImg.complete) drawReviewCanvas();
   const annos=document.getElementById("review-annos"); annos.innerHTML="";
   annotations.forEach(a=>{
-    const div=document.createElement("div");
-    div.className="review-anno "+(a.checked?"approved":"rejected");
-    div.id="rev-"+a.id;
-    const typeIcon=a.type==="polygon"?"🔷":"⬜";
-    div.innerHTML=`
-      <span class="review-check" onclick="toggleReviewAnno(${a.id})">${a.checked?"✅":"❌"}</span>
-      <div style="flex:1">
-        <div style="font-family:monospace;font-weight:700;font-size:14px;color:${a.color}">${a.clase}</div>
-        <div style="font-size:11px;color:var(--steel)">${typeIcon} ${a.type==="polygon"?"Polígono ("+a.points?.length+" pts)":"BBox"} ${a.qty?"· ×"+a.qty+" piezas":""}</div>
-      </div>`;
+    const div=document.createElement("div"); div.className="review-anno "+(a.checked?"approved":"rejected"); div.id="rev-"+a.id;
+    div.innerHTML=`<span class="review-check" onclick="toggleReviewAnno(${a.id})">${a.checked?"✅":"❌"}</span>
+      <div style="flex:1"><div style="font-family:monospace;font-weight:700;font-size:14px;color:${a.color}">${a.clase}</div>
+      <div style="font-size:11px;color:var(--steel)">${a.type==="polygon"?"🔷 Polígono":"⬜ BBox"} ${a.qty?"· ×"+a.qty+" piezas":""}</div></div>`;
     annos.appendChild(div);
   });
   document.getElementById("review-modal-bg").classList.add("show");
 }
-function toggleReviewAnno(id){
-  const a=annotations.find(x=>x.id===id); if(!a) return;
-  a.checked=!a.checked;
-  const div=document.getElementById("rev-"+id);
-  div.className="review-anno "+(a.checked?"approved":"rejected");
-  div.querySelector(".review-check").textContent=a.checked?"✅":"❌";
-  renderAnnoList(); redraw(); drawReviewCanvas(); updateButtons();
-}
+function toggleReviewAnno(id){ const a=annotations.find(x=>x.id===id); if(!a) return; a.checked=!a.checked; const div=document.getElementById("rev-"+id); div.className="review-anno "+(a.checked?"approved":"rejected"); div.querySelector(".review-check").textContent=a.checked?"✅":"❌"; renderAnnoList(); redraw(); drawReviewCanvas(); updateButtons(); }
 function drawReviewCanvas(){
-  const rImg=document.getElementById("review-img");
-  const rc=document.getElementById("review-canvas");
+  const rImg=document.getElementById("review-img"); const rc=document.getElementById("review-canvas");
   rc.width=rImg.offsetWidth; rc.height=rImg.offsetHeight;
   const scX=rImg.offsetWidth/imgDispW, scY=rImg.offsetHeight/imgDispH;
   const ctx=rc.getContext("2d"); ctx.clearRect(0,0,rc.width,rc.height);
   annotations.filter(a=>a.checked).forEach(a=>{
     ctx.strokeStyle=a.color; ctx.lineWidth=2.5;
-    if(a.type==="bbox"){
-      const b={x:a.bbox.x*scX,y:a.bbox.y*scY,w:a.bbox.w*scX,h:a.bbox.h*scY};
-      ctx.strokeRect(b.x,b.y,b.w,b.h);
-      drawLabel(ctx,a.clase,b.x,b.y,a.color);
-    } else if(a.type==="polygon"){
-      const pts=a.points.map(p=>({x:p.x*scX,y:p.y*scY}));
-      ctx.beginPath(); ctx.moveTo(pts[0].x,pts[0].y);
-      pts.forEach(p=>ctx.lineTo(p.x,p.y)); ctx.closePath();
-      ctx.fillStyle=a.color+"33"; ctx.fill(); ctx.stroke();
-      drawLabel(ctx,a.clase,pts[0].x,pts[0].y,a.color);
-    }
+    if(a.type==="bbox"){ const b={x:a.bbox.x*scX,y:a.bbox.y*scY,w:a.bbox.w*scX,h:a.bbox.h*scY}; ctx.strokeRect(b.x,b.y,b.w,b.h); drawLabel(ctx,a.clase,b.x,b.y,a.color); }
+    else if(a.type==="polygon"){ const pts=a.points.map(p=>({x:p.x*scX,y:p.y*scY})); ctx.beginPath(); ctx.moveTo(pts[0].x,pts[0].y); pts.forEach(p=>ctx.lineTo(p.x,p.y)); ctx.closePath(); ctx.fillStyle=a.color+"33"; ctx.fill(); ctx.stroke(); const cx=pts.reduce((s,p)=>s+p.x,0)/pts.length; const minY=Math.min(...pts.map(p=>p.y)); drawLabel(ctx,a.clase,cx,minY,a.color); }
   });
 }
 function closeReviewModal(e){ if(e.target===document.getElementById("review-modal-bg")) closeReviewModalDirect(); }
 function closeReviewModalDirect(){ document.getElementById("review-modal-bg").classList.remove("show"); }
 function confirmAndUpload(){ closeReviewModalDirect(); uploadAll(); }
 
-// ── Catálogo modal ────────────────────────────────────────────────────────────
-function openCatModal(){
-  catModalFam="ALL"; document.getElementById("cat-modal-bg").classList.add("show");
-  document.getElementById("cat-modal-search").value="";
-  renderCatModalFams(); renderCatModal("");
-  setTimeout(()=>document.getElementById("cat-modal-search").focus(),100);
-}
+// ─── Catálogo modal ───────────────────────────────────────────────
+function openCatModal(){ catModalFam="ALL"; document.getElementById("cat-modal-bg").classList.add("show"); document.getElementById("cat-modal-search").value=""; renderCatModalFams(); renderCatModal(""); setTimeout(()=>document.getElementById("cat-modal-search").focus(),100); }
 function closeCatModal(e){ if(e.target===document.getElementById("cat-modal-bg")) closeCatModalDirect(); }
 function closeCatModalDirect(){ document.getElementById("cat-modal-bg").classList.remove("show"); }
-function renderCatModalFams(){
-  const w=document.getElementById("cat-modal-families"); w.innerHTML="";
-  ["ALL","PM","PB","EI","EE"].forEach(f=>{const b=document.createElement("div");b.className="fam-btn"+(f===catModalFam?" active":"");b.textContent=f==="ALL"?"Todas":f;b.onclick=()=>{catModalFam=f;renderCatModalFams();renderCatModal(document.getElementById("cat-modal-search").value);};w.appendChild(b);});
-}
-function renderCatModal(q){
-  const list=document.getElementById("cat-modal-list"); list.innerHTML="";
-  CATALOG.filter(c=>(catModalFam==="ALL"||c.family===catModalFam)&&(!q||c.code.toLowerCase().includes(q.toLowerCase()))).slice(0,60).forEach(c=>{
-    const item=document.createElement("div"); item.className="cat-item";
-    item.innerHTML=`<div onclick="setClase('${c.code}')"><div class="ci-code">${c.code}</div><div class="ci-spec">${c.spec}</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('${c.code}')">📋</span>`;
-    list.appendChild(item);
-  });
-}
+function renderCatModalFams(){ const w=document.getElementById("cat-modal-families"); w.innerHTML=""; ["ALL","PM","PB","EI","EE"].forEach(f=>{const b=document.createElement("div");b.className="fam-btn"+(f===catModalFam?" active":"");b.textContent=f==="ALL"?"Todas":f;b.onclick=()=>{catModalFam=f;renderCatModalFams();renderCatModal(document.getElementById("cat-modal-search").value);};w.appendChild(b);}); }
+function renderCatModal(q){ const list=document.getElementById("cat-modal-list"); list.innerHTML=""; CATALOG.filter(c=>(catModalFam==="ALL"||c.family===catModalFam)&&(!q||c.code.toLowerCase().includes(q.toLowerCase()))).slice(0,60).forEach(c=>{ const item=document.createElement("div"); item.className="cat-item"; item.innerHTML=`<div onclick="setClase('${c.code}')"><div class="ci-code">${c.code}</div><div class="ci-spec">${c.spec}</div></div><span style="font-size:18px;cursor:pointer;padding:4px" onclick="copyCode('${c.code}')">📋</span>`; list.appendChild(item); }); }
 renderCatModalFams(); renderCatModal("");
 function renderCatalogPage(q){
   const fw=document.getElementById("cat-main-families"); fw.innerHTML="";
@@ -1217,48 +1081,40 @@ function renderCatalogPage(q){
     g.appendChild(card);
   });
 }
-function copyCode(code){ navigator.clipboard?.writeText(code).then(()=>showToast(`📋 ${code} copiado`,"ok")).catch(()=>{const t=document.createElement("textarea");t.value=code;document.body.appendChild(t);t.select();document.execCommand("copy");document.body.removeChild(t);showToast(`📋 ${code} copiado`,"ok");}); }
+function copyCode(code){ navigator.clipboard?.writeText(code).then(()=>showToast(`📋 ${code}`,"ok")).catch(()=>{ const t=document.createElement("textarea"); t.value=code; document.body.appendChild(t); t.select(); document.execCommand("copy"); document.body.removeChild(t); showToast(`📋 ${code}`,"ok"); }); }
 
-// ── Upload ────────────────────────────────────────────────────────────────────
+// ─── Upload ───────────────────────────────────────────────────────
 async function uploadAll(){
   const apiKey=document.getElementById("api-key").value.trim();
   const split=document.getElementById("split").value;
   const checked=annotations.filter(a=>a.checked);
-  if(!apiKey){showToast("⚠️ Ingresa tu API Key","err");return;}
-  if(!selectedFile){showToast("⚠️ Selecciona imagen","err");return;}
-  if(!checked.length){showToast("⚠️ Marca al menos una anotación","err");return;}
-  const btn=document.getElementById("btn-upload"), btnR=document.getElementById("btn-review");
+  if(!apiKey){ showToast("⚠️ Ingresa tu API Key Roboflow","err"); return; }
+  if(!selectedFile){ showToast("⚠️ Selecciona imagen","err"); return; }
+  if(!checked.length){ showToast("⚠️ Marca al menos una anotación","err"); return; }
+  const btn=document.getElementById("btn-upload"),btnR=document.getElementById("btn-review");
   btn.disabled=true; btnR.disabled=true; btn.innerHTML="⏳ Subiendo…"; btn.classList.add("loading");
-  const pw=document.getElementById("prog-wrap"), pb=document.getElementById("prog-bar");
+  const pw=document.getElementById("prog-wrap"),pb=document.getElementById("prog-bar");
   pw.classList.add("show"); pb.style.width="15%";
   const logId=Date.now();
   const ext=selectedFile.name.split(".").pop()||"jpg";
   const baseName=checked.filter(a=>!a.isQty).map(a=>a.clase).join("_")+"_"+logId+"."+ext;
   const previewUrl=URL.createObjectURL(selectedFile);
   try{
-    const b64=await fileToB64(selectedFile);
-    pb.style.width="40%";
-    const upRes=await fetchWithTimeout(`https://api.roboflow.com/dataset/${PROJECT}/upload?api_key=${apiKey}&name=${encodeURIComponent(baseName)}&split=${split}`,
-      {method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:b64.split(",")[1]}, 30000);
+    const b64=await fileToB64(selectedFile); pb.style.width="40%";
+    const upRes=await fetchWithTimeout(`https://api.roboflow.com/dataset/${PROJECT}/upload?api_key=${apiKey}&name=${encodeURIComponent(baseName)}&split=${split}`,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:b64.split(",")[1]},30000);
     const upData=await upRes.json();
     if(!upRes.ok||upData.error) throw new Error(upData.error||`HTTP ${upRes.status}`);
     pb.style.width="65%";
     const imageId=upData.id||"";
     if(imageId){
-      const scX=imgNatW/imgDispW, scY=imgNatH/imgDispH;
+      const scX=imgNatW/imgDispW,scY=imgNatH/imgDispH;
       const annoPayload={width:imgNatW,height:imgNatH,boxes:[]};
       checked.forEach(a=>{
-        if(a.type==="bbox"){
-          const b=a.bbox;
-          annoPayload.boxes.push({label:a.clase,x:(b.x+b.w/2)*scX/imgNatW,y:(b.y+b.h/2)*scY/imgNatH,w:b.w*scX/imgNatW,h:b.h*scY/imgNatH});
-        } else if(a.type==="polygon"){
-          annoPayload.boxes.push({label:a.clase,points:a.points.map(p=>({x:p.x*scX/imgNatW,y:p.y*scY/imgNatH}))});
-        }
+        if(a.type==="bbox"){ const b=a.bbox; annoPayload.boxes.push({label:a.clase,x:(b.x+b.w/2)*scX/imgNatW,y:(b.y+b.h/2)*scY/imgNatH,w:b.w*scX/imgNatW,h:b.h*scY/imgNatH}); }
+        else if(a.type==="polygon"){ annoPayload.boxes.push({label:a.clase,points:a.points.map(p=>({x:p.x*scX/imgNatW,y:p.y*scY/imgNatH}))}); }
       });
-      const annoRes=await fetchWithTimeout(`https://api.roboflow.com/dataset/${PROJECT}/annotate/${imageId}?api_key=${apiKey}&name=${encodeURIComponent(baseName)}`,
-        {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(annoPayload)}, 30000);
-      const annoData=await annoRes.json();
-      if(annoData.error) console.warn("Anotación:",annoData.error);
+      const annoRes=await fetchWithTimeout(`https://api.roboflow.com/dataset/${PROJECT}/annotate/${imageId}?api_key=${apiKey}&name=${encodeURIComponent(baseName)}`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(annoPayload)},30000);
+      const annoData=await annoRes.json(); if(annoData.error) console.warn("Anotación:",annoData.error);
     }
     pb.style.width="100%";
     sessionCount++; totalCount++; okCount++;
@@ -1272,30 +1128,24 @@ async function uploadAll(){
     const uniqueClasses=[...new Set(checked.filter(a=>!a.isQty).map(a=>a.clase))];
     uniqueClasses.forEach(c=>{ classCounts[c]=(classCounts[c]||0)+1; });
     localStorage.setItem("rf_class_counts",JSON.stringify(classCounts));
-    renderClassStats();
-    updateMemoryFromUpload(checked);
-    showToast(`✅ ${checked.length} anotación(es) → Dataset`,"ok");
-    resetAll();
+    renderClassStats(); updateMemoryFromUpload(checked);
+    showToast(`✅ ${checked.length} anotación(es) → Dataset`,"ok"); resetAll();
   }catch(err){
     pb.style.background="var(--danger)";
     uploadLog.unshift({id:logId,url:previewUrl,annos:checked.map(a=>({clase:a.clase,color:a.color})),split,ok:false,error:err.message,file:selectedFile});
-    addLogItem(uploadLog[0]);
-    showToast(`❌ ${err.message.slice(0,50)}`,"err");
+    addLogItem(uploadLog[0]); showToast(`❌ ${err.message.slice(0,50)}`,"err");
     setTimeout(()=>{pb.style.background="var(--amber)";pb.style.width="0%";pw.classList.remove("show");},2000);
   }finally{
     setTimeout(()=>{pb.style.width="0%";pw.classList.remove("show");},1500);
-    btn.disabled=false; btnR.disabled=false; btn.innerHTML="⬆️ Subir"; btn.classList.remove("loading");
-    updateButtons();
+    btn.disabled=false; btnR.disabled=false; btn.innerHTML="⬆️ Subir"; btn.classList.remove("loading"); updateButtons();
   }
 }
-function fileToB64(f){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=()=>rej(new Error("Error"));r.readAsDataURL(f);});}
+function fileToB64(f){ return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=()=>rej(new Error("Error")); r.readAsDataURL(f); }); }
 function discardPhoto(){
-  if(!selectedFile){ return; }
+  if(!selectedFile) return;
   const nAnnos=annotations.length;
-  const msg=nAnnos?`¿Descartar esta foto y sus ${nAnnos} anotación(es)? Podrás tomar o cargar otra de inmediato.`:"¿Descartar esta foto y tomar o cargar otra?";
-  if(!confirm(msg)) return;
-  resetAll();
-  showToast("🗑️ Foto descartada · elige cámara o galería","ok");
+  if(!confirm(nAnnos?`¿Descartar foto y ${nAnnos} anotación(es)?`:"¿Descartar foto?")) return;
+  resetAll(); showToast("🗑️ Foto descartada","ok");
 }
 function resetAll(){
   selectedFile=null; annotations=[]; bboxCurrent=null; bboxDrawing=false;
@@ -1304,423 +1154,304 @@ function resetAll(){
   document.getElementById("bbox-section").style.display="none";
   document.getElementById("annos-card").style.display="none";
   document.getElementById("file-input-cam").value=""; document.getElementById("file-input-gal").value="";
-  const ctx=canvas.getContext("2d"); ctx.clearRect(0,0,canvas.width,canvas.height);
-  _segCanvas=null; _segData=null;
-  samStatus("",false);
-  arrumeCount=0;
-  const ac=document.getElementById("arrume-counter"); if(ac) ac.textContent="×0";
+  canvas.getContext("2d").clearRect(0,0,canvas.width,canvas.height);
+  _segCanvas=null; _segData=null; samStatus("",false);
+  arrumeCount=0; const ac=document.getElementById("arrume-counter"); if(ac) ac.textContent="×0";
   updateButtons();
 }
 
-// ── Log ───────────────────────────────────────────────────────────────────────
+// ─── Log ──────────────────────────────────────────────────────────
 function addLogItem(entry){
-  const list=document.getElementById("log-list");
-  if(list.querySelector("p")) list.innerHTML="";
-  const item=document.createElement("div");
-  item.className="log-item"+(entry.ok?"":" error"); item.id="log-"+entry.id;
+  const list=document.getElementById("log-list"); if(list.querySelector("p")) list.innerHTML="";
+  const item=document.createElement("div"); item.className="log-item"+(entry.ok?"":" error"); item.id="log-"+entry.id;
   const tags=(entry.annos||[]).map(a=>`<span class="log-anno-tag" style="background:${a.color}22;color:${a.color};border:1px solid ${a.color}44">${a.type==="polygon"?"🔷":"⬜"} ${a.clase}</span>`).join("");
-  item.innerHTML=`
-    <div class="log-header">
-      <img class="log-thumb" src="${entry.url}" alt="">
-      <div class="log-info">
-        <div class="log-name">${(entry.annos||[]).length} anotación(es)</div>
-        <div class="log-meta">${entry.ok?"✓ "+entry.split+" · con anotación":"✗ "+(entry.error||"")}</div>
-        <div class="log-annos">${tags}</div>
-      </div>
-      <div class="log-actions">
-        <span style="cursor:pointer;font-size:18px" onclick="retryEntry(${entry.id})" title="Reintentar">🔄</span>
-        <span style="cursor:pointer;font-size:18px" onclick="deleteEntry(${entry.id})" title="Eliminar">🗑️</span>
-        <span>${entry.ok?"✅":"❌"}</span>
-      </div>
-    </div>`;
+  item.innerHTML=`<div class="log-header"><img class="log-thumb" src="${entry.url}" alt=""><div class="log-info"><div class="log-name">${(entry.annos||[]).length} anotación(es)</div><div class="log-meta">${entry.ok?"✓ "+entry.split:"✗ "+(entry.error||"")}</div><div class="log-annos">${tags}</div></div><div class="log-actions"><span style="cursor:pointer;font-size:18px" onclick="retryEntry(${entry.id})">🔄</span><span style="cursor:pointer;font-size:18px" onclick="deleteEntry(${entry.id})">🗑️</span><span>${entry.ok?"✅":"❌"}</span></div></div>`;
   list.insertBefore(item,list.firstChild);
 }
 async function retryEntry(id){
   const apiKey=document.getElementById("api-key").value.trim();
   const entry=uploadLog.find(e=>e.id===id);
-  if(!entry||!apiKey){showToast("⚠️ Falta API Key","err");return;}
+  if(!entry||!apiKey){ showToast("⚠️ Falta API Key","err"); return; }
   showToast("🔄 Reintentando…","");
   try{
     const b64=await fileToB64(entry.file);
     const name=(entry.annos||[]).map(a=>a.clase).join("_")+"_retry_"+Date.now()+".jpg";
-    const res=await fetchWithTimeout(`https://api.roboflow.com/dataset/${PROJECT}/upload?api_key=${apiKey}&name=${encodeURIComponent(name)}&split=${entry.split}`,
-      {method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:b64.split(",")[1]}, 30000);
-    const data=await res.json();
-    if(!res.ok||data.error) throw new Error(data.error||`HTTP ${res.status}`);
+    const res=await fetchWithTimeout(`https://api.roboflow.com/dataset/${PROJECT}/upload?api_key=${apiKey}&name=${encodeURIComponent(name)}&split=${entry.split}`,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:b64.split(",")[1]},30000);
+    const data=await res.json(); if(!res.ok||data.error) throw new Error(data.error||`HTTP ${res.status}`);
     entry.ok=true; entry.imageId=data.id||"";
-    const item=document.getElementById("log-"+id);
-    item.classList.remove("error");
+    const item=document.getElementById("log-"+id); item.classList.remove("error");
     item.querySelector(".log-meta").textContent="✓ "+entry.split+" (reintento ✔)";
     item.querySelector(".log-actions span:last-child").textContent="✅";
     showToast("✅ Reintento exitoso","ok");
-  }catch(err){showToast(`❌ ${err.message.slice(0,50)}`,"err");}
+  }catch(err){ showToast(`❌ ${err.message.slice(0,50)}`,"err"); }
 }
 async function deleteEntry(id){
   const apiKey=document.getElementById("api-key").value.trim();
-  const entry=uploadLog.find(e=>e.id===id);
-  if(!entry) return;
-  if(!confirm(`¿Eliminar imagen de Roboflow?`)) return;
-  if(entry.imageId&&apiKey){ try{await fetch(`https://api.roboflow.com/dataset/${PROJECT}/images/${entry.imageId}?api_key=${apiKey}`,{method:"DELETE"});}catch(e){} }
+  const entry=uploadLog.find(e=>e.id===id); if(!entry) return;
+  if(!confirm("¿Eliminar imagen de Roboflow?")) return;
+  if(entry.imageId&&apiKey){ try{ await fetch(`https://api.roboflow.com/dataset/${PROJECT}/images/${entry.imageId}?api_key=${apiKey}`,{method:"DELETE"}); }catch(e){} }
   document.getElementById("log-"+id)?.remove();
   uploadLog=uploadLog.filter(e=>e.id!==id);
   const list=document.getElementById("log-list");
   if(!list.children.length) list.innerHTML='<p style="color:var(--steel);font-size:13px;text-align:center;padding:20px">Las subidas aparecerán aquí</p>';
   showToast("🗑️ Eliminada","ok");
 }
-function showToast(msg,type){const t=document.getElementById("toast");t.textContent=msg;t.className=`toast ${type} show`;setTimeout(()=>t.classList.remove("show"),2800);}
+
+// ─── Descarga del propio HTML ─────────────────────────────────────
 function downloadApp(){
   const html=document.documentElement.outerHTML;
   const blob=new Blob(['<!DOCTYPE html>\n'+html],{type:'text/html'});
   const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');
-  a.href=url; a.download='UNISPAN-Dataset-v13.html'; document.body.appendChild(a); a.click();
-  document.body.removeChild(a); URL.revokeObjectURL(url);
-  showToast("⬇ Archivo descargado","ok");
+  const a=document.createElement('a'); a.href=url; a.download='UNISPAN-Dataset-v14.html';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+  showToast("⬇ Descargado como UNISPAN-Dataset-v14.html","ok");
 }
 
-// ── Estadísticas por clase ────────────────────────────────────────────────────
-function toggleStats(){
-  const b=document.getElementById("stats-body");
-  const c=document.getElementById("stats-caret");
-  const open=b.style.display==="none";
-  b.style.display=open?"block":"none";
-  c.textContent=open?"▲":"▼";
-  if(open) renderClassStats();
-}
+// ─── Stats ────────────────────────────────────────────────────────
+function toggleStats(){ const b=document.getElementById("stats-body"),c=document.getElementById("stats-caret"); const open=b.style.display==="none"; b.style.display=open?"block":"none"; c.textContent=open?"▲":"▼"; if(open) renderClassStats(); }
 function renderClassStats(){
   const list=document.getElementById("stats-list");
   const total=Object.values(classCounts).reduce((a,b)=>a+b,0);
   document.getElementById("stats-total").textContent=`(${total} img · ${Object.keys(classCounts).length} clases)`;
   if(!list) return;
   const entries=Object.entries(classCounts).sort((a,b)=>b[1]-a[1]);
-  if(!entries.length){ list.innerHTML='<div style="color:var(--steel);font-size:12px;text-align:center;padding:14px">Sin datos aún. Sube imágenes para ver el balance.</div>'; return; }
+  if(!entries.length){ list.innerHTML='<div style="color:var(--steel);font-size:12px;text-align:center;padding:14px">Sin datos aún.</div>'; return; }
   list.innerHTML=entries.map(([code,n])=>{
-    const pct=Math.min(100,Math.round(n/CLASS_GOAL*100));
-    const cls=n>=CLASS_GOAL?"ok":n<10?"low":"";
-    const flag=n>=CLASS_GOAL?"✅":n<10?"⚠️":"";
-    return `<div class="stat-row" style="flex-direction:column;align-items:stretch;gap:4px">
-      <div style="display:flex;justify-content:space-between;align-items:center">
-        <span class="stat-code">${flag} ${code}</span>
-        <span class="stat-count ${cls}">${n}/${CLASS_GOAL}</span>
-      </div>
-      <div class="stat-bar"><div class="stat-bar-fill" style="width:${pct}%;background:${cls==="ok"?"var(--ok)":cls==="low"?"var(--danger)":"var(--amber)"}"></div></div>
-    </div>`;
+    const pct=Math.min(100,Math.round(n/CLASS_GOAL*100)); const cls=n>=CLASS_GOAL?"ok":n<10?"low":""; const flag=n>=CLASS_GOAL?"✅":n<10?"⚠️":"";
+    return `<div class="stat-row" style="flex-direction:column;align-items:stretch;gap:4px"><div style="display:flex;justify-content:space-between;align-items:center"><span class="stat-code">${flag} ${code}</span><span class="stat-count ${cls}">${n}/${CLASS_GOAL}</span></div><div class="stat-bar"><div class="stat-bar-fill" style="width:${pct}%;background:${cls==="ok"?"var(--ok)":cls==="low"?"var(--danger)":"var(--amber)"}"></div></div></div>`;
   }).join("");
 }
-function resetStats(){
-  if(!confirm("¿Reiniciar el contador local de imágenes por clase? (No borra nada en Roboflow)")) return;
-  classCounts={}; localStorage.setItem("rf_class_counts","{}"); renderClassStats();
-}
+function resetStats(){ if(!confirm("¿Reiniciar contador local?")) return; classCounts={}; localStorage.setItem("rf_class_counts","{}"); renderClassStats(); }
 renderClassStats();
-// ══════════════════════════════════════════════════════════════════════════════
-// AGENTE EXPERTO — Base de conocimiento local sobre paneles formaleta UNISPAN
-// ══════════════════════════════════════════════════════════════════════════════
+
+// ═══════════════════════════════════════════════════════════════════
+// AGENTE EXPERTO — Base de conocimiento local UNISPAN
+// ═══════════════════════════════════════════════════════════════════
 const EXPERT_KB=[
  {t:"Lámina (cara de contacto)",k:["lamina","lámina","cara","contacto","superficie","acero","espesor","chapa"],
-  a:"La <b>lámina</b> es la cara de contacto con el concreto. En paneles UNISPAN es de acero de 3–5 mm (típ. 3 mm en PM/PB, 4–5 mm en refuerzos pesados). Se identifica por su superficie lisa continua, bordes soldados al marco perimetral y por la ausencia de perforaciones en su cara frontal (las perforaciones van en las <i>bridas laterales</i>, no en la lámina). Un panel visto de frente muestra: lámina central + marco perimetral con perforaciones."},
+  a:"La <b>lámina</b> es la cara de contacto con el concreto. En paneles UNISPAN es de acero de 3–5 mm (típ. 3 mm en PM/PB). Se identifica por su superficie lisa continua, bordes soldados al marco perimetral y ausencia de perforaciones en la cara frontal (las perforaciones van en las <i>bridas</i>)."},
  {t:"Bridas / marco perimetral",k:["brida","bridas","marco","perimetral","canto","borde","perfil"],
-  a:"Las <b>bridas</b> son los perfiles laterales que forman el marco perimetral del panel. Sostienen la lámina y contienen las <b>perforaciones para pasadores y grapas</b> de unión entre paneles. Se identifican como una franja perimetral de ~55–65 mm de ancho con agujeros equidistantes. Familias:<br>• PM/PB: brida plana con perforaciones circulares y ranuras.<br>• EI (esquina interior): dos bridas a 90°.<br>• EE (esquina exterior): dos bridas a 90° hacia afuera."},
- {t:"Platinas de unión",k:["platina","platinas","union","unión","placa","enlace"],
-  a:"Las <b>platinas</b> son placas metálicas planas soldadas o atornilladas que refuerzan uniones entre bridas o entre panel y refuerzo estructural. Suelen ser de acero 4–6 mm con 2 a 4 perforaciones. Se distinguen de una brida porque son <b>piezas puntuales</b> (no corren todo el borde) y suelen estar en esquinas o en cruces de refuerzos transversales."},
- {t:"Refuerzos: tipos generales",k:["refuerzo","refuerzos","costilla","nervio","tipos"],
-  a:"Un panel formaleta tiene tres tipos de refuerzos:<br>1) <b>Refuerzo transversal</b> — perfiles horizontales/verticales soldados por detrás de la lámina cada 200–300 mm. Mantienen la planitud bajo presión de concreto.<br>2) <b>Refuerzo estructural (principal)</b> — perfiles más pesados (tubulares o C) que dan rigidez global; suelen ir en pares por la cara posterior.<br>3) <b>Refuerzo de brida</b> — pequeñas cartelas triangulares que unen brida con refuerzo transversal."},
- {t:"Refuerzo transversal",k:["transversal","costilla","horizontal","nervio","separacion","separación"],
-  a:"El <b>refuerzo transversal</b> son perfiles (típicamente tubulares 40×20 mm o omega) soldados perpendicularmente a la lámina en la cara posterior. Se cuentan <b>de 3 a 6 refuerzos</b> según el ancho del panel. Regla práctica: separación entre ejes 200–300 mm. Su presencia y cantidad permiten distinguir un PM-2400×600 (más refuerzos) de un PB-2400×150 (uno o dos)."},
- {t:"Refuerzo estructural",k:["estructural","principal","tubular","viga","rigidez"],
-  a:"El <b>refuerzo estructural</b> es el par de perfiles principales (tubo rectangular 60×40 o similar) que corren longitudinalmente por la cara posterior. Sostienen los refuerzos transversales y transmiten la carga a los pasadores. Un panel PM completo se identifica por: 2 refuerzos estructurales longitudinales + 4–6 transversales."},
- {t:"Ángulos y esquineros",k:["angulo","ángulo","esquina","esquinero","EI","EE","interior","exterior"],
-  a:"Los <b>ángulos</b> son piezas conformadas a 90° para esquinas de muro:<br>• <b>EI (Esquina Interior)</b> — dos bridas hacia adentro, forman rincón interior.<br>• <b>EE (Esquina Exterior)</b> — dos bridas hacia afuera, forman canto de muro.<br>Se identifican por la <b>línea de doblez central</b> visible en la lámina y por tener perforaciones simétricas en ambas alas. Los códigos incluyen el ancho de cada ala (ej. EI-2400×150×150)."},
- {t:"Perforaciones rectangulares",k:["rectangular","rectangulares","ranura","ranuras","oblonga","oblongas","slot"],
-  a:"Las <b>perforaciones rectangulares (ranuras)</b> permiten ajuste dimensional en obra. Aparecen en las bridas alternadas con las circulares. Dimensiones típicas: 15×30 mm. Su presencia indica que la pieza es un <b>panel principal</b>; los accesorios (platinas cortas, tapas) usualmente solo tienen circulares."},
- {t:"Perforaciones en la lámina",k:["perforacion lamina","perforación lámina","agujero lamina","cara","frontal lamina"],
-  a:"Las <b>perforaciones frontales en la lámina</b> son <b>anómalas</b> en paneles estándar: la cara de contacto debe ser continua. Si aparecen, indican:<br>• Panel para <b>anclajes pasantes</b> (tie-rods) — agujeros de ~22 mm alineados verticalmente.<br>• Panel <b>reparado</b> o modificado (evitar en dataset limpio).<br>Marca estos casos con una clase separada para que el modelo no los confunda con paneles estándar."},
- {t:"Perforaciones frontales (identificación)",k:["frontal","frontales","cara frontal","vista frontal","brida corta","ancho"],
-  a:"<b>Perforaciones frontales</b> = las de las <b>bridas cortas (extremos)</b> del panel, sobre el lado del ancho. Con paso de 50 mm y inicio a 25 mm:<br>• Ancho 600 mm ⇒ <b>12 perforaciones frontales</b>.<br>• Ancho 500 mm ⇒ <b>10 perforaciones frontales</b>.<br>• Ancho 400 mm ⇒ 8 · 300 mm ⇒ 6 · 200 mm ⇒ 4.<br>Fórmula: <code>n = (ancho − 2×25)/50 + 1 = ancho/50</code>. Contar las frontales es el camino más rápido para conocer el <b>ancho</b> del panel."},
- {t:"Perforaciones laterales (identificación)",k:["lateral","laterales","canto","vista lateral","perfil lateral","brida larga","longitud"],
-  a:"<b>Perforaciones laterales</b> = las de las <b>bridas largas</b>, a lo largo de la longitud del panel. Con paso de 50 mm e inicio a 25 mm:<br>• Longitud 2400 mm ⇒ <b>48 perforaciones laterales</b>.<br>• 1200 ⇒ 24 · 900 ⇒ 18 · 800 ⇒ 16 · 600 ⇒ 12.<br>Fórmula: <code>n = longitud/50</code>. Contar las laterales revela la <b>longitud</b>."},
- {t:"Inicio de las perforaciones",k:["inicio","comienzo","primera perforacion","primera perforación","borde perforacion","distancia borde","25 mm","2.5 cm"],
-  a:"El <b>inicio de las perforaciones</b> UNISPAN: <b>25 mm (2.5 cm)</b> desde el borde del panel al centro de la primera perforación, tanto en bridas frontales (cortas) como laterales (largas). Este valor es constante y sirve para verificar que la pieza es UNISPAN estándar."},
- {t:"Medidas entre centros de perforaciones",k:["centro","centros","distancia","paso","pitch","separacion","separación","entre perforaciones","50 mm","5 cm"],
-  a:"<b>Paso entre centros UNISPAN: 50 mm (5 cm)</b>, constante en bridas frontales y laterales.<br>Regla: <code>n = (medida − 2×25)/50 + 1 = medida/50</code>.<br>Ej: 2400 mm ⇒ 48 · 600 mm ⇒ 12 · 500 mm ⇒ 10 · 400 mm ⇒ 8.<br>Este par (25 mm inicio + 50 mm paso) es la <b>firma dimensional</b> del sistema."},
- {t:"Tabla de perforaciones por referencia",k:["tabla","referencia","lookup","matriz","cuantas perforaciones","cuántas perforaciones","cuenta"],
-  a:"<b>Frontales (por ancho) × Laterales (por longitud):</b><br><table style='width:100%;border-collapse:collapse;font-size:11px;margin-top:6px'><tr style='background:#0b1220;color:var(--amber)'><th style='padding:4px;border:1px solid #334'>Ancho</th><th style='padding:4px;border:1px solid #334'>Frontales</th><th style='padding:4px;border:1px solid #334'>Longitud</th><th style='padding:4px;border:1px solid #334'>Laterales</th></tr><tr><td style='padding:4px;border:1px solid #334'>600</td><td style='padding:4px;border:1px solid #334'>12</td><td style='padding:4px;border:1px solid #334'>2400</td><td style='padding:4px;border:1px solid #334'>48</td></tr><tr><td style='padding:4px;border:1px solid #334'>500</td><td style='padding:4px;border:1px solid #334'>10</td><td style='padding:4px;border:1px solid #334'>1200</td><td style='padding:4px;border:1px solid #334'>24</td></tr><tr><td style='padding:4px;border:1px solid #334'>450</td><td style='padding:4px;border:1px solid #334'>9</td><td style='padding:4px;border:1px solid #334'>900</td><td style='padding:4px;border:1px solid #334'>18</td></tr><tr><td style='padding:4px;border:1px solid #334'>400</td><td style='padding:4px;border:1px solid #334'>8</td><td style='padding:4px;border:1px solid #334'>800</td><td style='padding:4px;border:1px solid #334'>16</td></tr><tr><td style='padding:4px;border:1px solid #334'>350</td><td style='padding:4px;border:1px solid #334'>7</td><td style='padding:4px;border:1px solid #334'>750</td><td style='padding:4px;border:1px solid #334'>15</td></tr><tr><td style='padding:4px;border:1px solid #334'>300</td><td style='padding:4px;border:1px solid #334'>6</td><td style='padding:4px;border:1px solid #334'>600</td><td style='padding:4px;border:1px solid #334'>12</td></tr><tr><td style='padding:4px;border:1px solid #334'>250</td><td style='padding:4px;border:1px solid #334'>5</td><td style='padding:4px;border:1px solid #334'>500</td><td style='padding:4px;border:1px solid #334'>10</td></tr><tr><td style='padding:4px;border:1px solid #334'>200</td><td style='padding:4px;border:1px solid #334'>4</td><td style='padding:4px;border:1px solid #334'>400</td><td style='padding:4px;border:1px solid #334'>8</td></tr><tr><td style='padding:4px;border:1px solid #334'>150</td><td style='padding:4px;border:1px solid #334'>3</td><td style='padding:4px;border:1px solid #334'>300</td><td style='padding:4px;border:1px solid #334'>6</td></tr><tr><td style='padding:4px;border:1px solid #334'>100</td><td style='padding:4px;border:1px solid #334'>2</td><td style='padding:4px;border:1px solid #334'>200</td><td style='padding:4px;border:1px solid #334'>4</td></tr></table><br>Usa la calculadora arriba para cualquier medida."},
- {t:"Cómo identificar un panel paso a paso",k:["identificar","como identificar","cómo identificar","paso a paso","procedimiento","reconocer"],
-  a:"<b>Procedimiento de identificación:</b><br>1) ¿Recto o esquinero? Doblez central ⇒ EI/EE.<br>2) Cuenta <b>perforaciones frontales</b> (bridas cortas) → ancho = frontales × 50 mm.<br>3) Cuenta <b>perforaciones laterales</b> (bridas largas) → longitud = laterales × 50 mm.<br>4) Ejemplo: 12 frontales + 48 laterales ⇒ <b>2400 × 600 mm</b>.<br>5) Verifica familia por ancho: PM (300–600), PB (80–270).<br>6) Confirma inicio 25 mm y paso 50 mm.<br>7) Cuenta refuerzos transversales por atrás como validación cruzada."},
- {t:"Buenas fotos para el dataset",k:["foto","fotos","dataset","imagenes","imágenes","calidad","angulo","ángulo","varios"],
-  a:"Para <b>30 imágenes por clase</b> (meta inicial v7), cubre estos ángulos:<br>• 6 frontales (cara de contacto, distinta iluminación).<br>• 6 posteriores (mostrando refuerzos).<br>• 6 laterales / canto.<br>• 6 en arrume (varias piezas juntas — anota todas).<br>• 6 en obra / instaladas.<br>Evita fotos borrosas (v5 detector), asegura que las perforaciones se vean nítidas — son la firma identificatoria del panel."},
+  a:"Las <b>bridas</b> son los perfiles laterales que forman el marco perimetral. Contienen las <b>perforaciones para pasadores y grapas</b>. Franja perimetral de ~55–65 mm con agujeros equidistantes.<br>• PM/PB: brida plana circular + ranuras.<br>• EI: dos bridas a 90° hacia adentro.<br>• EE: dos bridas a 90° hacia afuera."},
+ {t:"Platinas de unión",k:["platina","platinas","union","placa","enlace"],
+  a:"Las <b>platinas</b> son placas metálicas planas soldadas que refuerzan uniones entre bridas. Son piezas puntuales (no corren todo el borde), suelen estar en esquinas con 2–4 perforaciones."},
+ {t:"Refuerzos transversales",k:["transversal","costilla","horizontal","nervio","separacion"],
+  a:"Perfiles tubulares 40×20 mm soldados perpendicularmente a la lámina en la cara posterior, de 3 a 6 por panel según el ancho. Separación entre ejes 200–300 mm. Más refuerzos = panel más ancho (PM vs PB)."},
+ {t:"Refuerzo estructural principal",k:["estructural","principal","tubular","viga","rigidez"],
+  a:"Par de perfiles principales (tubo 60×40 mm) que corren longitudinalmente. Un PM completo: 2 refuerzos longitudinales + 4–6 transversales."},
+ {t:"Ángulos y esquineros EI/EE",k:["angulo","ángulo","esquina","esquinero","EI","EE","interior","exterior"],
+  a:"• <b>EI (Esquina Interior)</b>: dos bridas hacia adentro, forman rincón interior. Línea de doblez central visible.<br>• <b>EE (Esquina Exterior)</b>: bridas hacia afuera, forman canto de muro.<br>Ambos tienen perforaciones simétricas. Códigos: EI/EE-{largo}x150x150."},
+ {t:"Perforaciones frontales — identificar ancho",k:["frontal","frontales","cara frontal","brida corta","ancho","cuantos"],
+  a:"<b>Frontales</b> = perforaciones en las bridas cortas (extremos).<br>Fórmula: <code>n_frontales = ancho_mm / 50</code><br>• 600mm ⇒ 12 · 500mm ⇒ 10 · 400mm ⇒ 8 · 300mm ⇒ 6 · 200mm ⇒ 4<br>Contar frontales es el camino más rápido para conocer el <b>ancho</b>."},
+ {t:"Perforaciones laterales — identificar longitud",k:["lateral","laterales","canto","brida larga","longitud","largo"],
+  a:"<b>Laterales</b> = perforaciones en las bridas largas.<br>Fórmula: <code>n_laterales = largo_mm / 50</code><br>• 2400mm ⇒ 48 · 1200mm ⇒ 24 · 900mm ⇒ 18 · 800mm ⇒ 16 · 600mm ⇒ 12"},
+ {t:"Inicio y paso de perforaciones",k:["inicio","comienzo","primera","borde","25 mm","50 mm","paso","pitch"],
+  a:"<b>Inicio:</b> 25 mm desde el borde al centro de la primera perforación.<br><b>Paso:</b> 50 mm entre centros.<br>Estos dos valores son la <b>firma dimensional UNISPAN</b> y aplican a bridas frontales y laterales."},
+ {t:"Tabla de perforaciones por referencia",k:["tabla","referencia","lookup","cuantas","cuenta","matriz"],
+  a:"<b>Frontales (por ancho) × Laterales (por largo):</b><br><table style='width:100%;border-collapse:collapse;font-size:11px;margin-top:6px'><tr style='background:#0b1220;color:var(--amber)'><th style='padding:4px;border:1px solid #334'>Ancho</th><th style='padding:4px;border:1px solid #334'>F</th><th style='padding:4px;border:1px solid #334'>Largo</th><th style='padding:4px;border:1px solid #334'>L</th></tr><tr><td style='padding:4px;border:1px solid #334'>600</td><td style='padding:4px;border:1px solid #334'>12</td><td style='padding:4px;border:1px solid #334'>2400</td><td style='padding:4px;border:1px solid #334'>48</td></tr><tr><td style='padding:4px;border:1px solid #334'>500</td><td style='padding:4px;border:1px solid #334'>10</td><td style='padding:4px;border:1px solid #334'>1200</td><td style='padding:4px;border:1px solid #334'>24</td></tr><tr><td style='padding:4px;border:1px solid #334'>450</td><td style='padding:4px;border:1px solid #334'>9</td><td style='padding:4px;border:1px solid #334'>900</td><td style='padding:4px;border:1px solid #334'>18</td></tr><tr><td style='padding:4px;border:1px solid #334'>400</td><td style='padding:4px;border:1px solid #334'>8</td><td style='padding:4px;border:1px solid #334'>800</td><td style='padding:4px;border:1px solid #334'>16</td></tr><tr><td style='padding:4px;border:1px solid #334'>300</td><td style='padding:4px;border:1px solid #334'>6</td><td style='padding:4px;border:1px solid #334'>750</td><td style='padding:4px;border:1px solid #334'>15</td></tr><tr><td style='padding:4px;border:1px solid #334'>250</td><td style='padding:4px;border:1px solid #334'>5</td><td style='padding:4px;border:1px solid #334'>600</td><td style='padding:4px;border:1px solid #334'>12</td></tr><tr><td style='padding:4px;border:1px solid #334'>200</td><td style='padding:4px;border:1px solid #334'>4</td><td style='padding:4px;border:1px solid #334'>400</td><td style='padding:4px;border:1px solid #334'>8</td></tr><tr><td style='padding:4px;border:1px solid #334'>150</td><td style='padding:4px;border:1px solid #334'>3</td><td style='padding:4px;border:1px solid #334'>300</td><td style='padding:4px;border:1px solid #334'>6</td></tr><tr><td style='padding:4px;border:1px solid #334'>100</td><td style='padding:4px;border:1px solid #334'>2</td><td style='padding:4px;border:1px solid #334'>200</td><td style='padding:4px;border:1px solid #334'>4</td></tr></table>"},
+ {t:"Identificar un panel paso a paso",k:["identificar","como identificar","paso a paso","procedimiento","reconocer","determinar"],
+  a:"<b>Procedimiento:</b><br>1) ¿Tiene doblez central? → EI/EE<br>2) Cuenta <b>perforaciones frontales</b> → ancho = n × 50 mm<br>3) Cuenta <b>perforaciones laterales</b> → largo = n × 50 mm<br>4) Ancho 300–600 ⇒ PM | Ancho 80–270 ⇒ PB<br>5) Ej: 12F + 48L = PM-2400×600<br>6) Verifica con refuerzos transversales por atrás"},
+ {t:"Diferencia PM vs PB",k:["diferencia","PM","PB","comparar","ancho","estrecho","angosto"],
+  a:"<b>PM (Panel Mayor):</b> ancho 300–600 mm. Más refuerzos transversales (4–6). Mayor área de lámina visible.<br><b>PB (Panel Borde/Binche):</b> ancho 80–270 mm. Menos refuerzos (1–3). Usado en completaciones y bordes de encofrado."},
+ {t:"Composición de un panel completo",k:["composicion","composición","partes","estructura","componentes","consta","tiene"],
+  a:"Un panel UNISPAN completo tiene:<br>• <b>Lámina</b> (cara de contacto) — acero 3mm<br>• <b>Marco perimetral</b> (4 bridas soldadas)<br>• <b>2 refuerzos longitudinales</b> (tubo 60×40)<br>• <b>3–6 refuerzos transversales</b> (tubo 40×20)<br>• <b>Perforaciones</b> cada 50mm en todas las bridas<br>• Primera perforación a 25mm del borde"},
+ {t:"Buenas fotos para el dataset",k:["foto","fotos","dataset","calidad","angulo","varios","capturar"],
+  a:"Para 30 imágenes por clase: 6 frontales · 6 posteriores · 6 laterales · 6 en arrume · 6 en obra. Asegúrate de que las perforaciones se vean nítidas (son la firma identificatoria)."},
 ];
 
 let expertInited=false;
 function expertInit(){
   if(expertInited) return; expertInited=true;
   const chips=document.getElementById("expert-chips");
-  const topics=["Lámina","Bridas","Platinas","Refuerzos","Transversal","Estructural","Ángulos EI/EE","Rectangulares","Perforaciones frontales","Perforaciones laterales","Inicio de perforación","Distancia entre centros","Tabla de perforaciones","Identificar paso a paso","Buenas fotos"];
+  const topics=["Lámina","Bridas","Platinas","Transversales","Estructural","EI/EE","Frontales","Laterales","Inicio/Paso","Tabla perf.","PM vs PB","Composición","Identificar","Dataset"];
   chips.innerHTML=topics.map(t=>`<span onclick="expertSay('${t}')" style="background:#1a2130;color:#f59e0b;padding:6px 10px;border-radius:14px;font-size:11px;cursor:pointer;border:1px solid #334">${t}</span>`).join("");
-  expertBot("¡Hola! Soy el <b>agente experto UNISPAN</b>. Pregúntame sobre láminas, bridas, refuerzos, perforaciones o cómo identificar una pieza. También puedes tocar un tema arriba. <b>Funciono sin claves ni conexión.</b>");
+  expertBot("¡Hola! Soy el <b>agente experto UNISPAN</b>. Pregúntame sobre láminas, bridas, perforaciones o cómo identificar piezas. <b>Funciono 100% sin claves ni conexión.</b> También puedo analizar la imagen cargada localmente.");
 }
-function expertBot(html){
-  const c=document.getElementById("expert-chat");
-  c.insertAdjacentHTML("beforeend",`<div style="margin:6px 0;padding:10px;background:#1a2130;border-radius:8px;border-left:3px solid var(--amber)"><b style="color:var(--amber)">🎓 Experto:</b><br>${html}</div>`);
-  c.scrollTop=c.scrollHeight;
-}
-function expertUser(txt){
-  const c=document.getElementById("expert-chat");
-  c.insertAdjacentHTML("beforeend",`<div style="margin:6px 0;padding:8px 10px;background:#0b1220;border-radius:8px;text-align:right;color:#cbd5e1"><b>Tú:</b> ${txt}</div>`);
-  c.scrollTop=c.scrollHeight;
-}
+function expertBot(html){ const c=document.getElementById("expert-chat"); c.insertAdjacentHTML("beforeend",`<div style="margin:6px 0;padding:10px;background:#1a2130;border-radius:8px;border-left:3px solid var(--amber)"><b style="color:var(--amber)">🎓 Experto:</b><br>${html}</div>`); c.scrollTop=c.scrollHeight; }
+function expertUser(txt){ const c=document.getElementById("expert-chat"); c.insertAdjacentHTML("beforeend",`<div style="margin:6px 0;padding:8px 10px;background:#0b1220;border-radius:8px;text-align:right;color:#cbd5e1"><b>Tú:</b> ${txt}</div>`); c.scrollTop=c.scrollHeight; }
 function expertSay(topic){ document.getElementById("expert-input").value=topic; expertAsk(); }
 function normTxt(s){ return s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,""); }
-function memoryContextForAI(){
-  if(!imgMemory.length) return "Memoria vacía (aún no se ha capturado ninguna imagen).";
-  const byClass={};
-  imgMemory.forEach(e=>e.classes.forEach(c=>{ byClass[c]=(byClass[c]||0)+1; }));
-  const clsList=Object.entries(byClass).sort((a,b)=>b[1]-a[1]).slice(0,15).map(([c,n])=>`${c}:${n}`).join(", ")||"(sin clases anotadas)";
-  const withAI=imgMemory.filter(e=>e.aiObs);
-  const lastAI=withAI[0]?.aiObs;
-  const lastProof=physicalProofs[0];
-  const proofTxt=lastProof?`Última prueba física: conteo_total=${lastProof.conteo_total||"?"}; piezas=${(lastProof.piezas||[]).map(p=>validateAIReference(p)+"×"+(p.cantidad||1)).join(", ")||"-"}; arrumes=${(lastProof.arrumes||[]).map(a=>validateAIReference(a)+"×"+(a.cantidad_estimada||a.cantidad||"?")).join(", ")||"-"}.`:"Sin prueba física todavía.";
-  let lastAiTxt="(sin análisis previo)";
-  if(lastAI){
-    if(typeof lastAI==="object"){
-      lastAiTxt=`tipo=${lastAI.tipo||"?"} familia=${lastAI.familia||"?"} ref=${lastAI.referencia_validada||"?"} ancho=${lastAI.ancho_mm||"?"} largo=${lastAI.largo_mm||"?"} frontales=${lastAI.frontales||"?"} laterales=${lastAI.laterales||"?"} anomalias=${lastAI.anomalias||"-"}`;
-    } else lastAiTxt=String(lastAI).slice(0,300);
-  }
-  return `Imágenes capturadas: ${imgMemory.length} (${withAI.length} con análisis).\nClases anotadas: ${clsList}.\nÚltima observación: ${lastAiTxt}.\n${proofTxt}`;
-}
-async function askAIExpertFallback(question){
-  const key=(document.getElementById("openai-key")?.value||"").trim();
-  if(!key) return null;
-  const ctx=memoryContextForAI();
-  const kbBrief=EXPERT_KB.map(e=>`• ${e.t}`).join("\n");
-  const sys=`Eres el agente experto UNISPAN. Sabes de láminas, bridas, platinas, refuerzos (transversal, estructural, brida), ángulos EI/EE, perforaciones (inicio 25mm, paso 50mm ⇒ n=medida/50), y de identificar piezas por perforaciones frontales (ancho) y laterales (largo).\nCatálogo real:\n${catalogSummaryForPrompt()}\nTemas conocidos:\n${kbBrief}\nEstado actual de la captura de este usuario:\n${ctx}\nResponde en español, breve y práctico (máx 6 líneas), usando <b> para lo clave. Si la pregunta se refiere a "la foto actual" o "lo que capturé", usa la observación de arriba. Si no hay datos suficientes, dilo.`;
-  try{
-    const res=await fetchWithTimeout("https://api.openai.com/v1/chat/completions",
-      {method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+key},
-      body:JSON.stringify({model:"gpt-4o-mini",messages:[{role:"system",content:sys},{role:"user",content:question}],max_tokens:350})}, 15000);
-    const data=await res.json();
-    if(!res.ok) throw new Error(data.error?.message||`HTTP ${res.status}`);
-    return data.choices?.[0]?.message?.content||null;
-  }catch(err){
-    return `<span style="color:var(--danger)">❌ IA falló: ${err.message}</span>`;
-  }
-}
 async function expertAsk(){
-  const inp=document.getElementById("expert-input");
-  const q=inp.value.trim(); if(!q) return;
+  const inp=document.getElementById("expert-input"); const q=inp.value.trim(); if(!q) return;
   inp.value=""; expertUser(q);
   const qn=normTxt(q);
-  const scored=EXPERT_KB.map(e=>{
-    const hay=normTxt(e.t+" "+e.k.join(" "));
-    let s=0;
-    qn.split(/\s+/).filter(w=>w.length>2).forEach(w=>{ if(hay.includes(w)) s+=w.length; });
-    e.k.forEach(k=>{ if(qn.includes(normTxt(k))) s+=6; });
-    return {e,s};
-  }).sort((a,b)=>b.s-a.s);
-  const wantsContext=/\b(foto|imagen|captur|actual|memoria|analic|reciente|ultim|últim|qu[eé] tom|qu[eé] veo|reconoc)/i.test(q);
-  const hasKey=!!(document.getElementById("openai-key")?.value||"").trim();
-  if(scored[0].s===0 || wantsContext){
-    if(hasKey){
-      expertBot("⏳ Consultando IA…");
-      const c=document.getElementById("expert-chat"); const loading=c.lastElementChild;
-      const ans=await askAIExpertFallback(q);
-      if(loading) loading.remove();
-      if(ans){ expertBot(`🤖 <i>IA</i>: ${ans}`); return; }
-    }
-    if(wantsContext){
-      const ctx=memoryContextForAI();
-      expertBot(`📊 <b>Estado actual de captura:</b><br><pre style="white-space:pre-wrap;font-size:11px;margin-top:4px">${ctx}</pre>`);
-      return;
-    }
-    if(scored[0].s===0){
-      expertBot("No encontré una coincidencia clara en la base local. Temas disponibles: <i>lámina, brida, platina, refuerzo transversal, ángulo EI/EE, perforación frontal, distancia entre centros, inicio de perforación</i>. Si agregas una API key OpenAI arriba puedo razonar sobre tus capturas.");
+  const scored=EXPERT_KB.map(e=>{ const hay=normTxt(e.t+" "+e.k.join(" ")); let s=0; qn.split(/\s+/).filter(w=>w.length>2).forEach(w=>{ if(hay.includes(w)) s+=w.length; }); e.k.forEach(k=>{ if(qn.includes(normTxt(k))) s+=6; }); return{e,s}; }).sort((a,b)=>b.s-a.s);
+  // Si pregunta sobre imagen actual, dar análisis local
+  const wantsImage=/\b(foto|imagen|captur|actual|analic|reciente|ultim|últim|qu[eé] tom|qu[eé] veo|reconoc|que es|qué es)/i.test(q);
+  if(wantsImage && selectedFile){
+    expertBot("🔍 Analizando imagen cargada…");
+    const local=localImageAnalysis();
+    if(local){
+      const ref=local.referencia||"sin match";
+      expertBot(`📸 <b>Análisis de imagen actual:</b><br>
+        • <b>Referencia:</b> <span style="color:var(--amber);font-family:monospace">${ref}</span><br>
+        • <b>Familia:</b> ${local.familia}${local.esquinero?" — esquinero "+local.esquinero:""}<br>
+        • <b>Perforaciones frontales:</b> ${local.frontales} → ancho ~${local.ancho_mm} mm<br>
+        • <b>Perforaciones laterales:</b> ${local.laterales} → largo ~${local.largo_mm} mm<br>
+        • <b>Confianza:</b> ${local.confianza>=0.7?"✅ alta":local.confianza>=0.5?"⚠️ media":"❌ baja"}<br>
+        ${local.info?`• ${local.info}`:""}
+        <div style="margin-top:6px;font-size:10px;color:var(--steel)">Análisis 100% local · sin API key</div>`);
       return;
     }
   }
-  const top=scored[0].e;
-  let out=`<b>${top.t}</b><br>${top.a}`;
+  if(wantsImage && !selectedFile){ expertBot("⚠️ No hay imagen cargada. Carga una foto en la pestaña 📸 Captura primero."); return; }
+  if(scored[0].s===0){
+    // Intentar respuesta calculadora
+    const numMatch=q.match(/(\d+)\s*(mm|frontales|laterales|perf)/i);
+    if(numMatch){
+      const n=+numMatch[1];
+      const ancho=n*50; const largo=n*50;
+      const famW=familyFor(ancho);
+      expertBot(`Calculando: ${n} perforaciones × 50mm = <b>${ancho} mm</b>.<br>${famW!=="?"?`Familia por ancho: <b>${famW}</b>`:"Ancho fuera del catálogo estándar."}<br>Usa la <a onclick="switchTab('experto')" style="color:var(--amber);cursor:pointer">calculadora</a> para más opciones.`);
+      return;
+    }
+    expertBot("No encontré coincidencia en la base local. Temas disponibles: <i>lámina, brida, refuerzo transversal, EI/EE, perforación frontal, distancia entre centros, composición, identificar</i>. Toca un chip arriba o recarga con más detalle.");
+    return;
+  }
+  const top=scored[0].e; let out=`<b>${top.t}</b><br>${top.a}`;
   const rel=scored.slice(1,4).filter(x=>x.s>0);
-  if(rel.length){
-    out+=`<div style="margin-top:8px;font-size:11px;color:var(--steel)">También relacionado: ${rel.map(x=>`<span onclick="expertSay('${x.e.t}')" style="color:var(--amber);cursor:pointer;text-decoration:underline">${x.e.t}</span>`).join(" · ")}</div>`;
-  }
+  if(rel.length) out+=`<div style="margin-top:8px;font-size:11px;color:var(--steel)">También: ${rel.map(x=>`<span onclick="expertSay('${x.e.t}')" style="color:var(--amber);cursor:pointer;text-decoration:underline">${x.e.t}</span>`).join(" · ")}</div>`;
   expertBot(out);
 }
 
-// ── Calculadora perforaciones ⇄ medidas ──────────────────────────────────────
+// ─── Calculadora ─────────────────────────────────────────────────
 const PITCH=50, START=25;
-const STD_W=[600,500,450,400,350,300,270,250,230,200,150,120,100,90,80];
-const STD_L=[2400,1200,900,800,750,600];
-function nearest(v,arr){ return arr.reduce((a,b)=>Math.abs(b-v)<Math.abs(a-v)?b:a); }
-function familyFor(w){ if(w>=300&&w<=600) return "PM"; if(w>=80&&w<=270) return "PB"; return "?"; }
 function calcOut(html){ document.getElementById("calc-out").innerHTML=html; }
 function calcFromDims(){
   const w=+document.getElementById("calc-w").value, l=+document.getElementById("calc-l").value;
-  if(!w && !l){ calcOut("Ingresa medidas o conteos · inicio 25 mm · paso 50 mm"); return; }
+  if(!w&&!l){ calcOut("Ingresa medidas o conteos · inicio 25 mm · paso 50 mm"); return; }
   let out=[];
   if(w>0){ const nf=Math.round(w/PITCH); document.getElementById("calc-nf").value=nf; out.push(`Ancho ${w} mm ⇒ <b>${nf} frontales</b>`); }
   if(l>0){ const nl=Math.round(l/PITCH); document.getElementById("calc-nl").value=nl; out.push(`Longitud ${l} mm ⇒ <b>${nl} laterales</b>`); }
-  if(w>0 && l>0){
-    const fam=familyFor(w), sw=nearest(w,STD_W), sl=nearest(l,STD_L);
-    out.push(`<span style="color:var(--amber)">Referencia sugerida: <b>${fam}-${sl}x${sw}</b></span>`);
-  }
+  if(w>0&&l>0){ const fam=familyFor(w), sw=nearest(w,STD_ANCHOS), sl=nearest(l,STD_LARGOS); out.push(`<span style="color:var(--amber)">Referencia: <b>${fam}-${sl}x${sw}</b></span>`); }
   calcOut(out.join("<br>"));
 }
 function calcFromCounts(){
   const nf=+document.getElementById("calc-nf").value, nl=+document.getElementById("calc-nl").value;
-  if(!nf && !nl){ calcOut("Ingresa medidas o conteos · inicio 25 mm · paso 50 mm"); return; }
+  if(!nf&&!nl){ calcOut("Ingresa medidas o conteos · inicio 25 mm · paso 50 mm"); return; }
   let out=[];
   if(nf>0){ const w=nf*PITCH; document.getElementById("calc-w").value=w; out.push(`${nf} frontales ⇒ ancho <b>${w} mm</b>`); }
   if(nl>0){ const l=nl*PITCH; document.getElementById("calc-l").value=l; out.push(`${nl} laterales ⇒ longitud <b>${l} mm</b>`); }
-  if(nf>0 && nl>0){
-    const w=nf*PITCH, l=nl*PITCH, fam=familyFor(w), sw=nearest(w,STD_W), sl=nearest(l,STD_L);
-    out.push(`<span style="color:var(--amber)">Referencia sugerida: <b>${fam}-${sl}x${sw}</b></span>`);
-  }
+  if(nf>0&&nl>0){ const w=nf*PITCH,l=nl*PITCH,fam=familyFor(w),sw=nearest(w,STD_ANCHOS),sl=nearest(l,STD_LARGOS); out.push(`<span style="color:var(--amber)">Referencia: <b>${fam}-${sl}x${sw}</b></span>`); }
   calcOut(out.join("<br>"));
 }
 
-// ══════════════════════════════════════════════════════════════════════════════
-// MEMORIA + ANÁLISIS LOCAL (sin API key requerida)
-// ══════════════════════════════════════════════════════════════════════════════
-const savedOpenAIKey=localStorage.getItem("openai_key");
-if(savedOpenAIKey) { const el=document.getElementById("openai-key"); if(el) el.value=savedOpenAIKey; }
-document.addEventListener("blur",e=>{ if(e.target?.id==="openai-key") localStorage.setItem("openai_key",e.target.value.trim()); },true);
-
-let _lastMemoryEntry=null;
+// ═══════════════════════════════════════════════════════════════════
+// MEMORIA
+// ═══════════════════════════════════════════════════════════════════
 function recordMemory(img,file){
-  const w=img.naturalWidth, h=img.naturalHeight;
-  const aspect=+(w/h).toFixed(3);
-  const entry={
-    id:Date.now(), filename:file?.name||"cam", w,h,aspect,
-    orientation: aspect>1.2?"horizontal":aspect<0.83?"vertical":"cuadrada",
-    classes:[], qty:null, blur:null, note:"", aiObs:null,
-    date:new Date().toISOString(),
-  };
+  const w=img.naturalWidth, h=img.naturalHeight, aspect=+(w/h).toFixed(3);
+  const entry={id:Date.now(),filename:file?.name||"cam",w,h,aspect,orientation:aspect>1.2?"horizontal":aspect<0.83?"vertical":"cuadrada",classes:[],qty:null,blur:null,note:"",aiObs:null,date:new Date().toISOString()};
   imgMemory.unshift(entry); if(imgMemory.length>200) imgMemory.length=200;
   _lastMemoryEntry=entry; saveMemory();
 }
 function updateMemoryFromUpload(checkedAnnos){
   if(!_lastMemoryEntry) return;
-  const clsList=[...new Set(checkedAnnos.filter(a=>!a.isQty).map(a=>a.clase))];
-  _lastMemoryEntry.classes=clsList;
+  _lastMemoryEntry.classes=[...new Set(checkedAnnos.filter(a=>!a.isQty).map(a=>a.clase))];
   _lastMemoryEntry.qty=checkedAnnos.find(a=>a.qty)?.qty||null;
   saveMemory();
 }
-
-// ── Análisis local de imagen: detecta contornos y estima dimensiones ────────────
-function safeHtml(s){ return String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c])); }
-function parseAIJson(raw){
-  if(!raw) return null;
-  try{ return JSON.parse(raw); }catch(_){ }
-  const m=String(raw).match(/\{[\s\S]*\}/);
-  if(!m) return null;
-  try{ return JSON.parse(m[0]); }catch(_){ return null; }
-}
-function catalogByCode(code){ return CATALOG.find(c=>c.code.toUpperCase()===String(code||"").toUpperCase()); }
-function dimsFromCode(code){
-  const s=String(code||"").toUpperCase();
-  let m=s.match(/^(PM|PB)-(\d+)X(\d+)$/); if(m) return {family:m[1],largo:+m[2],ancho:+m[3]};
-  m=s.match(/^(EI|EE)-(\d+)X(\d+)X(\d+)$/); if(m) return {family:m[1],largo:+m[2],ancho:+m[3]};
-  return null;
-}
-function validateAIReference(obj){
-  if(!obj) return null;
-  let ref=String(obj.referencia||obj.referencia_validada||obj.codigo||"").toUpperCase().replace(/×/g,"x");
-  if(ref && catalogByCode(ref)) return ref;
-  const fam=String(obj.familia||dimsFromCode(ref)?.family||"").toUpperCase();
-  const largo=+(obj.largo_mm||obj.longitud_mm||dimsFromCode(ref)?.largo||0);
-  const ancho=+(obj.ancho_mm||dimsFromCode(ref)?.ancho||0);
-  if(["PM","PB","EI","EE"].includes(fam) && (largo||ancho)){
-    const match=nearestCatalogMatch(fam,largo,ancho);
-    if(match) return match.code;
-  }
-  return ref || "POR-IDENTIFICAR";
-}
-function resolveClaseForAnnotation(){
-  if(currentClase) return currentClase;
-  const last=physicalProofs[0];
-  const p=last?.piezas?.[0] || last?.arrumes?.[0];
-  const ref=validateAIReference(p||{});
-  return ref && ref!=="POR-IDENTIFICAR" ? ref : "POR-IDENTIFICAR";
-}
-function annotationBounds(a){
-  if(!a) return null;
-  if(a.type==="bbox") return {...a.bbox};
-  if(a.type==="polygon" && a.points?.length){
-    const xs=a.points.map(p=>p.x), ys=a.points.map(p=>p.y);
-    return {x:Math.min(...xs),y:Math.min(...ys),w:Math.max(...xs)-Math.min(...xs),h:Math.max(...ys)-Math.min(...ys)};
-  }
-  return null;
-}
-function annotationCropDataUrl(a,pad=.08){
-  const b=annotationBounds(a); if(!b) return null;
-  const img=document.getElementById("bbox-img");
-  const scX=imgNatW/imgDispW, scY=imgNatH/imgDispH;
-  const px=Math.max(0,b.x-b.w*pad), py=Math.max(0,b.y-b.h*pad);
-  const pw=Math.min(imgDispW-px,b.w*(1+pad*2)), ph=Math.min(imgDispH-py,b.h*(1+pad*2));
-  const sx=Math.max(0,Math.round(px*scX)), sy=Math.max(0,Math.round(py*scY));
-  const sw=Math.max(8,Math.min(imgNatW-sx,Math.round(pw*scX))), sh=Math.max(8,Math.min(imgNatH-sy,Math.round(ph*scY)));
-  const cv=document.createElement("canvas"); cv.width=Math.min(1024,sw); cv.height=Math.round(sh*(cv.width/sw));
-  cv.getContext("2d").drawImage(img,sx,sy,sw,sh,0,0,cv.width,cv.height);
-  return cv.toDataURL("image/jpeg",.86);
-}
-function addQtyBadgeForAnnotation(anno,qty){
-  qty=Math.max(1,Math.round(+qty||1));
-  anno.qty=qty; anno.isArrume=qty>1;
-  const old=annotations.find(x=>x.isQty && x.parentId===anno.id);
-  if(old){ old.clase=`QTY-${qty}`; return; }
-  const b=annotationBounds(anno); if(!b) return;
-  annotations.push({id:Date.now()+Math.floor(Math.random()*999),clase:`QTY-${qty}`,type:"bbox",bbox:{x:b.x+4,y:b.y+4,w:Math.min(64,b.w*.28),h:Math.min(32,b.h*.22)},color:"#22c55e",checked:true,isQty:true,parentId:anno.id});
+function memoryContextForAI(){
+  if(!imgMemory.length) return "Memoria vacía.";
+  const byClass={};
+  imgMemory.forEach(e=>e.classes.forEach(c=>{ byClass[c]=(byClass[c]||0)+1; }));
+  const clsList=Object.entries(byClass).sort((a,b)=>b[1]-a[1]).slice(0,15).map(([c,n])=>`${c}:${n}`).join(", ")||"(sin clases)";
+  return `Imágenes: ${imgMemory.length}. Clases: ${clsList}.`;
 }
 
-// ── Análisis local de imagen (sin API key) ────────────────────────────────────
-// Cuenta regiones oscuras (perforaciones) en los bordes y estima dimensiones
+// ═══════════════════════════════════════════════════════════════════
+// ANÁLISIS LOCAL MEJORADO — cruza con catálogo completo
+// ═══════════════════════════════════════════════════════════════════
 function localImageAnalysis(){
   const img=document.getElementById("bbox-img");
   if(!img||!img.naturalWidth) return null;
-  const maxDim=500;
-  const sc=Math.min(1, maxDim/Math.max(img.naturalWidth, img.naturalHeight));
+  const maxDim=600;
+  const sc=Math.min(1,maxDim/Math.max(img.naturalWidth,img.naturalHeight));
   const w=Math.round(img.naturalWidth*sc), h=Math.round(img.naturalHeight*sc);
   const cv=document.createElement("canvas"); cv.width=w; cv.height=h;
   const ctx=cv.getContext("2d"); ctx.drawImage(img,0,0,w,h);
   const data=ctx.getImageData(0,0,w,h).data;
-  // Detectar bordes: buscar regiones oscuras (perforaciones) en franjas perimetrales
-  const edgeW=Math.round(Math.min(w,h)*0.08); // franja perimetral ~8%
-  // Contar agujeros oscuros en franjas horizontales (top+bottom = frontales) y verticales (left+right = laterales)
-  const frontales=countDarkSpotsInBand(data,w,h,0,edgeW,0,w,"h")+countDarkSpotsInBand(data,w,h,h-edgeW,h,0,w,"h");
-  const laterales=countDarkSpotsInBand(data,w,h,0,h,0,edgeW,"v")+countDarkSpotsInBand(data,w,h,0,h,w-edgeW,w,"v");
-  const ancho_mm=Math.round(frontales*50);
-  const largo_mm=Math.round(laterales*50);
-  const fam=familyFor(ancho_mm);
-  let ref=null;
-  if(fam!=="?" && largo_mm>0) ref=nearestCatalogMatch(fam,largo_mm,ancho_mm)?.code;
-  // Detectar si es esquinero (doblez diagonal)
-  const esq=detectCornerFold(data,w,h);
-  if(esq && !ref){ ref=nearestCatalogMatch(esq,largo_mm||2400,150)?.code; }
-  return {frontales, laterales, ancho_mm, largo_mm, familia:fam, referencia:ref, esquinero:esq};
+
+  // Franjas perimetrales más anchas (12%) para detectar mejor las perforaciones en bridas
+  const edgeW=Math.round(Math.min(w,h)*0.12);
+
+  // Contar manchas oscuras en cada franja
+  const top=   countDarkRegions(data,w,h, 0,    edgeW, 0,   w);
+  const bottom=countDarkRegions(data,w,h, h-edgeW, h,  0,   w);
+  const left=  countDarkRegions(data,w,h, 0,    h,    0,    edgeW);
+  const right= countDarkRegions(data,w,h, 0,    h,    w-edgeW, w);
+
+  // Las bridas cortas (top+bottom) dan frontales, las largas (left+right) dan laterales
+  // Tomar el máximo por si la imagen está rotada o no se ven todas las bridas
+  const rawF=Math.max(top,bottom);
+  const rawL=Math.max(left,right);
+
+  // Ajustar a valores estándar por perforaciones (snap al catálogo)
+  const frontales=snapToStdPerf(rawF,"ancho");
+  const laterales=snapToStdPerf(rawL,"largo");
+
+  // Calcular dimensiones desde tabla real
+  const ancho_mm=PERF_INV_ANCHO[frontales] || (frontales>0?frontales*50:0);
+  const largo_mm=PERF_INV_LARGO[laterales] || (laterales>0?laterales*50:0);
+
+  // Familia
+  const familia=familyFor(ancho_mm);
+
+  // Buscar referencia en catálogo
+  let referencia=null, confianza=0;
+  if(familia!=="?"&&largo_mm>0){
+    const match=nearestCatalogMatch(familia,largo_mm,ancho_mm);
+    if(match){
+      referencia=match.code;
+      // Confianza según distancia al match
+      confianza=match.distancia_mm===0?0.95:match.distancia_mm<=100?0.80:match.distancia_mm<=300?0.60:0.40;
+    }
+  }
+
+  // Detectar esquinero
+  const esquinero=detectCornerFold(data,w,h);
+  if(esquinero&&!referencia){
+    const match=nearestCatalogMatch(esquinero,largo_mm||2400,150);
+    if(match){ referencia=match.code; confianza=0.65; }
+  }
+
+  // Información de diagnóstico
+  let info=`Franjas: T${top}/B${bottom}/L${left}/R${right} → ${frontales}F×${laterales}L → ${ancho_mm}×${largo_mm}mm`;
+
+  return{frontales,laterales,ancho_mm,largo_mm,familia,referencia,esquinero,confianza,info,raw:{top,bottom,left,right}};
 }
 
-function countDarkSpotsInBand(data,w,h,y0,y1,x0,x1,dir){
-  // Cuenta grupos de pixeles oscuros en una banda
+// Ajusta conteo crudo al valor más cercano en la tabla de perforaciones estándar
+function snapToStdPerf(rawCount, dim){
+  if(rawCount<=0) return 0;
+  const stdCounts=Object.values(PERF_TABLE[dim==="ancho"?"ancho":"largo"]);
+  const unique=[...new Set(stdCounts)].sort((a,b)=>a-b);
+  // Tolerancia: ±3 para frontales (bridas cortas difíciles), ±5 para laterales
+  const tol=dim==="ancho"?3:5;
+  let best=rawCount, bestD=Infinity;
+  unique.forEach(n=>{ const d=Math.abs(n-rawCount); if(d<bestD&&d<=tol){ bestD=d; best=n; } });
+  return best;
+}
+
+// Cuenta regiones oscuras (perforaciones) en una banda rectangular
+function countDarkRegions(data,w,h,y0,y1,x0,x1){
   const visited=new Uint8Array(w*h);
   let count=0;
-  for(let y=y0;y<y1;y+=2){
-    for(let x=x0;x<x1;x+=2){
+  for(let y=Math.max(0,y0);y<Math.min(h,y1);y+=2){
+    for(let x=Math.max(0,x0);x<Math.min(w,x1);x+=2){
       const idx=(y*w+x)*4;
       const lum=0.299*data[idx]+0.587*data[idx+1]+0.114*data[idx+2];
-      if(lum<80 && !visited[y*w+x]){
-        // BFS para agrupar
+      if(lum<75&&!visited[y*w+x]){
         const stack=[[x,y]]; let size=0;
-        while(stack.length && size<200){
+        while(stack.length&&size<400){
           const [cx,cy]=stack.pop();
-          if(cx<0||cx>=w||cy<0||cy>=h) continue;
-          const pi=cy*w+cx;
-          if(visited[pi]) continue;
-          const di=pi*4;
-          const l=0.299*data[di]+0.587*data[di+1]+0.114*data[di+2];
-          if(l>80) continue;
+          if(cx<x0||cx>=x1||cy<y0||cy>=y1) continue;
+          const pi=cy*w+cx; if(visited[pi]) continue;
+          const di=pi*4; const l=0.299*data[di]+0.587*data[di+1]+0.114*data[di+2];
+          if(l>75) continue;
           visited[pi]=1; size++;
           stack.push([cx+1,cy],[cx-1,cy],[cx,cy+1],[cx,cy-1]);
         }
-        if(size>8 && size<500) count++;
+        if(size>=6&&size<600) count++;
       }
     }
   }
@@ -1728,298 +1459,172 @@ function countDarkSpotsInBand(data,w,h,y0,y1,x0,x1,dir){
 }
 
 function detectCornerFold(data,w,h){
-  // Busca una linea diagonal oscura que cruce la imagen (doblez del esquinero)
-  let darkCount=0;
-  for(let i=0;i<Math.min(w,h);i+=3){
-    const x=i, y=i;
-    if(x<w && y<h){
-      const idx=(y*w+x)*4;
-      const lum=0.299*data[idx]+0.587*data[idx+1]+0.114*data[idx+2];
-      if(lum<100) darkCount++;
-    }
+  let dark1=0, dark2=0; const steps=Math.min(w,h);
+  for(let i=0;i<steps;i+=3){
+    if(i<w&&i<h){ const idx=(i*w+i)*4; if(0.299*data[idx]+0.587*data[idx+1]+0.114*data[idx+2]<100) dark1++; }
+    const x2=w-1-i;
+    if(x2>=0&&i<h){ const idx=(i*w+x2)*4; if(0.299*data[idx]+0.587*data[idx+1]+0.114*data[idx+2]<100) dark2++; }
   }
-  if(darkCount > Math.min(w,h)*0.15) return "EI";
-  // Anti-diagonal
-  darkCount=0;
-  for(let i=0;i<Math.min(w,h);i+=3){
-    const x=w-1-i, y=i;
-    if(x>=0 && y<h){
-      const idx=(y*w+x)*4;
-      const lum=0.299*data[idx]+0.587*data[idx+1]+0.114*data[idx+2];
-      if(lum<100) darkCount++;
-    }
-  }
-  if(darkCount > Math.min(w,h)*0.15) return "EE";
+  const threshold=steps*0.15;
+  if(dark1>threshold) return "EI";
+  if(dark2>threshold) return "EE";
   return null;
 }
 
-// ── Clasificar anotación individual (local + IA opcional) ─────────────────────
+// ─── Clasificar anotación individual (local) ──────────────────────
 async function classifyAnnotationLocal(annoId){
-  const anno=annotations.find(a=>a.id===annoId);
-  if(!anno) return;
-  const key=(document.getElementById("openai-key")?.value||"").trim();
-  // Análisis local primero: siempre funciona
+  const anno=annotations.find(a=>a.id===annoId); if(!anno) return;
   try{
     const local=localImageAnalysis();
-    if(local && local.referencia){
+    if(local&&local.referencia){
       anno.clase=local.referencia; anno.pendingAutoClass=false;
       addReciente(local.referencia); renderAnnoList(); redraw(); updateButtons();
-      samStatus(`✅ Identificada localmente: ${local.referencia} (${local.frontales}F × ${local.laterales}L)`);
-      if(_lastMemoryEntry){ _lastMemoryEntry.aiObs=local; _lastMemoryEntry.classes=[...new Set([...(_lastMemoryEntry.classes||[]), local.referencia])]; saveMemory(); }
-      showQtyPrompt(annoId);
+      samStatus(`✅ Identificada: ${local.referencia} (${local.frontales}F×${local.laterales}L) confianza ${Math.round(local.confianza*100)}%`);
+      if(_lastMemoryEntry){ _lastMemoryEntry.aiObs=local; _lastMemoryEntry.classes=[...new Set([...(_lastMemoryEntry.classes||[]),local.referencia])]; saveMemory(); }
+      showQtyPromptAt(annoId, annotationBounds(anno));
       return;
     }
   }catch(_){}
-  // Si hay API key, usar IA como respaldo
-  if(key){
-    samStatus("🤖 Identificando pieza con IA…");
-    try{
-      const crop=annotationCropDataUrl(anno);
-      const prompt=`Eres experto en formaletas metálicas UNISPAN. Identifica SOLO la pieza tocada/recortada. Catálogo:\n${catalogSummaryForPrompt()}\nReglas: perforaciones cada 50mm; frontales=ancho/50; laterales=largo/50; PM anchos 300-600; PB 80-270; EI/EE esquineros. Devuelve SOLO JSON: {"referencia":"PM-2400x600","familia":"PM|PB|EI|EE|ACCESORIO","tipo":"","frontales":0,"laterales":0,"ancho_mm":0,"largo_mm":0,"cantidad_estimada":1,"info":"","confianza":0.0}`;
-      const res=await fetchWithTimeout("https://api.openai.com/v1/chat/completions",
-        {method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+key},
-        body:JSON.stringify({model:"gpt-4o-mini",messages:[{role:"user",content:[{type:"text",text:prompt},{type:"image_url",image_url:{url:crop}}]}],max_tokens:360})}, 15000);
-      const data=await res.json(); if(!res.ok) throw new Error(data.error?.message||`HTTP ${res.status}`);
-      const parsed=parseAIJson(data.choices?.[0]?.message?.content||"");
-      if(parsed){
-        const ref=validateAIReference(parsed);
-        anno.clase=ref; anno.pendingAutoClass=false;
-        if((+parsed.cantidad_estimada||1)>1) addQtyBadgeForAnnotation(anno,+parsed.cantidad_estimada);
-        addReciente(ref); renderAnnoList(); redraw(); updateButtons();
-        samStatus(`✅ Identificada: ${ref}`);
-        expertInit(); expertBot(`🎯 Pieza identificada: <b>${safeHtml(ref)}</b> · ${safeHtml(parsed.tipo||"")} · confianza ${Math.round((parsed.confianza||0)*100)}%`);
-        if(_lastMemoryEntry){ _lastMemoryEntry.aiObs=parsed; _lastMemoryEntry.classes=[...new Set([...(_lastMemoryEntry.classes||[]), ref])]; saveMemory(); }
-        return;
-      }
-    }catch(err){
-      console.error("IA pieza:",err);
-    }
-  }
-  // Sin identificación: dejar como POR-IDENTIFICAR
   anno.clase="POR-IDENTIFICAR"; anno.pendingAutoClass=false;
   renderAnnoList(); redraw(); updateButtons();
   samStatus("✅ Pieza marcada. Toca la etiqueta para asignar clase manualmente.");
-  showQtyPrompt(annoId);
+  showQtyPromptAt(annoId, annotationBounds(anno));
 }
 
-// ── Prueba física: análisis local + IA opcional ───────────────────────────────
+// ─── Resolución de clase para anotación SAM ───────────────────────
+function resolveClaseForAnnotation(){
+  if(currentClase) return currentClase;
+  const last=physicalProofs[0];
+  const p=last?.piezas?.[0]||last?.arrumes?.[0];
+  if(p?.referencia&&p.referencia!=="POR-IDENTIFICAR") return p.referencia;
+  return "POR-IDENTIFICAR";
+}
+
+// ─── Auto-detect posición de piezas ──────────────────────────────
 function normalizedBoxToDisplay(b){
-  if(!b) return {x:imgDispW*.08,y:imgDispH*.08,w:imgDispW*.84,h:imgDispH*.84};
-  let x=+b.x||0, y=+b.y||0, w=+b.w||0, h=+b.h||0;
-  if(b.cx!=null || b.cy!=null){ x=(+b.cx||.5)-w/2; y=(+b.cy||.5)-h/2; }
+  if(!b) return{x:imgDispW*.08,y:imgDispH*.08,w:imgDispW*.84,h:imgDispH*.84};
+  let x=+b.x||0,y=+b.y||0,w=+b.w||0,h=+b.h||0;
+  if(b.cx!=null||b.cy!=null){ x=(+b.cx||.5)-w/2; y=(+b.cy||.5)-h/2; }
   if(x>1||y>1||w>1||h>1){ x/=imgNatW; y/=imgNatH; w/=imgNatW; h/=imgNatH; }
   x=Math.max(0,Math.min(.98,x)); y=Math.max(0,Math.min(.98,y)); w=Math.max(.04,Math.min(1-x,w||.84)); h=Math.max(.04,Math.min(1-y,h||.84));
-  return {x:x*imgDispW,y:y*imgDispH,w:w*imgDispW,h:h*imgDispH};
+  return{x:x*imgDispW,y:y*imgDispH,w:w*imgDispW,h:h*imgDispH};
 }
 function applyPhysicalDetections(proof){
-  if(!proof || !selectedFile) return;
-  const items=[];
-  (proof.piezas||[]).forEach(p=>items.push({...p,_kind:"pieza"}));
-  (proof.arrumes||[]).forEach(p=>items.push({...p,_kind:"arrume",cantidad_estimada:p.cantidad_estimada||p.cantidad||p.qty}));
+  if(!proof||!selectedFile) return;
+  const items=[...(proof.piezas||[]).map(p=>({...p,_kind:"pieza"})), ...(proof.arrumes||[]).map(p=>({...p,_kind:"arrume"}))];
   if(!items.length) return;
-  const existingAuto=annotations.filter(a=>a.fromPhysicalAuto).length;
-  if(existingAuto) return;
+  if(annotations.filter(a=>a.fromPhysicalAuto).length) return;
   items.slice(0,12).forEach((it,idx)=>{
-    const ref=validateAIReference(it);
+    const ref=it.referencia||"POR-IDENTIFICAR";
     const box=normalizedBoxToDisplay(it.bbox||it.box||it.rect);
-    const id=Date.now()+idx;
-    const color=COLORS[annotations.length%COLORS.length];
+    const id=Date.now()+idx; const color=COLORS[annotations.length%COLORS.length];
     const qty=+(it.cantidad_estimada||it.cantidad||1)||1;
-    const anno={id,clase:ref,type:"bbox",bbox:box,color,checked:true,qty:null,fromPhysicalAuto:true,physicalInfo:it.info||it.observacion||""};
+    const anno={id,clase:ref,type:"bbox",bbox:box,color,checked:true,qty:null,fromPhysicalAuto:true};
     annotations.push(anno);
     if(qty>1) addQtyBadgeForAnnotation(anno,qty);
-    if(ref && ref!=="POR-IDENTIFICAR") addReciente(ref);
+    if(ref&&ref!=="POR-IDENTIFICAR") addReciente(ref);
   });
   renderAnnoList(); redraw(); updateButtons();
 }
+
+// ─── Auto-prueba física (100% local) ─────────────────────────────
 async function runPhysicalProof(opts={}){
   if(!selectedFile){ setPhysicalStatus("⚠️ Toma/carga una foto primero."); return; }
-  const key=(document.getElementById("openai-key")?.value||"").trim();
-  // Análisis local primero (siempre funciona)
-  setPhysicalStatus(opts.auto?"🧪 Auto-reconociendo pieza localmente…":"🧪 Ejecutando análisis local…");
+  setPhysicalStatus(opts.auto?"🧪 Auto-reconociendo localmente…":"🧪 Analizando imagen…");
   try{
     const local=localImageAnalysis();
-    if(local){
-      const proof={
-        date:new Date().toISOString(),
-        resumen:`Análisis local: ${local.frontales} perforaciones frontales, ${local.laterales} laterales`,
-        conteo_total:1,
-        piezas:[{
-          referencia:local.referencia||"POR-IDENTIFICAR",
-          familia:local.familia||"?",
-          tipo:local.esquinero||(local.familia!=="?"?"panel":"?"),
-          cantidad:1,
-          bbox:{x:0.05,y:0.05,w:0.9,h:0.9},
-          frontales:local.frontales, laterales:local.laterales,
-          ancho_mm:local.ancho_mm, largo_mm:local.largo_mm,
-          info:`Detectado localmente: ${local.frontales}F × ${local.laterales}L ⇒ ${local.ancho_mm}×${local.largo_mm}mm`,
-          confianza:local.referencia?0.65:0.35
-        }],
-        arrumes:[],
-        calidad_foto:_lastMemoryEntry?.blur>180?"nítida":_lastMemoryEntry?.blur>80?"media":"borrosa",
-        acciones:"Revisar y confirmar detección"
-      };
-      physicalProofs.unshift(proof); if(physicalProofs.length>80) physicalProofs.length=80; savePhysicalProofs();
-      applyPhysicalDetections(proof);
-      if(_lastMemoryEntry){ _lastMemoryEntry.aiObs=proof; _lastMemoryEntry.classes=[...new Set([...(_lastMemoryEntry.classes||[]), validateAIReference(proof.piezas[0])].filter(Boolean))]; _lastMemoryEntry.qty=proof.conteo_total||null; saveMemory(); }
-      const p=proof.piezas[0];
-      const ref=validateAIReference(p);
-      const html=`<b style="color:var(--ok)">🧪 Análisis local completado</b><br>
-        ${safeHtml(proof.resumen)}<br>
-        <b>Referencia:</b> ${ref!=="POR-IDENTIFICAR"?`<span style="color:var(--amber);font-family:monospace">${ref}</span>`:"<span style='color:var(--steel)'>sin match claro</span>"}<br>
-        <b>Perforaciones:</b> ${p.frontales} frontales · ${p.laterales} laterales<br>
-        <b>Medidas:</b> ${p.ancho_mm} × ${p.largo_mm} mm<br>
-        <b>Familia:</b> ${p.familia}<br>
-        <b>Foto:</b> ${proof.calidad_foto} · confianza ${Math.round((p.confianza||0)*100)}%<br>
-        <span style="color:var(--steel)">Se marcó automáticamente. Revisa antes de subir.</span>`;
-      setPhysicalStatus(html);
-      expertInit(); expertBot(`🧪 Resultado análisis local:<br>${html}`);
-      showToast("🧪 Análisis local completado","ok");
-      return;
-    }
-    // Si análisis local falla y hay key, usar IA
-    if(!key){
-      setPhysicalStatus("🧪 Análisis local listo. Agrega API key OpenAI (opcional) para análisis visual más preciso.");
-      return;
-    }
-    // IA con timeout
-    setPhysicalStatus("🧪 Analizando con IA…");
-    const b64=await fileToB64(selectedFile);
-    const prompt=`Eres un inspector experto de formaletas metálicas UNISPAN. Reconoce referencias y cuenta piezas/arrumes. Catálogo:\n${catalogSummaryForPrompt()}\nReglas: perforaciones frontales=ancho/50, laterales=largo/50, inicio 25mm, paso 50mm. PM ancho 300-600; PB 80-270; EI/EE esquineros 150x150.\nDevuelve SOLO JSON: {"resumen":"","conteo_total":0,"piezas":[{"referencia":"PM-2400x600","familia":"PM","tipo":"panel","cantidad":1,"bbox":{"x":0.1,"y":0.1,"w":0.8,"h":0.5},"frontales":0,"laterales":0,"ancho_mm":0,"largo_mm":0,"info":"","confianza":0.0}],"arrumes":[],"calidad_foto":"","acciones":""}`;
-    const res=await fetchWithTimeout("https://api.openai.com/v1/chat/completions",
-      {method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+key},
-      body:JSON.stringify({model:"gpt-4o-mini",messages:[{role:"user",content:[{type:"text",text:prompt},{type:"image_url",image_url:{url:b64}}]}],max_tokens:700})}, 20000);
-    const data=await res.json(); if(!res.ok) throw new Error(data.error?.message||`HTTP ${res.status}`);
-    const proof=parseAIJson(data.choices?.[0]?.message?.content||"");
-    if(!proof) throw new Error("respuesta IA sin JSON");
-    proof.date=new Date().toISOString();
+    if(!local){ setPhysicalStatus("⚠️ No se pudo procesar la imagen."); return; }
+    const ref=local.referencia||"POR-IDENTIFICAR";
+    const proof={
+      date:new Date().toISOString(),
+      resumen:`Análisis local: ${local.frontales}F × ${local.laterales}L → ${local.ancho_mm}×${local.largo_mm}mm`,
+      conteo_total:1,
+      piezas:[{referencia:ref,familia:local.familia||"?",tipo:local.esquinero||(local.familia!=="?"?"panel":"?"),cantidad:1,bbox:{x:0.05,y:0.05,w:0.9,h:0.9},frontales:local.frontales,laterales:local.laterales,ancho_mm:local.ancho_mm,largo_mm:local.largo_mm,info:local.info,confianza:local.confianza}],
+      arrumes:[],
+      calidad_foto:_lastMemoryEntry?.blur>180?"nítida":_lastMemoryEntry?.blur>80?"media":"borrosa",
+      acciones:"Revisar y confirmar"
+    };
     physicalProofs.unshift(proof); if(physicalProofs.length>80) physicalProofs.length=80; savePhysicalProofs();
     applyPhysicalDetections(proof);
-    if(_lastMemoryEntry){ _lastMemoryEntry.aiObs=proof; _lastMemoryEntry.classes=[...new Set([...(proof.piezas||[]).map(validateAIReference),(proof.arrumes||[]).map(validateAIReference)].filter(Boolean))]; _lastMemoryEntry.qty=proof.conteo_total||null; saveMemory(); }
-    const piezaLines=(proof.piezas||[]).slice(0,5).map(p=>`• <b>${safeHtml(validateAIReference(p))}</b>${p.cantidad?` ×${safeHtml(p.cantidad)}`:""} · ${safeHtml(p.info||p.tipo||"")} · ${Math.round((p.confianza||0)*100)}%`).join("<br>");
-    const html=`<b style="color:var(--ok)">🧪 Prueba IA completada</b><br>${safeHtml(proof.resumen||"")}<br><b>Conteo:</b> ${safeHtml(proof.conteo_total||"?")}<br>${piezaLines?`<br><b>Piezas:</b><br>${piezaLines}`:""}<br><span style="color:var(--steel)">Se marcaron automáticamente.</span>`;
+    if(_lastMemoryEntry){ _lastMemoryEntry.aiObs=proof; _lastMemoryEntry.classes=[...new Set([...(_lastMemoryEntry.classes||[]),ref].filter(Boolean))]; _lastMemoryEntry.qty=1; saveMemory(); }
+    const confPct=Math.round((local.confianza||0)*100);
+    const refHtml=ref!=="POR-IDENTIFICAR"?`<span style="color:var(--amber);font-family:monospace">${ref}</span> (${confPct}% confianza)`:`<span style='color:var(--steel)'>sin match claro</span>`;
+    const html=`<b style="color:var(--ok)">🧪 Análisis completado <span style="color:var(--steel);font-size:10px">(local · sin claves)</span></b><br>
+      ${safeHtml(proof.resumen)}<br>
+      <b>Referencia:</b> ${refHtml}<br>
+      <b>Familia:</b> ${local.familia}${local.esquinero?" — "+local.esquinero:""}<br>
+      <b>Perforaciones:</b> ${local.frontales}F · ${local.laterales}L (raw: T${local.raw.top}/B${local.raw.bottom}/L${local.raw.left}/R${local.raw.right})<br>
+      <b>Medidas:</b> ${local.ancho_mm}×${local.largo_mm}mm · Foto: ${proof.calidad_foto}`;
     setPhysicalStatus(html);
-    expertInit(); expertBot(`🧪 Resultado de prueba IA:<br>${html}`);
-    showToast("🧪 Análisis IA completado","ok");
+    expertInit(); expertBot(`🧪 Resultado análisis:<br>${html}`);
+    showToast("🧪 Análisis completado","ok");
   }catch(err){
     console.error("Prueba física:",err);
     setPhysicalStatus(`❌ Error: ${safeHtml((err.message||err).toString().slice(0,140))}`);
   }
 }
 
-// ── Analizar imagen actual (local + IA opcional) ──────────────────────────────
+// ─── Analizar imagen actual ───────────────────────────────────────
 async function analyzeCurrentWithAI(){
-  const out=document.getElementById("ai-analysis-out");
-  out.style.display="block";
-  if(!selectedFile){ out.textContent="⚠️ Carga una imagen primero (Cámara o Galería)."; return; }
-  const key=(document.getElementById("openai-key")?.value||"").trim();
-  // Análisis local primero
+  const out=document.getElementById("ai-analysis-out"); out.style.display="block";
+  if(!selectedFile){ out.textContent="⚠️ Carga una imagen primero."; return; }
+  out.innerHTML="⏳ Analizando…";
   const local=localImageAnalysis();
   const e=_lastMemoryEntry;
   if(local){
-    const refHtml=local.referencia
-      ? `<span style="color:var(--ok);font-family:monospace">${local.referencia}</span> ✅`
-      : `<span style="color:var(--amber)">sin match claro en catálogo</span>`;
-    const html=`<b style="color:var(--amber)">🔍 Análisis local:</b><br>
+    const refHtml=local.referencia?`<span style="color:var(--ok);font-family:monospace">${local.referencia}</span> ✅ (${Math.round(local.confianza*100)}%)`:`<span style="color:var(--amber)">sin match claro</span>`;
+    const catEntry=local.referencia?CATALOG_MAP[local.referencia.toUpperCase()]:null;
+    const html=`<b style="color:var(--amber)">🔍 Análisis local (sin API key):</b><br>
       • <b>Referencia:</b> ${refHtml}<br>
-      • <b>Familia:</b> ${local.familia||"?"} ${local.esquinero?"(esquinero "+local.esquinero+")":""}<br>
+      • <b>Familia:</b> ${local.familia||"?"}${local.esquinero?" (esquinero "+local.esquinero+")":""}<br>
       • <b>Perforaciones:</b> ${local.frontales} frontales · ${local.laterales} laterales<br>
       • <b>Medidas estimadas:</b> ${local.ancho_mm} × ${local.largo_mm} mm<br>
-      • <b>Dimensiones:</b> ${e?.w||"?"}×${e?.h||"?"} px · aspecto ${e?.aspect||"?"} (${e?.orientation||"?"})<br>
-      • <b>Nitidez:</b> ${e?.blur??"?"} ${e&&e.blur>180?"✅ nítida":e&&e.blur>80?"⚠️ media":"❌ borrosa"}<br>
-      ${!key?'<span style="color:var(--steel)">Agrega API key OpenAI para análisis visual profundo con gpt-4o-mini.</span>':''}`;
+      ${catEntry?`• <b>Catálogo:</b> ${catEntry.code} — ${catEntry.spec}<br>`:""}
+      • <b>Diagnóstico:</b> <span style="font-size:10px;color:var(--steel)">${local.info}</span><br>
+      • <b>Dimensiones foto:</b> ${e?.w||"?"}×${e?.h||"?"} px (${e?.orientation||"?"})<br>
+      • <b>Nitidez:</b> ${e?.blur??"?"} ${e&&e.blur>180?"✅":e&&e.blur>80?"⚠️":"❌"}`;
     out.innerHTML=html;
     if(_lastMemoryEntry){ _lastMemoryEntry.aiObs=local; saveMemory(); }
-    if(!key) return; // sin key, terminamos con análisis local
-  } else if(!key){
-    if(!e){ out.textContent="⚠️ Sin datos aún."; return; }
-    out.innerHTML=`<b>Observación local (sin IA):</b><br>
-      • Dimensiones: ${e.w}×${e.h} px · aspecto ${e.aspect} (${e.orientation})<br>
-      • Nitidez: ${e.blur??"?"} ${e.blur>180?"✅ nítida":e.blur>80?"⚠️ media":"❌ borrosa"}<br>
-      • Clases anotadas: ${e.classes.length?e.classes.join(", "):"(ninguna)"}<br>
-      <span style="color:var(--steel)">Agrega API key OpenAI para análisis visual profundo.</span>`;
-    return;
-  }
-  // IA con timeout
-  localStorage.setItem("openai_key",key);
-  out.innerHTML="⏳ Analizando con gpt-4o-mini…";
-  try{
-    const b64=await fileToB64(selectedFile);
-    const prompt=`Eres un experto en formaletas metálicas UNISPAN (acero 3mm). Catálogo REAL:\n${catalogSummaryForPrompt()}\nReglas: inicio 25mm, paso 50mm. N=medida/50. Bridas cortas→ancho, largas→largo. PM 300-600, PB 80-270, EI/EE esquineros.\nAnaliza y devuelve SOLO JSON: {"tipo":"","familia":"PM|PB|EI|EE|ACCESORIO","estructura":"","frontales":0,"laterales":0,"ancho_mm":0,"largo_mm":0,"cantidad_estimada":1,"anomalias":"","calidad_foto":"","confianza":0.0}`;
-    const res=await fetchWithTimeout("https://api.openai.com/v1/chat/completions",
-      {method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+key},
-      body:JSON.stringify({model:"gpt-4o-mini",messages:[{role:"user",content:[{type:"text",text:prompt},{type:"image_url",image_url:{url:b64}}]}],max_tokens:400})}, 20000);
-    const data=await res.json();
-    if(!res.ok) throw new Error(data.error?.message||`HTTP ${res.status}`);
-    const raw=data.choices?.[0]?.message?.content||"";
-    let parsed=null;
-    try{ const m=raw.match(/\{[\s\S]*\}/); if(m) parsed=JSON.parse(m[0]); }catch(_){}
-    if(parsed){
-      const fam=(parsed.familia||"").toUpperCase().trim();
-      const match=["PM","PB","EI","EE"].includes(fam)?nearestCatalogMatch(fam,parsed.largo_mm,parsed.ancho_mm):null;
-      parsed.referencia_validada=match?match.code:null;
-      parsed.distancia_catalogo_mm=match?match.distancia_mm:null;
-    }
-    if(_lastMemoryEntry){ _lastMemoryEntry.aiObs=parsed||raw; saveMemory(); }
-    if(parsed){
-      const refHtml=parsed.referencia_validada
-        ?(parsed.distancia_catalogo_mm<=25
-          ?`<span style="color:var(--ok);font-family:monospace">${parsed.referencia_validada}</span> ✅`
-          :`<span style="color:var(--amber);font-family:monospace">${parsed.referencia_validada}</span> ⚠️`)
-        :`<span style="color:var(--danger)">sin match</span>`;
-      const html=`<b style="color:var(--amber)">🤖 Análisis IA:</b><br>
-        • <b>Tipo:</b> ${parsed.tipo||"?"} (familia ${parsed.familia||"?"})<br>
-        • <b>Referencia:</b> ${refHtml}<br>
-        • <b>Estructura:</b> ${parsed.estructura||"?"}<br>
-        • <b>Perforaciones:</b> ${parsed.frontales||"?"} frontales · ${parsed.laterales||"?"} laterales<br>
-        • <b>Medidas:</b> ${parsed.ancho_mm||"?"} × ${parsed.largo_mm||"?"} mm<br>
-        • <b>Cantidad:</b> ×${parsed.cantidad_estimada||1}<br>
-        • <b>Anomalías:</b> ${parsed.anomalias||"ninguna"}<br>
-        • <b>Foto:</b> ${parsed.calidad_foto||"?"} · confianza ${((parsed.confianza||0)*100).toFixed(0)}%<br>
-        <span style="color:var(--steel);font-size:10px">Guardado en memoria.</span>`;
-      out.innerHTML=html;
-      if(document.getElementById("expert-chat")){ expertInit(); expertBot(`📸 Análisis IA: ${html}`); }
-    } else {
-      out.innerHTML=`<b>🤖 Análisis IA (texto):</b><br><pre style="white-space:pre-wrap;font-size:11px">${raw}</pre>`;
-    }
-  }catch(err){
-    out.innerHTML=`❌ Error IA: ${err.message}`;
+    expertInit(); expertBot(`📸 ${html}`);
+  } else {
+    out.innerHTML="⚠️ No se pudo analizar la imagen. Intenta con una foto más nítida.";
   }
 }
 
 function showMemorySummary(){
-  const out=document.getElementById("ai-analysis-out");
-  out.style.display="block";
-  if(!imgMemory.length){ out.innerHTML="📭 Aún no hay imágenes en memoria."; return; }
+  const out=document.getElementById("ai-analysis-out"); out.style.display="block";
+  if(!imgMemory.length){ out.innerHTML="📭 Sin imágenes en memoria."; return; }
   const byClass={};
-  imgMemory.forEach(e=>e.classes.forEach(c=>{
-    if(!byClass[c]) byClass[c]={n:0,aspects:[],blurs:[]};
-    byClass[c].n++;
-    byClass[c].aspects.push(e.aspect);
-    if(e.blur) byClass[c].blurs.push(e.blur);
-  }));
+  imgMemory.forEach(e=>e.classes.forEach(c=>{ if(!byClass[c]) byClass[c]={n:0,blurs:[]}; byClass[c].n++; if(e.blur) byClass[c].blurs.push(e.blur); }));
   const withAI=imgMemory.filter(e=>e.aiObs).length;
-  let html=`<b>🧠 Memoria: ${imgMemory.length} imágenes · ${withAI} con análisis</b><br><br>`;
+  let html=`<b>🧠 Memoria: ${imgMemory.length} imágenes · ${withAI} analizadas</b><br><br>`;
   const entries=Object.entries(byClass).sort((a,b)=>b[1].n-a[1].n).slice(0,12);
-  if(!entries.length){ html+="<i style='color:var(--steel)'>Sin clases anotadas todavía.</i>"; }
+  if(!entries.length) html+="<i style='color:var(--steel)'>Sin clases anotadas.</i>";
   else{
-    html+="<table style='width:100%;border-collapse:collapse;font-size:11px'><tr style='color:var(--amber)'><th style='text-align:left;padding:3px'>Clase</th><th style='padding:3px'>N</th><th style='padding:3px'>Aspecto</th><th style='padding:3px'>Nitidez</th></tr>";
-    entries.forEach(([c,d])=>{
-      const avgA=(d.aspects.reduce((s,x)=>s+x,0)/d.aspects.length).toFixed(2);
-      const avgB=d.blurs.length?Math.round(d.blurs.reduce((s,x)=>s+x,0)/d.blurs.length):"?";
-      html+=`<tr style='border-top:1px solid #223'><td style='padding:3px;font-family:monospace'>${c}</td><td style='padding:3px;text-align:center'>${d.n}</td><td style='padding:3px;text-align:center'>${avgA}</td><td style='padding:3px;text-align:center'>${avgB}</td></tr>`;
-    });
+    html+="<table style='width:100%;border-collapse:collapse;font-size:11px'><tr style='color:var(--amber)'><th style='text-align:left;padding:3px'>Clase</th><th style='padding:3px'>N</th><th style='padding:3px'>Nitidez</th></tr>";
+    entries.forEach(([c,d])=>{ const avgB=d.blurs.length?Math.round(d.blurs.reduce((s,x)=>s+x,0)/d.blurs.length):"?"; html+=`<tr style='border-top:1px solid #223'><td style='padding:3px;font-family:monospace'>${c}</td><td style='padding:3px;text-align:center'>${d.n}</td><td style='padding:3px;text-align:center'>${avgB}</td></tr>`; });
     html+="</table>";
   }
   out.innerHTML=html;
 }
-function clearMemory(){
-  if(!confirm("¿Borrar toda la memoria de imágenes analizadas? (No afecta al dataset en Roboflow)")) return;
-  imgMemory=[]; physicalProofs=[]; saveMemory(); savePhysicalProofs();
-  const out=document.getElementById("ai-analysis-out");
-  out.style.display="block"; out.textContent="🗑️ Memoria y pruebas borradas.";
-  setPhysicalStatus("",false);
+function clearMemory(){ if(!confirm("¿Borrar toda la memoria? (No afecta Roboflow)")) return; imgMemory=[]; physicalProofs=[]; saveMemory(); savePhysicalProofs(); const out=document.getElementById("ai-analysis-out"); out.style.display="block"; out.textContent="🗑️ Memoria borrada."; setPhysicalStatus("",false); }
+
+// ─── Parse AI JSON helper ─────────────────────────────────────────
+function parseAIJson(raw){ if(!raw) return null; try{ return JSON.parse(raw); }catch(_){} const m=String(raw).match(/\{[\s\S]*\}/); if(!m) return null; try{ return JSON.parse(m[0]); }catch(_){ return null; } }
+function validateAIReference(obj){ if(!obj) return "POR-IDENTIFICAR"; let ref=String(obj.referencia||obj.referencia_validada||obj.codigo||"").toUpperCase().replace(/×/g,"x"); if(ref&&CATALOG_MAP[ref]) return ref; const fam=String(obj.familia||"").toUpperCase(); const largo=+(obj.largo_mm||obj.longitud_mm||0); const ancho=+(obj.ancho_mm||0); if(["PM","PB","EI","EE"].includes(fam)&&(largo||ancho)){ const match=nearestCatalogMatch(fam,largo,ancho); if(match) return match.code; } return ref||"POR-IDENTIFICAR"; }
+function annotationCropDataUrl(a,pad=.08){
+  const b=annotationBounds(a); if(!b) return null;
+  const img=document.getElementById("bbox-img");
+  const scX=imgNatW/imgDispW,scY=imgNatH/imgDispH;
+  const px=Math.max(0,b.x-b.w*pad),py=Math.max(0,b.y-b.h*pad);
+  const pw=Math.min(imgDispW-px,b.w*(1+pad*2)),ph=Math.min(imgDispH-py,b.h*(1+pad*2));
+  const sx=Math.max(0,Math.round(px*scX)),sy=Math.max(0,Math.round(py*scY));
+  const sw=Math.max(8,Math.min(imgNatW-sx,Math.round(pw*scX))),sh=Math.max(8,Math.min(imgNatH-sy,Math.round(ph*scY)));
+  const cv=document.createElement("canvas"); cv.width=Math.min(1024,sw); cv.height=Math.round(sh*(cv.width/sw));
+  cv.getContext("2d").drawImage(img,sx,sy,sw,sh,0,0,cv.width,cv.height);
+  return cv.toDataURL("image/jpeg",.86);
 }
 </script>
-</body>
-</html>
+
+
+</body></html>
