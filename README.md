@@ -1,11 +1,369 @@
 <!DOCTYPE html>
 <html lang="es"><head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.13/html-to-image.min.js" integrity="sha512-iZ2ORl595Wx6miw+GuadDet4WQbdSWS3JLMoNfY8cRGoEFy6oT3G9IbcrBeL6AfkgpA51ETt/faX6yLV+/gFJg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script>
+      (function() {
+        // Capture host references before any artifact code runs: Window.parent
+        // is [Replaceable] (a top-level `var parent` in artifact code would
+        // replace the accessor with a data property), and a top-level
+        // `const crypto` would shadow the global — either would otherwise
+        // silently break the bridge for artifacts that worked before.
+        const realParent = window.parent;
+        const cryptoObj = window.crypto;
+        // crypto.randomUUID exists only in Secure Contexts; fall back to a
+        // unique non-crypto id elsewhere (http://LAN-IP dev flows) —
+        // uniqueness is what the bridge needs, unpredictability is
+        // defense-in-depth on top of the source guards.
+        const newRequestId =
+          cryptoObj && typeof cryptoObj.randomUUID === "function"
+            ? function () { return cryptoObj.randomUUID(); }
+            : function () { return Date.now() + "-" + Math.random(); };
+        const originalConsole = window.console;
+        window.console = {
+          log: (...args) => {
+            originalConsole.log(...args);
+            realParent.postMessage({ type: 'console', message: args.join(' ') }, '*');
+          },
+          error: (...args) => {
+            originalConsole.error(...args);
+            realParent.postMessage({ type: 'console', message: 'Error: ' + args.join(' ') }, '*');
+          },
+          warn: (...args) => {
+            originalConsole.warn(...args);
+            realParent.postMessage({ type: 'console', message: 'Warning: ' + args.join(' ') }, '*');
+          }
+        };
+
+        // Bridge request ids are crypto-random (not sequential) so they
+        // cannot be predicted by other frames in the tab.
+        let callbacksMap = new Map();
+        let streamControllers = new Map();
+        
+        window.claude = {
+          complete: (prompt) => {
+            return new Promise((resolve, reject) => {
+              const id = newRequestId();
+              callbacksMap.set(id, { resolve, reject });
+              realParent.postMessage({ type: 'claudeComplete', id, prompt }, '*');
+            });
+          }
+        };
+
+        window.storage = {
+          get: (key, shared = false) => {
+            return new Promise((resolve, reject) => {
+              const id = newRequestId();
+              callbacksMap.set(id, { resolve, reject });
+              realParent.postMessage({ type: 'storageGet', id, key, shared }, '*');
+            });
+          },
+          set: (key, value, shared = false) => {
+            return new Promise((resolve, reject) => {
+              const id = newRequestId();
+              callbacksMap.set(id, { resolve, reject });
+              realParent.postMessage({ type: 'storageSet', id, key, value, shared }, '*');
+            });
+          },
+          delete: (key, shared = false) => {
+            return new Promise((resolve, reject) => {
+              const id = newRequestId();
+              callbacksMap.set(id, { resolve, reject });
+              realParent.postMessage({ type: 'storageDelete', id, key, shared }, '*');
+            });
+          },
+          list: (prefix, shared = false) => {
+            return new Promise((resolve, reject) => {
+              const id = newRequestId();
+              callbacksMap.set(id, { resolve, reject });
+              realParent.postMessage({ type: 'storageList', id, prefix, shared }, '*');
+            });
+          }
+        };
+
+        let pendingBlobs = new Map();
+        URL.createObjectURL = (blob) => {
+          // Store the blob and create an ID and URL for it
+          const blobId = `blob-${Date.now()}-${Math.random()}`;
+          pendingBlobs.set(blobId, blob);
+          return `blob-request://${blobId}`;
+        };
+
+        URL.revokeObjectURL = (url) => {
+          // Remove the blob from our store
+          const blobId = url.replace("blob-request://", "");
+          pendingBlobs.delete(blobId);
+        };
+
+        const getBlobFromURL = (url) => {
+          const blobId = url.replace("blob-request://", "");
+          return pendingBlobs.get(blobId);
+        };
+
+        // Override global fetch with streaming support
+        window.fetch = (url, init = {}) => {
+          return new Promise((resolve, reject) => {
+            const id = newRequestId();
+            const channelId = `fetch-${id}-${Date.now()}`;
+            
+            callbacksMap.set(id, { 
+              resolve: (response) => {
+                // Null-body statuses: Response(stream, {status: 204}) throws
+                // per the Fetch spec, which would escape this resolver and
+                // hang the artifact's await forever.
+                if (response.status === 204 || response.status === 205 || response.status === 304) {
+                  try {
+                    resolve(new Response(null, {
+                      status: response.status,
+                      statusText: response.statusText,
+                      headers: response.headers
+                    }));
+                  } catch (err) {
+                    // Invalid statusText/header bytes can throw here too.
+                    reject(new TypeError(
+                      'Bridge fetch: unconstructable response (status ' + response.status + ')'
+                    ));
+                  }
+                  return;
+                }
+                // Create a ReadableStream for the response body
+                const stream = new ReadableStream({
+                  start(controller) {
+                    streamControllers.set(channelId, controller);
+                  },
+                  cancel() {
+                    streamControllers.delete(channelId);
+                  }
+                });
+                
+                // Create and return the Response with the stream. Response()
+                // requires status in [200, 599]; an opaque/no-cors fetch
+                // forwards status 0, which would throw here and escape the
+                // resolver, hanging the artifact's await. Surface it as a
+                // network-error-shaped rejection instead.
+                try {
+                  resolve(new Response(stream, {
+                    status: response.status,
+                    statusText: response.statusText,
+                    headers: response.headers
+                  }));
+                } catch (err) {
+                  streamControllers.delete(channelId);
+                  reject(new TypeError(
+                    'Bridge fetch: unconstructable response (status ' + response.status + ')'
+                  ));
+                }
+              },
+              reject,
+              channelId
+            });
+            
+            realParent.postMessage({
+              type: 'proxyFetch',
+              id,
+              url,
+              init,
+              channelId
+            }, '*');
+          });
+        };
+
+        window.addEventListener('message', async (event) => {
+          // Only the embedding parent may drive the bridge — sibling and
+          // nested frames can also postMessage into this window.
+          if (event.source !== realParent) return;
+          if (event.data.type === 'takeScreenshot') {
+            // Echo the request's nonce so the requester can correlate the
+            // reply to ITS request — a reply without the expected nonce
+            // (e.g. from a stale pre-remount artifact) is ignored upstream.
+            const screenshotNonce = event.data.nonce;
+            const rootElement = document.getElementById('artifacts-component-root-html');
+            if (!rootElement) {
+              realParent.postMessage({
+                type: 'screenshotError',
+                nonce: screenshotNonce,
+                error: new Error('Root element not found'),
+              }, '*');
+              return;
+            }
+            // Catch CDN load failures (htmlToImage undefined) and toPng errors
+            // so the parent always gets a response instead of hanging forever.
+            try {
+              const screenshot = await htmlToImage.toPng(rootElement, {
+                imagePlaceholder:
+                  "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAA1JREFUGFdjePDgwX8ACOQDoNsk0PMAAAAASUVORK5CYII=",
+              });
+              realParent.postMessage({
+                type: 'screenshotData',
+                nonce: screenshotNonce,
+                data: screenshot,
+              }, '*');
+            } catch (err) {
+              realParent.postMessage({
+                type: 'screenshotError',
+                nonce: screenshotNonce,
+                error: err instanceof Error ? err : new Error(String(err)),
+              }, '*');
+            }
+          } else if (event.data.type === 'claudeComplete') {
+            const callback = callbacksMap.get(event.data.id);
+            if (!callback) return;
+            if (event.data.error) {
+              callback.reject(new Error(event.data.error));
+            } else {
+              callback.resolve(event.data.completion);
+            }
+            callbacksMap.delete(event.data.id);
+          } else if (event.data.type === 'proxyFetchResponse') {
+            const callback = callbacksMap.get(event.data.id);
+            if (!callback) return;
+            if (event.data.error) {
+              callback.reject(new Error(event.data.error));
+              callbacksMap.delete(event.data.id);
+            } else {
+              // Initial response with headers, status, etc.
+              callback.resolve({
+                status: event.data.status,
+                statusText: event.data.statusText,
+                headers: event.data.headers
+              });
+              // Don't delete the callback yet if streaming
+              if (!event.data.body) {
+                callbacksMap.delete(event.data.id);
+              }
+            }
+          } else if (event.data.type === 'proxyFetchStream') {
+            // Handle streaming data chunks
+            const controller = streamControllers.get(event.data.channelId);
+            if (controller) {
+              if (event.data.error) {
+                controller.error(new Error(event.data.error));
+                streamControllers.delete(event.data.channelId);
+              } else if (event.data.done) {
+                controller.close();
+                streamControllers.delete(event.data.channelId);
+                // Clean up the callback
+                const callback = Array.from(callbacksMap.entries()).find(
+                  ([_, value]) => value.channelId === event.data.channelId
+                );
+                if (callback) {
+                  callbacksMap.delete(callback[0]);
+                }
+              } else if (event.data.chunk) {
+                controller.enqueue(new Uint8Array(event.data.chunk));
+              }
+            }
+          } else if (event.data.type === 'storageGet') {
+            const callback = callbacksMap.get(event.data.id);
+            if (!callback) return;
+            if (event.data.error) {
+              callback.reject(new Error(event.data.error));
+            } else {
+              callback.resolve(event.data.result);
+            }
+            callbacksMap.delete(event.data.id);
+          } else if (event.data.type === 'storageSet') {
+            const callback = callbacksMap.get(event.data.id);
+            if (!callback) return;
+            if (event.data.error) {
+              callback.reject(new Error(event.data.error));
+            } else {
+              callback.resolve(event.data.result);
+            }
+            callbacksMap.delete(event.data.id);
+          } else if (event.data.type === 'storageDelete') {
+            const callback = callbacksMap.get(event.data.id);
+            if (!callback) return;
+            if (event.data.error) {
+              callback.reject(new Error(event.data.error));
+            } else {
+              callback.resolve(event.data.result);
+            }
+            callbacksMap.delete(event.data.id);
+          } else if (event.data.type === 'storageList') {
+            const callback = callbacksMap.get(event.data.id);
+            if (!callback) return;
+            if (event.data.error) {
+              callback.reject(new Error(event.data.error));
+            } else {
+              callback.resolve(event.data.result);
+            }
+            callbacksMap.delete(event.data.id);
+          }
+        });
+
+        window.addEventListener('click', (event) => {
+          const isEl = event.target instanceof HTMLElement;
+          if (!isEl) return;
+    
+          // find ancestor links
+          const linkEl = event.target.closest("a");
+          if (!linkEl || !linkEl.href) return;
+    
+          event.preventDefault();
+          event.stopImmediatePropagation();
+    
+          if (linkEl.href.startsWith("blob-request:")) {
+            const blob = getBlobFromURL(linkEl.href);
+            if (!blob) return;
+            void blob.arrayBuffer().then((data) => {
+              realParent.postMessage({
+                type: "downloadFile",
+                filename: linkEl.download,
+                data,
+                mimeType: blob.type || "application/octet-stream",
+              });
+            });
+          } else if (linkEl.href.startsWith("data:")) {
+            const [header, base64Data] = linkEl.href.split(",");
+            const mimeMatch = header.match(/data:([^;]+)/);
+            const mimeType = mimeMatch ? mimeMatch[1] : "application/octet-stream";
+            const binaryString = atob(base64Data);
+            const data = Uint8Array.from(binaryString, (c) =>
+              c.charCodeAt(0),
+            ).buffer;
+            realParent.postMessage({
+              type: "downloadFile",
+              filename: linkEl.download,
+              data,
+              mimeType,
+            });
+          } else {
+            let linkUrl;
+            try {
+              linkUrl = new URL(linkEl.href);
+            } catch (error) {
+              return;
+            }
+    
+            if (linkUrl.hostname === window.location.hostname) return;
+      
+            realParent.postMessage({
+              type: 'openExternal',
+              href: linkEl.href,
+            }, '*');
+          }
+      });
+
+        const originalOpen = window.open;
+        window.open = function (url) {
+          realParent.postMessage({
+            type: "openExternal",
+            href: url,
+          }, "*");
+        };
+
+        window.addEventListener('error', (event) => {
+          realParent.postMessage({ type: 'console', message: 'Uncaught Error: ' + event.message }, '*');
+        });
+      })();
+    </script>
+  
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#0a1628">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>UNISPAN — Dataset v15</title>
+<title>UNISPAN — Dataset v16</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;touch-action:manipulation;}
 :root{--bg:#0a1628;--surface:#102a43;--surface2:#1a3a5c;--border:rgba(99,125,152,0.25);--amber:#f59e0b;--steel:#627d98;--text:#e2e8f0;--text2:#94a3b8;--ok:#22c55e;--danger:#ef4444;--radius:14px;}
@@ -152,10 +510,10 @@ input[type="password"]{letter-spacing:2px;}
 @keyframes samPulse{0%{opacity:1;width:24px;height:24px;}100%{opacity:0;width:80px;height:80px;}}
 </style>
 </head>
-<body>
+<body id="artifacts-component-root-html">
 <header>
   <div class="logo">U</div>
-  <div style="flex:1"><h1>UNISPAN Dataset v15</h1><p>SAM sobre la pieza exacta · Agente con memoria · Descarga</p></div>
+  <div style="flex:1"><h1>UNISPAN Dataset v16</h1><p>SAM robusto · Auto-conteo de arrumes · Memoria</p></div>
   <button class="btn btn-sm" style="background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.2);flex:none;padding:10px 14px" onclick="downloadApp()">⬇ Descargar</button>
 </header>
 <div class="tabs">
@@ -497,6 +855,11 @@ function bumpArrume(){
   arrumeCount++;
   document.getElementById("arrume-counter").textContent="×"+arrumeCount;
 }
+function bumpArrumeBy(n){
+  if(!arrumeMode) return;
+  arrumeCount+=Math.max(1,Math.round(n));
+  document.getElementById("arrume-counter").textContent="×"+arrumeCount;
+}
 
 // ─── Clase ───────────────────────────────────────────────────────
 function setClase(code){
@@ -638,10 +1001,17 @@ function bboxEnd_(e){
   bboxDrawing=false;
   if(bboxCurrent&&bboxCurrent.w>15&&bboxCurrent.h>15){
     const id=Date.now(); const color=COLORS[annotations.length%COLORS.length];
-    annotations.push({id,clase:currentClase,type:"bbox",bbox:{...bboxCurrent},color,checked:true,qty:null});
+    const finalBox={...bboxCurrent};
+    annotations.push({id,clase:currentClase,type:"bbox",bbox:finalBox,color,checked:true,qty:null});
     bboxCurrent=null; redraw(); renderAnnoList(); updateButtons();
-    if(arrumeMode){ bumpArrume(); showToast(`🔗 +1 ${currentClase} (${arrumeCount})`,"ok"); }
-    else showQtyPromptAt(id, bboxCurrent||annotations[annotations.length-1]?.bbox);
+    if(arrumeMode){
+      let inc=1, est=null;
+      if(finalBox.w>40&&finalBox.h>40){ try{ est=estimateArrumeCount(finalBox); }catch(_){} }
+      if(est&&est.estimated>1) inc=est.estimated;
+      bumpArrumeBy(inc);
+      showToast(inc>1?`🔗 +${inc} ${currentClase} (auto-conteo) → total ${arrumeCount}`:`🔗 +1 ${currentClase} (${arrumeCount})`,"ok");
+    }
+    else showQtyPromptAt(id, finalBox);
   } else { bboxCurrent=null; redraw(); }
 }
 
@@ -718,6 +1088,45 @@ function closePolygon(){
 }
 function cancelPolygon(){ polyPoints=[]; polyDrawing=false; polyPreview=null; document.getElementById("poly-toolbar").style.display="none"; redraw(); }
 
+// Estima cuántas piezas hay apiladas en un arrume analizando las líneas
+// oscuras separadoras (bridas frontales de 47mm) dentro de la región marcada.
+function estimateArrumeCount(cropDisplayBox){
+  const img=document.getElementById("bbox-img");
+  if(!img||!img.naturalWidth||!cropDisplayBox) return null;
+  const scX=img.naturalWidth/imgDispW, scY=img.naturalHeight/imgDispH;
+  const sx=Math.max(0,Math.round(cropDisplayBox.x*scX)), sy=Math.max(0,Math.round(cropDisplayBox.y*scY));
+  const sw=Math.max(10,Math.min(img.naturalWidth-sx,Math.round(cropDisplayBox.w*scX)));
+  const sh=Math.max(10,Math.min(img.naturalHeight-sy,Math.round(cropDisplayBox.h*scY)));
+  const isVertical=sh>=sw; // el arrume suele apilarse en la dirección más larga
+  const W=isVertical?40:160, H=isVertical?160:40;
+  const cv=document.createElement("canvas"); cv.width=W; cv.height=H;
+  const ctx=cv.getContext("2d"); ctx.drawImage(img,sx,sy,sw,sh,0,0,W,H);
+  const data=ctx.getImageData(0,0,W,H).data;
+  const n=isVertical?H:W;
+  const profile=new Float32Array(n);
+  for(let i=0;i<n;i++){
+    let sum=0,cnt=0;
+    if(isVertical){ for(let x=0;x<W;x++){ const idx=(i*W+x)*4; sum+=0.299*data[idx]+0.587*data[idx+1]+0.114*data[idx+2]; cnt++; } }
+    else{ for(let y=0;y<H;y++){ const idx=(y*W+i)*4; sum+=0.299*data[idx]+0.587*data[idx+1]+0.114*data[idx+2]; cnt++; } }
+    profile[i]=sum/cnt;
+  }
+  // suavizado simple
+  const smooth=new Float32Array(n);
+  for(let i=0;i<n;i++){ let s=0,c=0; for(let d=-1;d<=1;d++){ const j=i+d; if(j>=0&&j<n){ s+=profile[j]; c++; } } smooth[i]=s/c; }
+  const mean=smooth.reduce((a,b)=>a+b,0)/n;
+  const std=Math.sqrt(smooth.reduce((a,b)=>a+(b-mean)**2,0)/n)||1;
+  // detectar valles (líneas separadoras oscuras) con prominencia mínima y separación mínima
+  const minGap=Math.max(3,Math.round(n*0.05));
+  const valleys=[];
+  for(let i=1;i<n-1;i++){
+    if(smooth[i]<mean-std*0.35 && smooth[i]<=smooth[i-1] && smooth[i]<=smooth[i+1]){
+      if(!valleys.length||i-valleys[valleys.length-1]>=minGap) valleys.push(i);
+    }
+  }
+  const estimated=Math.max(1,Math.min(200,valleys.length+1));
+  return {estimated,valles:valleys.length};
+}
+
 // ═══════════════════════════════════════════════════════════════════
 // SAM MEJORADO: contorno preciso sobre la pieza tocada
 // ═══════════════════════════════════════════════════════════════════
@@ -742,7 +1151,6 @@ function colorDist(r1,g1,b1,r2,g2,b2){ return Math.sqrt((r1-r2)**2+(g1-g2)**2+(b
 function floodFill(startX,startY,threshold){
   const W=_segW, H=_segH, data=_segData;
   const idx0=(startY*W+startX)*4;
-  const sr=data[idx0], sg=data[idx0+1], sb=data[idx0+2];
   // Muestra color promedio en parche 5×5 para robustez
   let rSum=0,gSum=0,bSum=0,cnt=0;
   for(let dy=-2;dy<=2;dy++) for(let dx=-2;dx<=2;dx++){
@@ -754,6 +1162,8 @@ function floodFill(startX,startY,threshold){
   const mask=new Uint8Array(W*H);
   const stack=[[startX,startY]];
   let count=0;
+  const cap=W*H*0.7; // si se desborda más allá, es fondo, no la pieza
+  let overflowed=false;
   while(stack.length){
     const [x,y]=stack.pop();
     if(x<0||x>=W||y<0||y>=H) continue;
@@ -763,10 +1173,10 @@ function floodFill(startX,startY,threshold){
     const di=pi*4;
     if(colorDist(data[di],data[di+1],data[di+2],mr,mg,mb)>threshold) continue;
     mask[pi]=1; count++;
-    if(count>W*H*0.6) break;
+    if(count>cap){ overflowed=true; break; }
     stack.push([x+1,y],[x-1,y],[x,y+1],[x,y-1]);
   }
-  return {mask,count};
+  return {mask,count,overflowed};
 }
 
 function nearestActivePixel(bin,W,H,tx,ty,maxR){
@@ -895,15 +1305,32 @@ async function samTap(e){
     const sx=Math.round(p.x*(_segW/imgDispW));
     const sy=Math.round(p.y*(_segH/imgDispH));
     if(sx<0||sx>=_segW||sy<0||sy>=_segH){ samStatus("⚠️ Toca dentro de la imagen"); return; }
-    // Intentar con tolerancia adaptativa (30 → 45 → 55)
+    // Intentar con tolerancia progresiva, rechazando desbordes al fondo
     let mask=null, count=0;
-    for(const thr of [30,42,55]){
+    for(const thr of [16,22,30,38,48,60,75]){
       const res=floodFill(sx,sy,thr);
+      if(res.overflowed) continue; // ese umbral ya se comió el fondo, seguir con el siguiente
       if(res.count>=25){ mask=res.mask; count=res.count; break; }
     }
-    if(!mask||count<25){ samStatus("⚠️ No se detectó pieza. Intenta tocar más al centro de la pieza."); return; }
-    const contour=maskToContour(mask,_segW,_segH,sx,sy);
-    if(!contour||contour.length<3){ samStatus("⚠️ Contorno no claro. Prueba en área con más contraste."); return; }
+    let contour=null;
+    if(mask&&count>=25) contour=maskToContour(mask,_segW,_segH,sx,sy);
+    if(!contour||contour.length<3){
+      // Fallback: nunca dejar el toque sin respuesta — caja centrada en el punto tocado
+      const fbSizeX=Math.min(_segW*0.35,180), fbSizeY=Math.min(_segH*0.35,180);
+      const fx0=Math.max(0,sx-fbSizeX/2), fy0=Math.max(0,sy-fbSizeY/2);
+      const scX0=imgDispW/_segW, scY0=imgDispH/_segH;
+      const fbBox={x:fx0*scX0,y:fy0*scY0,w:fbSizeX*scX0,h:fbSizeY*scY0};
+      const id0=Date.now(); const color0=COLORS[annotations.length%COLORS.length];
+      const clase0=resolveClaseForAnnotation();
+      const pending0=!currentClase;
+      annotations.push({id:id0,clase:clase0,type:"bbox",bbox:fbBox,color:color0,checked:true,qty:null,fromSam:true,fromSamFallback:true,pendingAutoClass:pending0});
+      redraw(); renderAnnoList(); updateButtons();
+      samStatus("⚠️ Contorno automático no claro — se colocó un cuadro sobre el punto tocado, ajústalo con las esquinas si es necesario.");
+      if(pending0) classifyAnnotationLocal(id0);
+      else if(!arrumeMode) showQtyPromptAt(id0,fbBox);
+      else{ bumpArrume(); showToast(`🔗 +1 ${clase0} (${arrumeCount})`,"ok"); }
+      return;
+    }
     const scX=imgDispW/_segW, scY=imgDispH/_segH;
     const points=contour.map(pt=>({x:pt.x*scX,y:pt.y*scY}));
     // Verificar que el contorno cubre el punto tocado (corrección de posición)
@@ -935,6 +1362,7 @@ function autoDetectPieceContour(){
     const sx=Math.min(W-1,Math.max(0,Math.round(fx*W))), sy=Math.min(H-1,Math.max(0,Math.round(fy*H)));
     for(const thr of [26,36,48]){
       const res=floodFill(sx,sy,thr);
+      if(res.overflowed) continue;
       const areaFrac=res.count/(W*H);
       if(areaFrac<0.05||areaFrac>0.85) continue;
       const score=1-Math.abs(areaFrac-0.42);
@@ -1051,13 +1479,18 @@ function annotationBounds(a){
 
 function showQtyPromptAt(annoId, bboxHint){
   const ex=document.getElementById("qty-prompt"); if(ex) ex.remove();
+  const anno0=annotations.find(a=>a.id===annoId);
+  const box0=bboxHint||(anno0?annotationBounds(anno0):null);
+  let est=null;
+  if(box0&&box0.w>25&&box0.h>25){ try{ est=estimateArrumeCount(box0); }catch(_){} }
   const div=document.createElement("div"); div.id="qty-prompt"; div.className="float-panel"; div.style.width="270px";
   div.innerHTML=`<div class="fp-head" id="qty-head"><span style="flex:1">📦 ¿Cuántas piezas?</span><button class="fp-btn" onclick="document.getElementById('qty-prompt').classList.toggle('min')">▁</button><button class="fp-btn" onclick="skipQty()">✕</button></div>
     <div class="fp-body">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
-        <input type="number" id="qty-input" placeholder="Cantidad" min="1" max="999" style="flex:1;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-size:16px;outline:none;margin:0">
+        <input type="number" id="qty-input" placeholder="Cantidad" min="1" max="999" value="${est&&est.estimated>1?est.estimated:""}" style="flex:1;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-size:16px;outline:none;margin:0">
         <span style="font-size:12px;color:var(--steel)">piezas</span>
       </div>
+      ${est&&est.estimated>1?`<div style="font-size:10px;color:var(--amber);margin-bottom:8px">🔢 Estimado automático del arrume (líneas separadoras): ${est.estimated}. Ajusta si es necesario.</div>`:""}
       <div style="display:flex;gap:6px">
         <button onclick="skipQty()" style="flex:1;padding:9px;border-radius:8px;border:1.5px solid var(--border);background:var(--surface);color:var(--text2);font-size:12px;font-weight:600;cursor:pointer">Sin cantidad</button>
         <button onclick="addQty(${annoId})" style="flex:1;padding:9px;border-radius:8px;border:none;background:var(--amber);color:#0a1628;font-size:12px;font-weight:700;cursor:pointer">✅ Agregar</button>
@@ -1285,9 +1718,9 @@ function downloadApp(){
   const html=document.documentElement.outerHTML;
   const blob=new Blob(['<!DOCTYPE html>\n'+html],{type:'text/html'});
   const url=URL.createObjectURL(blob);
-  const a=document.createElement('a'); a.href=url; a.download='UNISPAN-Dataset-v15.html';
+  const a=document.createElement('a'); a.href=url; a.download='UNISPAN-Dataset-v16.html';
   document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
-  showToast("⬇ Descargado como UNISPAN-Dataset-v15.html","ok");
+  showToast("⬇ Descargado como UNISPAN-Dataset-v16.html","ok");
 }
 
 // ─── Stats ────────────────────────────────────────────────────────
