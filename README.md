@@ -5,7 +5,7 @@
 <meta name="theme-color" content="#0a1628">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>UNISPAN — Dataset v14</title>
+<title>UNISPAN — Dataset v15</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;touch-action:manipulation;}
 :root{--bg:#0a1628;--surface:#102a43;--surface2:#1a3a5c;--border:rgba(99,125,152,0.25);--amber:#f59e0b;--steel:#627d98;--text:#e2e8f0;--text2:#94a3b8;--ok:#22c55e;--danger:#ef4444;--radius:14px;}
@@ -155,7 +155,7 @@ input[type="password"]{letter-spacing:2px;}
 <body>
 <header>
   <div class="logo">U</div>
-  <div style="flex:1"><h1>UNISPAN Dataset v14</h1><p>SAM preciso · Agente sin claves · Análisis catálogo · Descarga</p></div>
+  <div style="flex:1"><h1>UNISPAN Dataset v15</h1><p>SAM sobre la pieza exacta · Agente con memoria · Descarga</p></div>
   <button class="btn btn-sm" style="background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.2);flex:none;padding:10px 14px" onclick="downloadApp()">⬇ Descargar</button>
 </header>
 <div class="tabs">
@@ -401,9 +401,51 @@ let imgMemory=JSON.parse(localStorage.getItem("rf_img_memory")||"[]");
 let physicalProofs=JSON.parse(localStorage.getItem("rf_physical_proofs")||"[]");
 let autoPhysicalOn=localStorage.getItem("rf_auto_physical")!=="0";
 let _lastMemoryEntry=null;
+let learnedPieces=JSON.parse(localStorage.getItem("rf_learned_pieces")||"[]");
 
 function saveMemory(){ try{ localStorage.setItem("rf_img_memory",JSON.stringify(imgMemory.slice(0,200))); }catch(_){} }
 function savePhysicalProofs(){ try{ localStorage.setItem("rf_physical_proofs",JSON.stringify(physicalProofs.slice(0,80))); }catch(_){} }
+function saveLearned(){ try{ localStorage.setItem("rf_learned_pieces",JSON.stringify(learnedPieces.slice(0,600))); }catch(_){} }
+
+// ─── Huella visual (dHash) + memoria de piezas confirmadas ────────
+function computeFingerprintFromCanvas(srcCanvas){
+  try{
+    const S=9;
+    const c=document.createElement("canvas"); c.width=S; c.height=8;
+    const ctx=c.getContext("2d"); ctx.drawImage(srcCanvas,0,0,S,8);
+    const d=ctx.getImageData(0,0,S,8).data;
+    const gray=[];
+    for(let i=0;i<S*8;i++){ const idx=i*4; gray.push(0.299*d[idx]+0.587*d[idx+1]+0.114*d[idx+2]); }
+    let bits="";
+    for(let y=0;y<8;y++) for(let x=0;x<S-1;x++) bits+= gray[y*S+x]>gray[y*S+x+1] ? "1":"0";
+    return bits;
+  }catch(_){ return null; }
+}
+function hashHamming(a,b){ if(!a||!b||a.length!==b.length) return 999; let d=0; for(let i=0;i<a.length;i++) if(a[i]!==b[i]) d++; return d; }
+function learnPiece(hash,clase,meta){
+  if(!hash||!clase||clase==="POR-IDENTIFICAR") return;
+  let best=null,bestD=999;
+  learnedPieces.forEach(p=>{ const d=hashHamming(p.hash,hash); if(d<bestD){bestD=d;best=p;} });
+  if(best&&bestD<=6){ best.hash=hash; best.clase=clase; best.confirmations=(best.confirmations||1)+1; best.lastSeen=Date.now(); Object.assign(best,meta||{}); }
+  else{ learnedPieces.unshift({hash,clase,confirmations:1,lastSeen:Date.now(),...(meta||{})}); }
+  if(learnedPieces.length>600) learnedPieces.length=600;
+  saveLearned();
+}
+function matchLearnedPiece(hash){
+  if(!hash||!learnedPieces.length) return null;
+  let best=null,bestD=999;
+  learnedPieces.forEach(p=>{ const d=hashHamming(p.hash,hash); if(d<bestD){ bestD=d; best=p; } });
+  if(!best) return null;
+  const thr=(best.confirmations||1)>=3?10:7;
+  if(bestD>thr) return null;
+  const confianza=Math.max(0.55,Math.min(0.97,(1-bestD/16)*Math.min(1,0.5+(best.confirmations||1)*0.12)));
+  return {...best,distancia:bestD,confianza};
+}
+function boundsOfPoints(points){
+  const xs=points.map(p=>p.x), ys=points.map(p=>p.y);
+  const x=Math.min(...xs), y=Math.min(...ys);
+  return {x,y,w:Math.max(1,Math.max(...xs)-x),h:Math.max(1,Math.max(...ys)-y)};
+}
 
 const _autoPhysicalToggle=document.getElementById("auto-ai-toggle");
 if(_autoPhysicalToggle) _autoPhysicalToggle.checked=autoPhysicalOn;
@@ -460,7 +502,15 @@ function bumpArrume(){
 function setClase(code){
   if(catModalMode==="reassign" && catReassignId!=null){
     const a=annotations.find(x=>x.id===catReassignId);
-    if(a){ a.clase=code; renderAnnoList(); redraw(); showToast(`✏️ Clase → ${code}`,"ok"); }
+    if(a){
+      a.clase=code; renderAnnoList(); redraw(); showToast(`✏️ Clase → ${code}`,"ok");
+      const codeUp=String(code).toUpperCase();
+      if(CATALOG_MAP[codeUp]){
+        let hash=a._hash;
+        if(!hash){ try{ const box=annotationBounds(a); const loc=localImageAnalysis(box); if(loc&&loc._cv) hash=computeFingerprintFromCanvas(loc._cv); }catch(_){} }
+        if(hash){ a._hash=hash; learnPiece(hash,codeUp,{familia:CATALOG_MAP[codeUp].family}); }
+      }
+    }
     catModalMode="select"; catReassignId=null;
     closeCatModalDirect(); addReciente(code); return;
   }
@@ -873,6 +923,32 @@ async function samTap(e){
   }
 }
 
+// Auto-detección del contorno real de la pieza (sin toque manual):
+// prueba varios puntos semilla y se queda con el componente de tamaño
+// más plausible para una pieza (evita fondo completo o ruido pequeño).
+function autoDetectPieceContour(){
+  if(!ensureSegCanvas()) return null;
+  const W=_segW,H=_segH;
+  const seeds=[[0.5,0.5],[0.5,0.4],[0.5,0.6],[0.4,0.5],[0.6,0.5],[0.35,0.4],[0.65,0.6],[0.5,0.3]];
+  let best=null,bestScore=-1,bestSeed=null;
+  for(const [fx,fy] of seeds){
+    const sx=Math.min(W-1,Math.max(0,Math.round(fx*W))), sy=Math.min(H-1,Math.max(0,Math.round(fy*H)));
+    for(const thr of [26,36,48]){
+      const res=floodFill(sx,sy,thr);
+      const areaFrac=res.count/(W*H);
+      if(areaFrac<0.05||areaFrac>0.85) continue;
+      const score=1-Math.abs(areaFrac-0.42);
+      if(score>bestScore){ bestScore=score; best=res.mask; bestSeed=[sx,sy]; }
+      break;
+    }
+  }
+  if(!best) return null;
+  const contour=maskToContour(best,W,H,bestSeed[0],bestSeed[1]);
+  if(!contour||contour.length<3) return null;
+  const scX=imgDispW/W, scY=imgDispH/H;
+  return contour.map(pt=>({x:pt.x*scX,y:pt.y*scY}));
+}
+
 // ─── Redraw ───────────────────────────────────────────────────────
 function redraw(){
   const ctx=canvas.getContext("2d");
@@ -1129,6 +1205,13 @@ async function uploadAll(){
     uniqueClasses.forEach(c=>{ classCounts[c]=(classCounts[c]||0)+1; });
     localStorage.setItem("rf_class_counts",JSON.stringify(classCounts));
     renderClassStats(); updateMemoryFromUpload(checked);
+    checked.filter(a=>!a.isQty).forEach(a=>{
+      const codeUp=String(a.clase||"").toUpperCase();
+      if(!CATALOG_MAP[codeUp]) return;
+      let hash=a._hash;
+      if(!hash){ try{ const box=annotationBounds(a); const loc=localImageAnalysis(box); if(loc&&loc._cv) hash=computeFingerprintFromCanvas(loc._cv); }catch(_){} }
+      if(hash) learnPiece(hash,codeUp,{familia:CATALOG_MAP[codeUp].family});
+    });
     showToast(`✅ ${checked.length} anotación(es) → Dataset`,"ok"); resetAll();
   }catch(err){
     pb.style.background="var(--danger)";
@@ -1202,9 +1285,9 @@ function downloadApp(){
   const html=document.documentElement.outerHTML;
   const blob=new Blob(['<!DOCTYPE html>\n'+html],{type:'text/html'});
   const url=URL.createObjectURL(blob);
-  const a=document.createElement('a'); a.href=url; a.download='UNISPAN-Dataset-v14.html';
+  const a=document.createElement('a'); a.href=url; a.download='UNISPAN-Dataset-v15.html';
   document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
-  showToast("⬇ Descargado como UNISPAN-Dataset-v14.html","ok");
+  showToast("⬇ Descargado como UNISPAN-Dataset-v15.html","ok");
 }
 
 // ─── Stats ────────────────────────────────────────────────────────
@@ -1361,14 +1444,24 @@ function memoryContextForAI(){
 // ═══════════════════════════════════════════════════════════════════
 // ANÁLISIS LOCAL MEJORADO — cruza con catálogo completo
 // ═══════════════════════════════════════════════════════════════════
-function localImageAnalysis(){
+function localImageAnalysis(cropDisplayBox){
   const img=document.getElementById("bbox-img");
   if(!img||!img.naturalWidth) return null;
+  let sx=0,sy=0,sw=img.naturalWidth,sh=img.naturalHeight;
+  if(cropDisplayBox&&imgDispW&&imgDispH){
+    const scX=img.naturalWidth/imgDispW, scY=img.naturalHeight/imgDispH;
+    const pad=0.06;
+    const px=Math.max(0,cropDisplayBox.x-cropDisplayBox.w*pad), py=Math.max(0,cropDisplayBox.y-cropDisplayBox.h*pad);
+    const pw=cropDisplayBox.w*(1+pad*2), ph=cropDisplayBox.h*(1+pad*2);
+    sx=Math.max(0,Math.round(px*scX)); sy=Math.max(0,Math.round(py*scY));
+    sw=Math.max(20,Math.min(img.naturalWidth-sx,Math.round(pw*scX)));
+    sh=Math.max(20,Math.min(img.naturalHeight-sy,Math.round(ph*scY)));
+  }
   const maxDim=600;
-  const sc=Math.min(1,maxDim/Math.max(img.naturalWidth,img.naturalHeight));
-  const w=Math.round(img.naturalWidth*sc), h=Math.round(img.naturalHeight*sc);
+  const sc=Math.min(1,maxDim/Math.max(sw,sh));
+  const w=Math.round(sw*sc), h=Math.round(sh*sc);
   const cv=document.createElement("canvas"); cv.width=w; cv.height=h;
-  const ctx=cv.getContext("2d"); ctx.drawImage(img,0,0,w,h);
+  const ctx=cv.getContext("2d"); ctx.drawImage(img,sx,sy,sw,sh,0,0,w,h);
   const data=ctx.getImageData(0,0,w,h).data;
 
   // Franjas perimetrales más anchas (12%) para detectar mejor las perforaciones en bridas
@@ -1417,7 +1510,7 @@ function localImageAnalysis(){
   // Información de diagnóstico
   let info=`Franjas: T${top}/B${bottom}/L${left}/R${right} → ${frontales}F×${laterales}L → ${ancho_mm}×${largo_mm}mm`;
 
-  return{frontales,laterales,ancho_mm,largo_mm,familia,referencia,esquinero,confianza,info,raw:{top,bottom,left,right}};
+  return{frontales,laterales,ancho_mm,largo_mm,familia,referencia,esquinero,confianza,info,raw:{top,bottom,left,right},_cv:cv};
 }
 
 // Ajusta conteo crudo al valor más cercano en la tabla de perforaciones estándar
@@ -1475,13 +1568,25 @@ function detectCornerFold(data,w,h){
 async function classifyAnnotationLocal(annoId){
   const anno=annotations.find(a=>a.id===annoId); if(!anno) return;
   try{
-    const local=localImageAnalysis();
+    const box=annotationBounds(anno);
+    const local=localImageAnalysis(box);
+    const hash=local&&local._cv?computeFingerprintFromCanvas(local._cv):null;
+    if(hash) anno._hash=hash;
+    const learned=hash?matchLearnedPiece(hash):null;
+    if(learned){
+      anno.clase=learned.clase; anno.pendingAutoClass=false;
+      addReciente(learned.clase); renderAnnoList(); redraw(); updateButtons();
+      samStatus(`🧠 Reconocida por memoria: ${learned.clase} (${learned.confirmations||1}× confirmada · ${Math.round(learned.confianza*100)}%)`);
+      if(_lastMemoryEntry){ _lastMemoryEntry.aiObs=local; _lastMemoryEntry.classes=[...new Set([...(_lastMemoryEntry.classes||[]),learned.clase])]; saveMemory(); }
+      showQtyPromptAt(annoId, box);
+      return;
+    }
     if(local&&local.referencia){
       anno.clase=local.referencia; anno.pendingAutoClass=false;
       addReciente(local.referencia); renderAnnoList(); redraw(); updateButtons();
-      samStatus(`✅ Identificada: ${local.referencia} (${local.frontales}F×${local.laterales}L) confianza ${Math.round(local.confianza*100)}%`);
+      samStatus(`✅ Identificada por catálogo: ${local.referencia} (${local.frontales}F×${local.laterales}L) confianza ${Math.round(local.confianza*100)}%`);
       if(_lastMemoryEntry){ _lastMemoryEntry.aiObs=local; _lastMemoryEntry.classes=[...new Set([...(_lastMemoryEntry.classes||[]),local.referencia])]; saveMemory(); }
-      showQtyPromptAt(annoId, annotationBounds(anno));
+      showQtyPromptAt(annoId, box);
       return;
     }
   }catch(_){}
@@ -1511,20 +1616,24 @@ function normalizedBoxToDisplay(b){
 }
 function applyPhysicalDetections(proof){
   if(!proof||!selectedFile) return;
-  const items=[...(proof.piezas||[]).map(p=>({...p,_kind:"pieza"})), ...(proof.arrumes||[]).map(p=>({...p,_kind:"arrume"}))];
-  if(!items.length) return;
+  const p=(proof.piezas||[])[0];
+  if(!p) return;
   if(annotations.filter(a=>a.fromPhysicalAuto).length) return;
-  items.slice(0,12).forEach((it,idx)=>{
-    const ref=it.referencia||"POR-IDENTIFICAR";
-    const box=normalizedBoxToDisplay(it.bbox||it.box||it.rect);
-    const id=Date.now()+idx; const color=COLORS[annotations.length%COLORS.length];
-    const qty=+(it.cantidad_estimada||it.cantidad||1)||1;
-    const anno={id,clase:ref,type:"bbox",bbox:box,color,checked:true,qty:null,fromPhysicalAuto:true};
-    annotations.push(anno);
-    if(qty>1) addQtyBadgeForAnnotation(anno,qty);
-    if(ref&&ref!=="POR-IDENTIFICAR") addReciente(ref);
-  });
+  const ref=p.referencia||"POR-IDENTIFICAR";
+  const id=Date.now(); const color=COLORS[annotations.length%COLORS.length];
+  let anno;
+  if(p.contourPoints&&p.contourPoints.length>=3){
+    anno={id,clase:ref,type:"polygon",points:p.contourPoints,color,checked:true,qty:null,fromPhysicalAuto:true,fromSam:true,_hash:p.hash||null};
+  } else {
+    const box=normalizedBoxToDisplay(p.bbox);
+    anno={id,clase:ref,type:"bbox",bbox:box,color,checked:true,qty:null,fromPhysicalAuto:true,_hash:p.hash||null};
+  }
+  annotations.push(anno);
+  const qty=+(p.cantidad_estimada||p.cantidad||1)||1;
+  if(qty>1) addQtyBadgeForAnnotation(anno,qty);
+  if(ref&&ref!=="POR-IDENTIFICAR") addReciente(ref);
   renderAnnoList(); redraw(); updateButtons();
+  if(!arrumeMode) showQtyPromptAt(id, anno.type==="polygon"?annotationBounds(anno):anno.bbox);
 }
 
 // ─── Auto-prueba física (100% local) ─────────────────────────────
@@ -1532,14 +1641,21 @@ async function runPhysicalProof(opts={}){
   if(!selectedFile){ setPhysicalStatus("⚠️ Toma/carga una foto primero."); return; }
   setPhysicalStatus(opts.auto?"🧪 Auto-reconociendo localmente…":"🧪 Analizando imagen…");
   try{
-    const local=localImageAnalysis();
+    const contour=autoDetectPieceContour();
+    const cropBox=contour?boundsOfPoints(contour):null;
+    const local=localImageAnalysis(cropBox);
     if(!local){ setPhysicalStatus("⚠️ No se pudo procesar la imagen."); return; }
-    const ref=local.referencia||"POR-IDENTIFICAR";
+    const hash=local._cv?computeFingerprintFromCanvas(local._cv):null;
+    const learned=hash?matchLearnedPiece(hash):null;
+    const ref=(learned&&learned.clase)||local.referencia||"POR-IDENTIFICAR";
+    const familia=(learned&&learned.familia)||local.familia||"?";
+    const confianza=learned?learned.confianza:(local.confianza||0);
+    const normBox=cropBox?{x:cropBox.x/imgDispW,y:cropBox.y/imgDispH,w:cropBox.w/imgDispW,h:cropBox.h/imgDispH}:{x:.15,y:.15,w:.7,h:.7};
     const proof={
       date:new Date().toISOString(),
-      resumen:`Análisis local: ${local.frontales}F × ${local.laterales}L → ${local.ancho_mm}×${local.largo_mm}mm`,
+      resumen: learned?`Reconocida por memoria (${learned.confirmations||1}× confirmada)`:`Análisis local: ${local.frontales}F × ${local.laterales}L → ${local.ancho_mm}×${local.largo_mm}mm`,
       conteo_total:1,
-      piezas:[{referencia:ref,familia:local.familia||"?",tipo:local.esquinero||(local.familia!=="?"?"panel":"?"),cantidad:1,bbox:{x:0.05,y:0.05,w:0.9,h:0.9},frontales:local.frontales,laterales:local.laterales,ancho_mm:local.ancho_mm,largo_mm:local.largo_mm,info:local.info,confianza:local.confianza}],
+      piezas:[{referencia:ref,familia,tipo:local.esquinero||(familia!=="?"?"panel":"?"),cantidad:1,bbox:normBox,contourPoints:contour||null,frontales:local.frontales,laterales:local.laterales,ancho_mm:local.ancho_mm,largo_mm:local.largo_mm,info:local.info,confianza,hash,viaMemoria:!!learned}],
       arrumes:[],
       calidad_foto:_lastMemoryEntry?.blur>180?"nítida":_lastMemoryEntry?.blur>80?"media":"borrosa",
       acciones:"Revisar y confirmar"
@@ -1547,17 +1663,17 @@ async function runPhysicalProof(opts={}){
     physicalProofs.unshift(proof); if(physicalProofs.length>80) physicalProofs.length=80; savePhysicalProofs();
     applyPhysicalDetections(proof);
     if(_lastMemoryEntry){ _lastMemoryEntry.aiObs=proof; _lastMemoryEntry.classes=[...new Set([...(_lastMemoryEntry.classes||[]),ref].filter(Boolean))]; _lastMemoryEntry.qty=1; saveMemory(); }
-    const confPct=Math.round((local.confianza||0)*100);
-    const refHtml=ref!=="POR-IDENTIFICAR"?`<span style="color:var(--amber);font-family:monospace">${ref}</span> (${confPct}% confianza)`:`<span style='color:var(--steel)'>sin match claro</span>`;
+    const confPct=Math.round((confianza||0)*100);
+    const refHtml=ref!=="POR-IDENTIFICAR"?`<span style="color:var(--amber);font-family:monospace">${ref}</span> (${confPct}% confianza${learned?" · 🧠 memoria":""})`:`<span style='color:var(--steel)'>sin match claro</span>`;
     const html=`<b style="color:var(--ok)">🧪 Análisis completado <span style="color:var(--steel);font-size:10px">(local · sin claves)</span></b><br>
       ${safeHtml(proof.resumen)}<br>
       <b>Referencia:</b> ${refHtml}<br>
-      <b>Familia:</b> ${local.familia}${local.esquinero?" — "+local.esquinero:""}<br>
+      <b>Familia:</b> ${familia}${local.esquinero?" — "+local.esquinero:""}<br>
       <b>Perforaciones:</b> ${local.frontales}F · ${local.laterales}L (raw: T${local.raw.top}/B${local.raw.bottom}/L${local.raw.left}/R${local.raw.right})<br>
-      <b>Medidas:</b> ${local.ancho_mm}×${local.largo_mm}mm · Foto: ${proof.calidad_foto}`;
+      <b>Medidas:</b> ${local.ancho_mm}×${local.largo_mm}mm · Foto: ${proof.calidad_foto}${contour?"":" · <span style=\"color:var(--steel)\">contorno no claro, usa SAM manual para ajustar</span>"}`;
     setPhysicalStatus(html);
     expertInit(); expertBot(`🧪 Resultado análisis:<br>${html}`);
-    showToast("🧪 Análisis completado","ok");
+    showToast(learned?"🧠 Reconocida por memoria":"🧪 Análisis completado","ok");
   }catch(err){
     console.error("Prueba física:",err);
     setPhysicalStatus(`❌ Error: ${safeHtml((err.message||err).toString().slice(0,140))}`);
@@ -1569,14 +1685,19 @@ async function analyzeCurrentWithAI(){
   const out=document.getElementById("ai-analysis-out"); out.style.display="block";
   if(!selectedFile){ out.textContent="⚠️ Carga una imagen primero."; return; }
   out.innerHTML="⏳ Analizando…";
-  const local=localImageAnalysis();
+  const contour=autoDetectPieceContour();
+  const cropBox=contour?boundsOfPoints(contour):null;
+  const local=localImageAnalysis(cropBox);
   const e=_lastMemoryEntry;
   if(local){
-    const refHtml=local.referencia?`<span style="color:var(--ok);font-family:monospace">${local.referencia}</span> ✅ (${Math.round(local.confianza*100)}%)`:`<span style="color:var(--amber)">sin match claro</span>`;
-    const catEntry=local.referencia?CATALOG_MAP[local.referencia.toUpperCase()]:null;
+    const hash=local._cv?computeFingerprintFromCanvas(local._cv):null;
+    const learned=hash?matchLearnedPiece(hash):null;
+    const refCode=(learned&&learned.clase)||local.referencia;
+    const refHtml=refCode?`<span style="color:var(--ok);font-family:monospace">${refCode}</span> ✅ (${Math.round((learned?learned.confianza:local.confianza)*100)}%${learned?" · 🧠 memoria":""})`:`<span style="color:var(--amber)">sin match claro</span>`;
+    const catEntry=refCode?CATALOG_MAP[refCode.toUpperCase()]:null;
     const html=`<b style="color:var(--amber)">🔍 Análisis local (sin API key):</b><br>
       • <b>Referencia:</b> ${refHtml}<br>
-      • <b>Familia:</b> ${local.familia||"?"}${local.esquinero?" (esquinero "+local.esquinero+")":""}<br>
+      • <b>Familia:</b> ${(learned&&learned.familia)||local.familia||"?"}${local.esquinero?" (esquinero "+local.esquinero+")":""}<br>
       • <b>Perforaciones:</b> ${local.frontales} frontales · ${local.laterales} laterales<br>
       • <b>Medidas estimadas:</b> ${local.ancho_mm} × ${local.largo_mm} mm<br>
       ${catEntry?`• <b>Catálogo:</b> ${catEntry.code} — ${catEntry.spec}<br>`:""}
@@ -1597,7 +1718,8 @@ function showMemorySummary(){
   const byClass={};
   imgMemory.forEach(e=>e.classes.forEach(c=>{ if(!byClass[c]) byClass[c]={n:0,blurs:[]}; byClass[c].n++; if(e.blur) byClass[c].blurs.push(e.blur); }));
   const withAI=imgMemory.filter(e=>e.aiObs).length;
-  let html=`<b>🧠 Memoria: ${imgMemory.length} imágenes · ${withAI} analizadas</b><br><br>`;
+  let html=`<b>🧠 Memoria: ${imgMemory.length} imágenes · ${withAI} analizadas</b><br>
+  <b>🎓 Piezas aprendidas:</b> ${learnedPieces.length} huellas (${learnedPieces.reduce((s,p)=>s+(p.confirmations||1),0)} confirmaciones totales)<br><br>`;
   const entries=Object.entries(byClass).sort((a,b)=>b[1].n-a[1].n).slice(0,12);
   if(!entries.length) html+="<i style='color:var(--steel)'>Sin clases anotadas.</i>";
   else{
