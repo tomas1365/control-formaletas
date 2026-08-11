@@ -1258,49 +1258,49 @@ async function uploadAll(){
     const upData=await upRes.json();
     if(!upRes.ok||upData.error) throw new Error(upData.error||`HTTP ${upRes.status}`);
     pb.style.width="65%";
-    const imageId=upData.id||"";
+    // El endpoint de anotación espera exactamente el ID devuelto por la subida.
+    const imageId=String(upData.id||upData.image?.id||"");
     if(!imageId) throw new Error("Roboflow no devolvió id de imagen");
-    // ── Anotaciones en formato COCO (píxeles absolutos de la imagen original) ──
+    // ── Anotación Pascal VOC: un XML asociado directamente a esta imagen ──
     const _bi=document.getElementById("bbox-img");
     const _dw=imgDispW||_bi?.offsetWidth||imgNatW, _dh=imgDispH||_bi?.offsetHeight||imgNatH;
     const scX=imgNatW/_dw, scY=imgNatH/_dh;
     const real=checked.filter(a=>!a.isQty);
     if(!real.length) throw new Error("No hay anotaciones de clase (solo QTY)");
-    const cats=[...new Set(real.map(a=>String(a.clase)))];
-    const coco={
-      info:{description:"UNISPAN app"},
-      images:[{id:1,file_name:baseName,width:imgNatW,height:imgNatH}],
-      categories:cats.map((c,i)=>({id:i+1,name:c,supercategory:"none"})),
-      annotations:[]
-    };
-    let aid=1;
+    const escXml=value=>String(value).replace(/[<>&"']/g,ch=>({"<":"&lt;",">":"&gt;","&":"&amp;",'"':"&quot;","'":"&apos;"}[ch]));
+    const objects=[];
     real.forEach(a=>{
-      const cid=cats.indexOf(String(a.clase))+1;
+      let bounds;
       if(a.type==="polygon"&&a.points?.length>=3){
         const pts=a.points.map(p=>[p.x*scX,p.y*scY]);
         const xs=pts.map(p=>p[0]),ys=pts.map(p=>p[1]);
         const x=Math.max(0,Math.min(...xs)),y=Math.max(0,Math.min(...ys));
         const w=Math.min(imgNatW-x,Math.max(...xs)-x),h=Math.min(imgNatH-y,Math.max(...ys)-y);
-        coco.annotations.push({id:aid++,image_id:1,category_id:cid,iscrowd:0,
-          bbox:[Math.round(x),Math.round(y),Math.round(w),Math.round(h)],area:Math.round(w*h),
-          segmentation:[pts.flat().map(v=>Math.round(v))]});
+        bounds={x,y,w,h};
       }else{
         const b=annotationBounds(a); if(!b) return;
         let x=Math.max(0,b.x*scX), y=Math.max(0,b.y*scY);
         let w=Math.min(imgNatW-x,b.w*scX), h=Math.min(imgNatH-y,b.h*scY);
-        if(w<1||h<1) return;
-        coco.annotations.push({id:aid++,image_id:1,category_id:cid,iscrowd:0,
-          bbox:[Math.round(x),Math.round(y),Math.round(w),Math.round(h)],area:Math.round(w*h),
-          segmentation:[[x,y,x+w,y,x+w,y+h,x,y+h].map(v=>Math.round(v))]});
+        bounds={x,y,w,h};
       }
+      if(!bounds||bounds.w<1||bounds.h<1) return;
+      const xmin=Math.max(0,Math.floor(bounds.x));
+      const ymin=Math.max(0,Math.floor(bounds.y));
+      const xmax=Math.min(imgNatW,Math.ceil(bounds.x+bounds.w));
+      const ymax=Math.min(imgNatH,Math.ceil(bounds.y+bounds.h));
+      objects.push(`<object><name>${escXml(a.clase)}</name><pose>Unspecified</pose><truncated>0</truncated><difficult>0</difficult><bndbox><xmin>${xmin}</xmin><ymin>${ymin}</ymin><xmax>${xmax}</xmax><ymax>${ymax}</ymax></bndbox></object>`);
     });
-    if(!coco.annotations.length) throw new Error("Anotaciones inválidas (tamaño 0)");
+    if(!objects.length) throw new Error("Anotaciones inválidas (tamaño 0)");
+    const voc=`<?xml version="1.0"?><annotation><folder>UNISPAN</folder><filename>${escXml(baseName)}</filename><path>${escXml(baseName)}</path><source><database>Roboflow</database></source><size><width>${imgNatW}</width><height>${imgNatH}</height><depth>3</depth></size><segmented>0</segmented>${objects.join("")}</annotation>`;
+    const annotationName=baseName.replace(/\.[^.]+$/,"")+".xml";
+    const annotationEnvelope={annotationFile:voc,labelmap:null};
     const annoRes=await fetchWithTimeout(
-      `https://api.roboflow.com/dataset/${PROJECT}/annotate/${imageId}?api_key=${apiKey}&name=${encodeURIComponent("_annotations.coco.json")}`,
-      {method:"POST",headers:{"Content-Type":"text/plain"},body:JSON.stringify(coco)},30000);
-    let annoData={}; try{ annoData=await annoRes.json(); }catch(_){}
-    if(!annoRes.ok||annoData.error){
-      const msg=typeof annoData.error==="string"?annoData.error:(annoData.error?.message||`HTTP ${annoRes.status}`);
+      `https://api.roboflow.com/dataset/${PROJECT}/annotate/${imageId.split("/").map(encodeURIComponent).join("/")}?api_key=${apiKey}&name=${encodeURIComponent(annotationName)}&jobName=${encodeURIComponent("Anotaciones App UNISPAN")}`,
+      {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(annotationEnvelope)},30000);
+    const annoText=await annoRes.text();
+    let annoData={}; try{ annoData=JSON.parse(annoText); }catch(_){}
+    if(!annoRes.ok||annoData.error||annoData.success===false){
+      const msg=typeof annoData.error==="string"?annoData.error:(annoData.error?.message||annoText||`HTTP ${annoRes.status}`);
       throw new Error("Anotación falló: "+msg);
     }
     pb.style.width="100%";
