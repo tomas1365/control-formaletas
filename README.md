@@ -157,7 +157,7 @@ input[type="password"]{letter-spacing:2px;}
 <body id="artifacts-component-root-html">
 <header>
   <div class="logo">U</div>
-  <div style="flex:1"><h1>UNISPAN Dataset v17</h1><p>SAM robusto · Auto-conteo de arrumes · Memoria</p></div>
+  <div style="flex:1"><h1>UNISPAN Dataset v20</h1><p>Multi-BBox por imagen · SAM · Memoria</p></div>
   <button class="btn btn-sm" style="background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.2);flex:none;padding:10px 14px" onclick="downloadApp()">⬇ Descargar</button>
 </header>
 <div class="tabs">
@@ -209,6 +209,11 @@ input[type="password"]{letter-spacing:2px;}
       <input type="checkbox" id="arrume-toggle" onchange="toggleArrume(this.checked)" style="width:18px;height:18px;margin:0;accent-color:var(--amber)">
       <div style="flex:1"><div style="font-size:13px;font-weight:700;color:var(--text)">🔗 Modo Arrume</div><div style="font-size:10px;color:var(--steel)">Mantiene la clase activa y dibuja varias piezas iguales</div></div>
       <span id="arrume-counter" style="display:none;font-family:monospace;font-weight:800;color:var(--amber);font-size:16px">×0</span>
+    </label>
+    <label style="display:flex;align-items:center;gap:10px;margin-top:8px;padding:10px;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;cursor:pointer" for="multibox-toggle">
+      <input type="checkbox" id="multibox-toggle" checked onchange="toggleMultiBox(this.checked)" style="width:18px;height:18px;margin:0;accent-color:var(--ok)">
+      <div style="flex:1"><div style="font-size:13px;font-weight:700;color:var(--text)">⬜⬜ Multi-BBox</div><div style="font-size:10px;color:var(--steel)">Dibuja varios recuadros seguidos en la misma foto (sin popup de cantidad). Todos se envían juntos.</div></div>
+      <span id="multibox-counter" style="font-family:monospace;font-weight:800;color:var(--ok);font-size:16px">×0</span>
     </label>
   </div>
   <div class="card">
@@ -394,6 +399,9 @@ let zoomScale=1, zoomTx=0, zoomTy=0;
 let pinchState=null;
 let activeTool="bbox";
 let arrumeMode=false, arrumeCount=0;
+let multiBox=(localStorage.getItem("rf_multibox")??"1")==="1";
+function toggleMultiBox(on){ multiBox=!!on; localStorage.setItem("rf_multibox",on?"1":"0"); showToast(on?"⬜⬜ Multi-BBox activo: dibuja varios recuadros":"Multi-BBox desactivado","ok"); }
+function updateMultiCounter(){ const el=document.getElementById("multibox-counter"); if(el) el.textContent="×"+annotations.filter(a=>!a.isQty).length; }
 let bboxDrawing=false, bboxStart={x:0,y:0}, bboxCurrent=null;
 let polyPoints=[], polyDrawing=false, polyPreview=null;
 let cornerState=null, cornerDrawing=false, cornerBaseStart=null;
@@ -655,6 +663,7 @@ function bboxEnd_(e){
       bumpArrumeBy(inc);
       showToast(inc>1?`🔗 +${inc} ${currentClase} (auto-conteo) → total ${arrumeCount}`:`🔗 +1 ${currentClase} (${arrumeCount})`,"ok");
     }
+    else if(multiBox){ updateMultiCounter(); showToast(`⬜ ${currentClase} · ${annotations.filter(x=>!x.isQty).length} recuadro(s) en esta foto`,"ok"); }
     else showQtyPromptAt(id, finalBox);
   } else { bboxCurrent=null; redraw(); }
 }
@@ -971,7 +980,7 @@ async function samTap(e){
       redraw(); renderAnnoList(); updateButtons();
       samStatus("⚠️ Contorno automático no claro — se colocó un cuadro sobre el punto tocado, ajústalo con las esquinas si es necesario.");
       if(pending0) classifyAnnotationLocal(id0);
-      else if(!arrumeMode) showQtyPromptAt(id0,fbBox);
+      else if(!arrumeMode&&!multiBox) showQtyPromptAt(id0,fbBox);
       else{ bumpArrume(); showToast(`🔗 +1 ${clase0} (${arrumeCount})`,"ok"); }
       return;
     }
@@ -987,7 +996,7 @@ async function samTap(e){
     if(arrumeMode){ bumpArrume(); samStatus(`🔗 +1 ${clase} (${arrumeCount}) · toca otra pieza`); }
     else{ samStatus(`✅ Contorno trazado sobre pieza · ${pending?"identificando…":"toca otra o revisa"}`); }
     if(pending) classifyAnnotationLocal(id);
-    else if(!arrumeMode) showQtyPromptAt(id,bboxPts);
+    else if(!arrumeMode&&!multiBox) showQtyPromptAt(id,bboxPts);
   }catch(err){
     console.error("Auto-seg:",err);
     samStatus(`❌ Error: ${(err.message||err).toString().slice(0,80)}`);
@@ -1091,7 +1100,8 @@ function checkClase(){ if(!currentClase){ showToast("⚠️ Selecciona una clase
 // ─── Lista anotaciones ────────────────────────────────────────────
 function renderAnnoList(){
   const list=document.getElementById("anno-list"); const card=document.getElementById("annos-card"); const title=document.getElementById("annos-title");
-  if(!annotations.length){ card.style.display="none"; return; }
+  if(!annotations.length){ card.style.display="none"; updateMultiCounter(); return; }
+  updateMultiCounter();
   card.style.display="block"; title.textContent=`📦 Anotaciones (${annotations.length})`;
   list.innerHTML="";
   annotations.forEach(a=>{
@@ -1101,6 +1111,7 @@ function renderAnnoList(){
       <span class="anno-label" onclick="reassignClass(${a.id})" style="cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px" title="Cambiar clase">${a.clase}</span>
       <span class="anno-type">${a.type==="polygon"?"🔷 Polígono":"⬜ BBox"}</span>
       ${qtyBadge}
+      ${a.isQty?"":`<span onclick="showQtyPromptAt(${a.id},null)" style="cursor:pointer;font-size:13px" title="Asignar cantidad">🔢</span>`}
       <span class="anno-check" onclick="toggleAnno(${a.id})">${a.checked?"✅":"☐"}</span>
       <span class="anno-del" onclick="deleteAnno(${a.id})">🗑️</span>`;
     list.appendChild(item);
@@ -1268,7 +1279,7 @@ async function uploadAll(){
     const real=checked.filter(a=>!a.isQty);
     if(!real.length) throw new Error("No hay anotaciones de clase (solo QTY)");
     const escXml=value=>String(value).replace(/[<>&"']/g,ch=>({"<":"&lt;",">":"&gt;","&":"&amp;",'"':"&quot;","'":"&apos;"}[ch]));
-    const objects=[];
+    const objects=[]; const dropped=[];
     real.forEach(a=>{
       let bounds;
       if(a.type==="polygon"&&a.points?.length>=3){
@@ -1278,12 +1289,12 @@ async function uploadAll(){
         const w=Math.min(imgNatW-x,Math.max(...xs)-x),h=Math.min(imgNatH-y,Math.max(...ys)-y);
         bounds={x,y,w,h};
       }else{
-        const b=annotationBounds(a); if(!b) return;
+        const b=annotationBounds(a); if(!b){ dropped.push(a.clase); return; }
         let x=Math.max(0,b.x*scX), y=Math.max(0,b.y*scY);
         let w=Math.min(imgNatW-x,b.w*scX), h=Math.min(imgNatH-y,b.h*scY);
         bounds={x,y,w,h};
       }
-      if(!bounds||bounds.w<1||bounds.h<1) return;
+      if(!bounds||bounds.w<1||bounds.h<1){ dropped.push(a.clase); return; }
       const xmin=Math.max(0,Math.floor(bounds.x));
       const ymin=Math.max(0,Math.floor(bounds.y));
       const xmax=Math.min(imgNatW,Math.ceil(bounds.x+bounds.w));
@@ -1291,11 +1302,13 @@ async function uploadAll(){
       objects.push(`<object><name>${escXml(a.clase)}</name><pose>Unspecified</pose><truncated>0</truncated><difficult>0</difficult><bndbox><xmin>${xmin}</xmin><ymin>${ymin}</ymin><xmax>${xmax}</xmax><ymax>${ymax}</ymax></bndbox></object>`);
     });
     if(!objects.length) throw new Error("Anotaciones inválidas (tamaño 0)");
+    if(dropped.length) showToast(`⚠️ ${dropped.length} anotación(es) descartada(s): ${dropped.join(", ")}`,"err");
     const voc=`<?xml version="1.0"?><annotation><folder>UNISPAN</folder><filename>${escXml(baseName)}</filename><path>${escXml(baseName)}</path><source><database>Roboflow</database></source><size><width>${imgNatW}</width><height>${imgNatH}</height><depth>3</depth></size><segmented>0</segmented>${objects.join("")}</annotation>`;
     const annotationName=baseName.replace(/\.[^.]+$/,"")+".xml";
+    const annotationEnvelope={annotationFile:voc,labelmap:null};
     const annoRes=await fetchWithTimeout(
       `https://api.roboflow.com/dataset/${PROJECT}/annotate/${imageId.split("/").map(encodeURIComponent).join("/")}?api_key=${apiKey}&name=${encodeURIComponent(annotationName)}&jobName=${encodeURIComponent("Anotaciones App UNISPAN")}`,
-      {method:"POST",headers:{"Content-Type":"text/plain"},body:voc},30000);
+      {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(annotationEnvelope)},30000);
     const annoText=await annoRes.text();
     let annoData={}; try{ annoData=JSON.parse(annoText); }catch(_){}
     if(!annoRes.ok||annoData.error||annoData.success===false){
@@ -1322,7 +1335,7 @@ async function uploadAll(){
       if(!hash){ try{ const box=annotationBounds(a); const loc=localImageAnalysis(box); if(loc&&loc._cv) hash=computeFingerprintFromCanvas(loc._cv); }catch(_){} }
       if(hash) learnPiece(hash,codeUp,{familia:CATALOG_MAP[codeUp].family});
     });
-    showToast(`✅ ${checked.length} anotación(es) → Dataset`,"ok"); resetAll();
+    showToast(`✅ ${objects.length} BBox/Polígono(s) en 1 imagen → Dataset`,"ok"); resetAll();
   }catch(err){
     pb.style.background="var(--danger)";
     uploadLog.unshift({id:logId,url:previewUrl,annos:checked.map(a=>({clase:a.clase,color:a.color})),split,ok:false,error:err.message,file:selectedFile});
@@ -1395,9 +1408,9 @@ function downloadApp(){
   const html=document.documentElement.outerHTML;
   const blob=new Blob(['<!DOCTYPE html>\n'+html],{type:'text/html'});
   const url=URL.createObjectURL(blob);
-  const a=document.createElement('a'); a.href=url; a.download='UNISPAN-Dataset-v17.html';
+  const a=document.createElement('a'); a.href=url; a.download='UNISPAN-Dataset-v16.html';
   document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
-  showToast("⬇ Descargado como UNISPAN-Dataset-v17.html","ok");
+  showToast("⬇ Descargado como UNISPAN-Dataset-v16.html","ok");
 }
 
 // ─── Stats ────────────────────────────────────────────────────────
@@ -1724,24 +1737,11 @@ function normalizedBoxToDisplay(b){
   x=Math.max(0,Math.min(.98,x)); y=Math.max(0,Math.min(.98,y)); w=Math.max(.04,Math.min(1-x,w||.84)); h=Math.max(.04,Math.min(1-y,h||.84));
   return{x:x*imgDispW,y:y*imgDispH,w:w*imgDispW,h:h*imgDispH};
 }
-function boxOverlapRatio(b1,b2){
-  if(!b1||!b2) return 0;
-  const x1=Math.max(b1.x,b2.x), y1=Math.max(b1.y,b2.y);
-  const x2=Math.min(b1.x+b1.w,b2.x+b2.w), y2=Math.min(b1.y+b1.h,b2.y+b2.h);
-  const iw=Math.max(0,x2-x1), ih=Math.max(0,y2-y1);
-  const inter=iw*ih; if(!inter) return 0;
-  const union=b1.w*b1.h+b2.w*b2.h-inter;
-  return union>0?inter/union:0;
-}
 function applyPhysicalDetections(proof){
   if(!proof||!selectedFile) return;
   const p=(proof.piezas||[])[0];
   if(!p) return;
-  // Evita duplicar la MISMA detección (misma zona ya marcada), pero permite
-  // agregar detecciones adicionales en otras zonas de la foto (varias piezas).
-  const newBox=normalizedBoxToDisplay(p.bbox);
-  const dup=annotations.some(a=>a.fromPhysicalAuto && boxOverlapRatio(annotationBounds(a),newBox)>0.6);
-  if(dup){ showToast("ℹ️ Esa zona ya tiene una detección. Toca otra pieza o usa BBox manual.","ok"); return; }
+  if(annotations.filter(a=>a.fromPhysicalAuto).length) return;
   const ref=p.referencia||"POR-IDENTIFICAR";
   const id=Date.now(); const color=COLORS[annotations.length%COLORS.length];
   let anno;
@@ -1756,7 +1756,7 @@ function applyPhysicalDetections(proof){
   if(qty>1) addQtyBadgeForAnnotation(anno,qty);
   if(ref&&ref!=="POR-IDENTIFICAR") addReciente(ref);
   renderAnnoList(); redraw(); updateButtons();
-  if(!arrumeMode) showQtyPromptAt(id, anno.type==="polygon"?annotationBounds(anno):anno.bbox);
+  if(!arrumeMode&&!multiBox) showQtyPromptAt(id, anno.type==="polygon"?annotationBounds(anno):anno.bbox);
 }
 
 // ─── Auto-prueba física (100% local) ─────────────────────────────
@@ -1870,7 +1870,6 @@ function annotationCropDataUrl(a,pad=.08){
   return cv.toDataURL("image/jpeg",.86);
 }
 </script>
-
 
 
 </body></html>
