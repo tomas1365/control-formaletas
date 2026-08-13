@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#0a1628">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>UNISPAN — Dataset v17</title>
+<title>UNISPAN — Dataset v21</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;touch-action:manipulation;}
 :root{--bg:#0a1628;--surface:#102a43;--surface2:#1a3a5c;--border:rgba(99,125,152,0.25);--amber:#f59e0b;--steel:#627d98;--text:#e2e8f0;--text2:#94a3b8;--ok:#22c55e;--danger:#ef4444;--radius:14px;}
@@ -157,7 +157,7 @@ input[type="password"]{letter-spacing:2px;}
 <body id="artifacts-component-root-html">
 <header>
   <div class="logo">U</div>
-  <div style="flex:1"><h1>UNISPAN Dataset v20</h1><p>Multi-BBox por imagen · SAM · Memoria</p></div>
+  <div style="flex:1"><h1>UNISPAN Dataset v21</h1><p>Multi-BBox · Conteo de arrumes · Agente por referencia</p></div>
   <button class="btn btn-sm" style="background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.2);flex:none;padding:10px 14px" onclick="downloadApp()">⬇ Descargar</button>
 </header>
 <div class="tabs">
@@ -212,8 +212,12 @@ input[type="password"]{letter-spacing:2px;}
     </label>
     <label style="display:flex;align-items:center;gap:10px;margin-top:8px;padding:10px;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;cursor:pointer" for="multibox-toggle">
       <input type="checkbox" id="multibox-toggle" checked onchange="toggleMultiBox(this.checked)" style="width:18px;height:18px;margin:0;accent-color:var(--ok)">
-      <div style="flex:1"><div style="font-size:13px;font-weight:700;color:var(--text)">⬜⬜ Multi-BBox</div><div style="font-size:10px;color:var(--steel)">Dibuja varios recuadros seguidos en la misma foto (sin popup de cantidad). Todos se envían juntos.</div></div>
+      <div style="flex:1"><div style="font-size:13px;font-weight:700;color:var(--text)">⬜⬜ Multi-BBox</div><div style="font-size:10px;color:var(--steel)">Cada recuadro es un objeto independiente. Todos se validan y suben en la misma anotación.</div></div>
       <span id="multibox-counter" style="font-family:monospace;font-weight:800;color:var(--ok);font-size:16px">×0</span>
+    </label>
+    <label style="display:flex;align-items:center;gap:10px;margin-top:8px;padding:10px;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;cursor:pointer" for="qty-upload-toggle">
+      <input type="checkbox" id="qty-upload-toggle" checked style="width:18px;height:18px;margin:0;accent-color:var(--ok)">
+      <div style="flex:1"><div style="font-size:13px;font-weight:700;color:var(--text)">🔢 Subir cantidades</div><div style="font-size:10px;color:var(--steel)">Envía cada marcador QTY-N como un BBox adicional para entrenar el conteo.</div></div>
     </label>
   </div>
   <div class="card">
@@ -412,10 +416,12 @@ let physicalProofs=JSON.parse(localStorage.getItem("rf_physical_proofs")||"[]");
 let autoPhysicalOn=localStorage.getItem("rf_auto_physical")!=="0";
 let _lastMemoryEntry=null;
 let learnedPieces=JSON.parse(localStorage.getItem("rf_learned_pieces")||"[]");
+let referenceKnowledge=JSON.parse(localStorage.getItem("rf_reference_knowledge")||"{}");
 
 function saveMemory(){ try{ localStorage.setItem("rf_img_memory",JSON.stringify(imgMemory.slice(0,200))); }catch(_){} }
 function savePhysicalProofs(){ try{ localStorage.setItem("rf_physical_proofs",JSON.stringify(physicalProofs.slice(0,80))); }catch(_){} }
 function saveLearned(){ try{ localStorage.setItem("rf_learned_pieces",JSON.stringify(learnedPieces.slice(0,600))); }catch(_){} }
+function saveReferenceKnowledge(){ try{ localStorage.setItem("rf_reference_knowledge",JSON.stringify(referenceKnowledge)); }catch(_){} }
 
 // ─── Huella visual (dHash) + memoria de piezas confirmadas ────────
 function computeFingerprintFromCanvas(srcCanvas){
@@ -524,6 +530,7 @@ function setClase(code){
         let hash=a._hash;
         if(!hash){ try{ const box=annotationBounds(a); const loc=localImageAnalysis(box); if(loc&&loc._cv) hash=computeFingerprintFromCanvas(loc._cv); }catch(_){} }
         if(hash){ a._hash=hash; learnPiece(hash,codeUp,{familia:CATALOG_MAP[codeUp].family}); }
+        learnReferenceProfile(codeUp,a);
       }
     }
     catModalMode="select"; catReassignId=null;
@@ -1039,11 +1046,9 @@ function redraw(){
     ctx.strokeStyle=a.color; ctx.lineWidth=2.5; ctx.globalAlpha=1;
     if(a.type==="bbox"){
       const b=a.bbox;
-      ctx.fillStyle="rgba(0,0,0,0.2)";
-      ctx.fillRect(0,0,canvas.width,b.y);
-      ctx.fillRect(0,b.y+b.h,canvas.width,canvas.height-b.y-b.h);
-      ctx.fillRect(0,b.y,b.x,b.h);
-      ctx.fillRect(b.x+b.w,b.y,canvas.width-b.x-b.w,b.h);
+      // No oscurecer el exterior: con varios BBox las capas se acumulaban y la foto perdía luz.
+      ctx.fillStyle=a.color+"12";
+      ctx.fillRect(b.x,b.y,b.w,b.h);
       ctx.strokeRect(b.x,b.y,b.w,b.h);
       drawCorners(ctx,b.x,b.y,b.w,b.h,a.color);
       drawLabel(ctx,a.clase,b.x,b.y,a.color);
@@ -1102,7 +1107,7 @@ function renderAnnoList(){
   const list=document.getElementById("anno-list"); const card=document.getElementById("annos-card"); const title=document.getElementById("annos-title");
   if(!annotations.length){ card.style.display="none"; updateMultiCounter(); return; }
   updateMultiCounter();
-  card.style.display="block"; title.textContent=`📦 Anotaciones (${annotations.length})`;
+  card.style.display="block"; title.textContent=`📦 Anotaciones (${annotations.filter(a=>!a.isQty).length} objetos · ${annotations.filter(a=>a.isQty).length} cantidades)`;
   list.innerHTML="";
   annotations.forEach(a=>{
     const item=document.createElement("div"); item.className="anno-item";
@@ -1251,7 +1256,8 @@ function copyCode(code){ navigator.clipboard?.writeText(code).then(()=>showToast
 async function uploadAll(){
   const apiKey=document.getElementById("api-key").value.trim();
   const split=document.getElementById("split").value;
-  const checked=annotations.filter(a=>a.checked);
+  const uploadQty=document.getElementById("qty-upload-toggle")?.checked!==false;
+  const checked=annotations.filter(a=>a.checked&&(uploadQty||!a.isQty));
   if(!apiKey){ showToast("⚠️ Ingresa tu API Key Roboflow","err"); return; }
   if(!selectedFile){ showToast("⚠️ Selecciona imagen","err"); return; }
   if(!checked.length){ showToast("⚠️ Marca al menos una anotación","err"); return; }
@@ -1261,7 +1267,7 @@ async function uploadAll(){
   pw.classList.add("show"); pb.style.width="15%";
   const logId=Date.now();
   const ext=selectedFile.name.split(".").pop()||"jpg";
-  const baseName=checked.filter(a=>!a.isQty).map(a=>a.clase).join("_")+"_"+logId+"."+ext;
+  const baseName=checked.filter(a=>!a.isQty).map(a=>a.clase).join("_")+"_"+checked.filter(a=>!a.isQty).length+"obj_"+logId+"."+ext;
   const previewUrl=URL.createObjectURL(selectedFile);
   try{
     const b64=await fileToB64(selectedFile); pb.style.width="40%";
@@ -1276,8 +1282,10 @@ async function uploadAll(){
     const _bi=document.getElementById("bbox-img");
     const _dw=imgDispW||_bi?.offsetWidth||imgNatW, _dh=imgDispH||_bi?.offsetHeight||imgNatH;
     const scX=imgNatW/_dw, scY=imgNatH/_dh;
-    const real=checked.filter(a=>!a.isQty);
-    if(!real.length) throw new Error("No hay anotaciones de clase (solo QTY)");
+    const real=checked;
+    const objectCount=real.filter(a=>!a.isQty).length;
+    const quantityCount=real.filter(a=>a.isQty).length;
+    if(!objectCount) throw new Error("No hay BBox de piezas para subir");
     const escXml=value=>String(value).replace(/[<>&"']/g,ch=>({"<":"&lt;",">":"&gt;","&":"&amp;",'"':"&quot;","'":"&apos;"}[ch]));
     const objects=[]; const dropped=[];
     real.forEach(a=>{
@@ -1334,8 +1342,9 @@ async function uploadAll(){
       let hash=a._hash;
       if(!hash){ try{ const box=annotationBounds(a); const loc=localImageAnalysis(box); if(loc&&loc._cv) hash=computeFingerprintFromCanvas(loc._cv); }catch(_){} }
       if(hash) learnPiece(hash,codeUp,{familia:CATALOG_MAP[codeUp].family});
+      learnReferenceProfile(codeUp,a);
     });
-    showToast(`✅ ${objects.length} BBox/Polígono(s) en 1 imagen → Dataset`,"ok"); resetAll();
+    showToast(`✅ Verificado: ${objectCount} objeto(s)${quantityCount?` + ${quantityCount} cantidad(es)`:""} → Dataset`,"ok"); resetAll();
   }catch(err){
     pb.style.background="var(--danger)";
     uploadLog.unshift({id:logId,url:previewUrl,annos:checked.map(a=>({clase:a.clase,color:a.color})),split,ok:false,error:err.message,file:selectedFile});
@@ -1408,9 +1417,9 @@ function downloadApp(){
   const html=document.documentElement.outerHTML;
   const blob=new Blob(['<!DOCTYPE html>\n'+html],{type:'text/html'});
   const url=URL.createObjectURL(blob);
-  const a=document.createElement('a'); a.href=url; a.download='UNISPAN-Dataset-v16.html';
+  const a=document.createElement('a'); a.href=url; a.download='UNISPAN-Dataset-v21.html';
   document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
-  showToast("⬇ Descargado como UNISPAN-Dataset-v16.html","ok");
+  showToast("⬇ Descargado como UNISPAN-Dataset-v21.html","ok");
 }
 
 // ─── Stats ────────────────────────────────────────────────────────
@@ -1480,6 +1489,12 @@ async function expertAsk(){
   const inp=document.getElementById("expert-input"); const q=inp.value.trim(); if(!q) return;
   inp.value=""; expertUser(q);
   const qn=normTxt(q);
+  const mentionedRef=Object.keys(referenceKnowledge).find(code=>qn.includes(normTxt(code)));
+  if(mentionedRef){
+    const p=referenceKnowledge[mentionedRef];
+    expertBot(`<b>${safeHtml(mentionedRef)}</b><br>${safeHtml(p.spec||"Referencia aprendida en la aplicación.")}<br><span style="color:var(--ok)">🧠 ${safeHtml(referenceProfileText(mentionedRef))}</span>`);
+    return;
+  }
   const scored=EXPERT_KB.map(e=>{ const hay=normTxt(e.t+" "+e.k.join(" ")); let s=0; qn.split(/\s+/).filter(w=>w.length>2).forEach(w=>{ if(hay.includes(w)) s+=w.length; }); e.k.forEach(k=>{ if(qn.includes(normTxt(k))) s+=6; }); return{e,s}; }).sort((a,b)=>b.s-a.s);
   // Si pregunta sobre imagen actual, dar análisis local
   const wantsImage=/\b(foto|imagen|captur|actual|analic|reciente|ultim|últim|qu[eé] tom|qu[eé] veo|reconoc|que es|qué es)/i.test(q);
@@ -1539,6 +1554,33 @@ function calcFromCounts(){
   if(nl>0){ const l=nl*PITCH; document.getElementById("calc-l").value=l; out.push(`${nl} laterales ⇒ longitud <b>${l} mm</b>`); }
   if(nf>0&&nl>0){ const w=nf*PITCH,l=nl*PITCH,fam=familyFor(w),sw=nearest(w,STD_ANCHOS),sl=nearest(l,STD_LARGOS); out.push(`<span style="color:var(--amber)">Referencia: <b>${fam}-${sl}x${sw}</b></span>`); }
   calcOut(out.join("<br>"));
+}
+
+// Aprende un perfil técnico por referencia confirmada. No reemplaza el modelo de Roboflow:
+// acumula perforaciones, dimensiones, cantidades y confirmaciones para el agente local.
+function learnReferenceProfile(clase,anno){
+  const code=String(clase||"").toUpperCase();
+  if(!code||code.startsWith("QTY-")||code==="POR-IDENTIFICAR") return;
+  const catalog=CATALOG_MAP[code]||null;
+  let observed=null;
+  try{ const box=anno?annotationBounds(anno):null; observed=localImageAnalysis(box); }catch(_){}
+  const prev=referenceKnowledge[code]||{code,confirmations:0,quantities:[],observations:[]};
+  prev.confirmations=(prev.confirmations||0)+1;
+  prev.family=catalog?.family||observed?.familia||prev.family||"?";
+  prev.spec=catalog?.spec||prev.spec||"";
+  prev.lastSeen=Date.now();
+  if(anno?.qty) prev.quantities=[...(prev.quantities||[]),anno.qty].slice(-30);
+  if(observed){
+    prev.observations=[...(prev.observations||[]),{frontales:observed.frontales,laterales:observed.laterales,ancho_mm:observed.ancho_mm,largo_mm:observed.largo_mm,confianza:observed.confianza}].slice(-20);
+    prev.frontales=observed.frontales||prev.frontales; prev.laterales=observed.laterales||prev.laterales;
+    prev.ancho_mm=observed.ancho_mm||prev.ancho_mm; prev.largo_mm=observed.largo_mm||prev.largo_mm;
+  }
+  referenceKnowledge[code]=prev; saveReferenceKnowledge();
+}
+function referenceProfileText(code){
+  const p=referenceKnowledge[String(code||"").toUpperCase()]; if(!p) return "";
+  const q=(p.quantities||[]); const avg=q.length?Math.round(q.reduce((a,b)=>a+b,0)/q.length):null;
+  return `${p.confirmations||0} confirmación(es)${p.frontales?` · ${p.frontales}F`:""}${p.laterales?` × ${p.laterales}L`:""}${p.ancho_mm&&p.largo_mm?` · ${p.largo_mm}×${p.ancho_mm} mm`:""}${avg?` · arrume medio ${avg} piezas`:""}`;
 }
 
 // ═══════════════════════════════════════════════════════════════════
