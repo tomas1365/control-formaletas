@@ -1319,7 +1319,9 @@ async function uploadAll(){
     pb.style.width="65%";
     // El endpoint de anotación espera exactamente el ID devuelto por la subida.
     const imageId=String(upData.id||upData.image?.id||"");
+    const isDuplicate=!!(upData.duplicate||upData.image?.duplicate);
     if(!imageId) throw new Error("Roboflow no devolvió id de imagen");
+    if(isDuplicate) showToast("ℹ️ Roboflow ya tenía esta imagen (duplicada) · se sobrescribirá su anotación","ok");
     // ── Anotación Pascal VOC: un XML asociado directamente a esta imagen ──
     const _bi=document.getElementById("bbox-img");
     const _dw=imgDispW||_bi?.offsetWidth||imgNatW, _dh=imgDispH||_bi?.offsetHeight||imgNatH;
@@ -1355,7 +1357,7 @@ async function uploadAll(){
     const annotationName=baseName.replace(/\.[^.]+$/,"")+".xml";
     const annotationEnvelope={annotationFile:voc,labelmap:null};
     const annoRes=await fetchWithTimeout(
-      `https://api.roboflow.com/dataset/${PROJECT}/annotate/${imageId.split("/").map(encodeURIComponent).join("/")}?api_key=${apiKey}&name=${encodeURIComponent(annotationName)}&jobName=${encodeURIComponent("Anotaciones App UNISPAN")}`,
+      `https://api.roboflow.com/dataset/${PROJECT}/annotate/${imageId.split("/").map(encodeURIComponent).join("/")}?api_key=${apiKey}&name=${encodeURIComponent(annotationName)}&jobName=${encodeURIComponent("Anotaciones App UNISPAN")}&overwrite=true`,
       {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(annotationEnvelope)},30000);
     const annoText=await annoRes.text();
     let annoData={}; try{ annoData=JSON.parse(annoText); }catch(_){}
