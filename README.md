@@ -1355,10 +1355,14 @@ async function uploadAll(){
     if(dropped.length) showToast(`⚠️ ${dropped.length} anotación(es) descartada(s): ${dropped.join(", ")}`,"err");
     const voc=`<?xml version="1.0"?><annotation><folder>UNISPAN</folder><filename>${escXml(baseName)}</filename><path>${escXml(baseName)}</path><source><database>Roboflow</database></source><size><width>${imgNatW}</width><height>${imgNatH}</height><depth>3</depth></size><segmented>0</segmented>${objects.join("")}</annotation>`;
     const annotationName=baseName.replace(/\.[^.]+$/,"")+".xml";
-    const annotationEnvelope={annotationFile:voc,labelmap:null};
+    // La API de Roboflow espera el XML crudo como cuerpo de la petición
+    // (igual que "cat anotacion.xml | curl -d @-"), NO envuelto en JSON.
+    // Envolverlo en {annotationFile, labelmap} hacía que Roboflow solo
+    // reconociera/tomara el primer <object> del XML y descartara el resto,
+    // por eso con varios BBox en una misma foto solo llegaba 1 a Roboflow.
     const annoRes=await fetchWithTimeout(
       `https://api.roboflow.com/dataset/${PROJECT}/annotate/${imageId.split("/").map(encodeURIComponent).join("/")}?api_key=${apiKey}&name=${encodeURIComponent(annotationName)}&jobName=${encodeURIComponent("Anotaciones App UNISPAN")}&overwrite=true`,
-      {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(annotationEnvelope)},30000);
+      {method:"POST",headers:{"Content-Type":"text/plain"},body:voc},30000);
     const annoText=await annoRes.text();
     let annoData={}; try{ annoData=JSON.parse(annoText); }catch(_){}
     if(!annoRes.ok||annoData.error||annoData.success===false){
