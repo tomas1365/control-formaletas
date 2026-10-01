@@ -1271,13 +1271,15 @@ async function uploadAll(){
   const previewUrl=URL.createObjectURL(selectedFile);
   try{
     const b64=await fileToB64(selectedFile); pb.style.width="40%";
-    const upRes=await fetchWithTimeout(`https://api.roboflow.com/dataset/${PROJECT}/upload?api_key=${apiKey}&name=${encodeURIComponent(baseName)}&split=${split}`,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:b64.split(",")[1]},30000);
+    const upRes=await fetchWithTimeout(`https://api.roboflow.com/dataset/${PROJECT}/upload?api_key=${apiKey}&name=${encodeURIComponent(baseName)}&split=${split}&batch=${encodeURIComponent("App UNISPAN")}&tag=${encodeURIComponent("app-unispan")}`,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:b64.split(",")[1]},30000);
     const upData=await upRes.json();
     if(!upRes.ok||upData.error) throw new Error(upData.error||`HTTP ${upRes.status}`);
     pb.style.width="65%";
     // El endpoint de anotación espera exactamente el ID devuelto por la subida.
     const imageId=String(upData.id||upData.image?.id||"");
     if(!imageId) throw new Error("Roboflow no devolvió id de imagen");
+    console.log("[v23] Respuesta subida Roboflow:",upData);
+    if(upData.duplicate){ showToast("⚠️ Roboflow dice que esta foto YA estaba subida (duplicada): no suma al total. Usa una foto nueva.","err"); }
     // ── Anotación Pascal VOC: un XML asociado directamente a esta imagen ──
     const _bi=document.getElementById("bbox-img");
     const _dw=imgDispW||_bi?.offsetWidth||imgNatW, _dh=imgDispH||_bi?.offsetHeight||imgNatH;
@@ -1326,14 +1328,14 @@ async function uploadAll(){
     const base0=baseName.replace(/\.[^.]+$/,"");
     try{ await tryAnno(base0+".json",createml); }
     catch(e1){ console.warn("CreateML falló, usando VOC:",e1.message); try{ await tryAnno(base0+".xml",voc); }catch(e2){ throw new Error("Anotación falló: "+e2.message); } }
-    console.log(`[v22] Enviados ${vocBoxes.length} recuadros en una sola anotación`,cmlAnnos);
+    console.log(`[v23] Enviados ${vocBoxes.length} recuadros en una sola anotación`,cmlAnnos);
     pb.style.width="100%";
     sessionCount++; totalCount++; okCount++;
     localStorage.setItem("rf_total",totalCount); localStorage.setItem("rf_ok",okCount);
     document.getElementById("cnt-session").textContent=sessionCount;
     document.getElementById("cnt-total").textContent=totalCount;
     document.getElementById("cnt-ok").textContent=okCount;
-    const entry={id:logId,url:previewUrl,annos:checked.map(a=>({clase:a.clase,color:a.color,type:a.type})),split,ok:true,file:selectedFile,imageId};
+    const entry={id:logId,url:previewUrl,annos:checked.map(a=>({clase:a.clase,color:a.color,type:a.type})),split:split+(upData.duplicate?" · REPETIDA":" · nueva"),ok:true,file:selectedFile,imageId};
     uploadLog.unshift(entry); addLogItem(entry);
     checked.filter(a=>!a.isQty).forEach(a=>addReciente(a.clase));
     const uniqueClasses=[...new Set(checked.filter(a=>!a.isQty).map(a=>a.clase))];
@@ -1348,7 +1350,7 @@ async function uploadAll(){
       if(hash) learnPiece(hash,codeUp,{familia:CATALOG_MAP[codeUp].family});
       learnReferenceProfile(codeUp,a);
     });
-    showToast(`✅ ${vocBoxes.length} recuadro(s) en 1 foto: ${objectCount} pieza(s)${quantityCount?` + ${quantityCount} cantidad(es)`:""} → Dataset`,"ok"); resetAll();
+    showToast(upData.duplicate?`⚠️ Foto repetida: Roboflow actualizó sus ${vocBoxes.length} recuadro(s) pero no la cuenta como nueva`:`✅ Foto NUEVA + ${vocBoxes.length} recuadro(s) → lote "App UNISPAN" (${split})`,upData.duplicate?"err":"ok"); resetAll();
   }catch(err){
     pb.style.background="var(--danger)";
     uploadLog.unshift({id:logId,url:previewUrl,annos:checked.map(a=>({clase:a.clase,color:a.color})),split,ok:false,error:err.message,file:selectedFile});
