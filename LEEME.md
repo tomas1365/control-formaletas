@@ -1,4 +1,4 @@
-# Horas Extras · Unispan
+# Jornada Ext Laboral · Unispan
 
 App web para registrar, firmar y legalizar horas extras con el formato
 "REPORTE DE NOVEDADES HORAS EXTRAS". Funciona igual que la Bitácora de Herramientas:
@@ -117,3 +117,68 @@ los salarios. Si una hoja ya está registrada en el libro de otra persona, no se
 En **Mi cuenta → Compartir la app** está el enlace con botones para copiar, compartir o enviar por WhatsApp.
 Quien lo abra la usa en el navegador del PC o la instala en el celular, y pide acceso desde la pantalla de ingreso.
 - Costo = salario ÷ 210 × recargo × horas (divisor y recargos en Ajustes).
+
+## Que la app no se duerma
+En el plan gratuito, Render duerme el servidor después de 15 minutos sin uso y tarda alrededor de un minuto en despertar.
+- Mientras alguien tenga la app abierta, no se duerme (la app consulta el servidor cada 15 segundos).
+- Al abrirla con el servidor dormido, la pantalla aparece al instante con "Conectando con el servidor…" y entra sola.
+- **Para que no se duerma nunca (gratis):** cree una cuenta en https://cron-job.org, **Create cronjob**, URL
+  `https://SU-APP.onrender.com/salud`, cada **10 minutos**. Si la Bitácora también está en el plan gratuito de la misma
+  cuenta de Render, limite el horario (por ejemplo lunes a sábado de 6:00 a 19:00, zona America/Bogota): las dos apps
+  comparten 750 horas gratis al mes y, si se agotan, Render suspende ambas hasta el mes siguiente.
+- **Opción sin límites:** en Render, servicio → Settings → Instance Type → **Starter** (USD 7 al mes); no se duerme nunca.
+
+## Centros de costo
+- En **Accesos → Centros de costo** el principal crea los centros (código y nombre) y, con **Editar**, asigna a cada persona
+  los suyos.
+- Cada hoja tiene un **centro de costo** (en el editor). Las horas se cargan a ese centro, sin importar el área del
+  colaborador. Un usuario solo puede elegir entre los centros que tiene asignados; por defecto se usa el primero.
+- Informes tiene filtro y gráfica por centro de costo; aparece también en el PDF, el Excel, el consolidado y los planos de nómina.
+
+## Libro por años y meses
+El Libro abre en el **mes en curso** (o el último con hojas). Arriba están los años y sus meses con cuántas hojas tiene cada
+uno, y en el PC también en la barra lateral, debajo de "Libro". "Todos los meses" muestra todo; con fechas o búsqueda
+se busca en todos los meses.
+
+## Nómina
+- En Accesos marque a un administrador como **Nómina** (el principal también tiene el permiso).
+- Menú **Nómina**: una tarjeta por semana de **sábado a viernes**, con colaboradores, horas extras, recargo nocturno, valor y
+  cuántos registros fueron en **festivo** o domingo.
+- **Descargar plano** genera un Excel con tres hojas: **PLANO** (una fila por colaborador, centro de costo y concepto
+  —código de jornada D, N, DD, ND, FD, FN, RN— con factor, horas, horas en festivo, salario, valor hora y valor),
+  **DETALLE** (cada registro) y **CONTROL** (totales por concepto y estado).
+- Control: **Marcar revisado** y después **Marcar pagado** (queda quién y cuándo). Si las horas de una semana cambian
+  después de revisarla, la tarjeta lo avisa para revisarla de nuevo.
+- Por defecto se pagan las **legalizaciones**; se pueden incluir autorizaciones que aún no se han legalizado.
+
+## Rangos de administrador (cargos)
+En **Accesos → Rangos de administrador** el principal crea cargos (Coordinador, Jefe de área, Gerente…) y marca sus
+permisos: ver salarios y costos, ver todos los libros, definir metas, crear proyectos, reabrir hojas y quitar firmas,
+cambiar responsable, actualizar salarios y nómina. Con **Editar** se asigna el rango a cada administrador. Un administrador
+sin rango tiene los permisos básicos (todos menos salarios y nómina, que se dan con su casilla o con el rango).
+El servidor aplica los permisos: por ejemplo, un rango sin "ver salarios" no recibe salarios ni costos.
+
+## Proyectos
+- En **Informes → Proyectos**, quien tenga el permiso crea proyectos: nombre, **por qué** se hacen las horas extras,
+  centro de costo, fechas, meta de horas, estado y personas asignadas (si no marca ninguna, todos pueden usarlo).
+- En cada hoja se elige el proyecto: trae el porqué a Observaciones y a los soportes vacíos, y su centro de costo.
+- Informes por proyecto: tarjeta con horas, costo, colaboradores, hojas y avance contra la meta; filtro y gráfica por
+  proyecto en el tablero; **Informe del proyecto** en Excel. El proyecto también sale en el PDF, el Excel y los planos de nómina.
+
+## Centros de costo de las hojas ya cargadas
+Al asignar centros de costo a una persona, sus hojas que no tenían centro (o tenían uno que no es suyo) pasan a su primer
+centro asignado, y queda anotado en el historial de cada hoja. El Libro muestra los años **cerrados**: al tocar un año se
+despliegan sus meses.
+
+## Llegada de operarios y asistencia
+Menú **Llegada**: elija la fecha (Hoy, Ayer, Mañana o cualquier día) y aparecen los operarios programados en las hojas de
+ese día. Por cada uno: **Llegó ahora** (anota la hora actual) o escriba la hora de llegada, y marque **✓ Asistió** o
+**✕ No asistió**. Si llegó más de 5 minutos después de la hora programada se marca "min tarde". **Confirmar a todos los que
+llegaron** confirma de una vez a quienes ya tienen hora de llegada. Queda quién confirmó y cuándo.
+En la hoja, cada nombre muestra su llegada y asistencia, y un indicador "Asistencia confirmada x/y". Al legalizar una
+autorización, las filas marcadas "No asistió" no pasan a la legalización. Los planos de nómina traen LLEGADA y ASISTENCIA.
+
+## Confirmar hojas (libro en curso)
+El Libro abre en **En curso**: solo las hojas sin confirmar. Cuando una hoja está lista, **Confirmar y enviar a su mes**
+(en la hoja o seleccionando varias en el Libro) la pasa al mes de su fecha, dentro del año (Libro ▸ 2026 ▸ Noviembre).
+Antes de confirmar avisa si hay firmas o asistencias pendientes. **Devolver a en curso** la regresa.

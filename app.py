@@ -1,4 +1,4 @@
-"""Horas Extras Unispan — servidor.
+"""Jornada Ext Laboral (horas extras) · Unispan — servidor.
 
 Misma base que la Bitácora de Herramientas: ingreso con usuario y clave propios,
 el primer administrador se crea con el CODIGO_INSTALACION y las demás personas
@@ -67,11 +67,18 @@ MAX_INTENTOS = 5
 BLOQUEO_MS = 15 * 60 * 1000
 ROLES_FIRMA = ("ELABORA", "AUTORIZA", "LIQUIDA")
 ESTADOS = ("borrador", "firmado", "legalizado", "cerrado")
-CATALOGOS = ("empleados", "jornadas", "config", "metas")
+CATALOGOS = ("empleados", "jornadas", "config", "metas", "centros", "nomina", "proyectos", "rangos")
 # Roles: principal (quien instaló la app; cambia estructura y forma y aprueba accesos),
 # admin (ve y edita salarios, recargos y costos) y operario (usuario: registra y firma, sin valores).
 ROLES = ("principal", "admin", "operario")
 ADMINES = ("principal", "admin")
+# Permisos que se reparten con los rangos (cargos) de administrador. Un administrador sin rango tiene los
+# permisos de siempre (todos menos salarios y nómina, que se dan con sus casillas o con el rango).
+PERMISOS = {"valores": "Ver salarios, recargos y costos", "todos": "Ver los libros de todas las personas",
+            "metas": "Definir metas", "proyectos": "Crear y editar proyectos", "reabrir": "Reabrir hojas cerradas y quitar firmas",
+            "responsable": "Cambiar el responsable de las hojas", "salarios": "Actualizar salarios (Recursos Humanos)",
+            "nomina": "Nómina: planos, revisado y pagado"}
+PERM_BASE = ["valores", "todos", "metas", "proyectos", "reabrir", "responsable"]
 
 
 def ahora():
@@ -138,7 +145,11 @@ def usuario_actual():
     if not uid:
         return None
     with pool.connection() as c:
-        u = c.execute("select id,nombre,usuario,rol,estado,rrhh from hx_usuarios where id=%s", (uid,)).fetchone()
+        u = c.execute("select id,nombre,usuario,rol,estado,rrhh,nomina,ccs,rango from hx_usuarios where id=%s", (uid,)).fetchone()
+        if u and u["rol"] == "admin" and u.get("rango"):
+            rg = next((x for x in (leer_registro(c, "catalogo", "rangos") or {}).get("lista") or [] if x.get("id") == u["rango"]), None)
+            u["_perm"] = set(rg.get("p") or []) if rg else None
+            u["rangoNombre"] = rg.get("n") if rg else None
     if not u or u["estado"] != "activo":
         session.clear()
         return None
@@ -176,12 +187,33 @@ def validar_clave(clave):
 
 
 def publico(u):
-    return dict({k: u[k] for k in ("id", "nombre", "usuario", "rol", "estado")}, rrhh=puede_salarios(u))
+    return dict({k: u[k] for k in ("id", "nombre", "usuario", "rol", "estado")}, rrhh=puede_salarios(u),
+                nomina=puede_nomina(u), ccs=u.get("ccs") or [], rango=u.get("rangoNombre"),
+                permisos=[p for p in PERMISOS if puede(u, p)])
+
+
+def puede(u, p):
+    """¿El usuario tiene el permiso p? El principal todo; el usuario ninguno; el administrador según su rango."""
+    if u["rol"] == "principal":
+        return True
+    if u["rol"] != "admin":
+        return False
+    if p == "salarios" and u.get("rrhh"):
+        return True
+    if p == "nomina" and u.get("nomina"):
+        return True
+    perm = u.get("_perm")
+    return p in (perm if perm is not None else PERM_BASE)
+
+
+def puede_nomina(u):
+    """Administrador de nómina: descarga los planos semanales y marca revisado y pagado."""
+    return puede(u, "nomina")
 
 
 def puede_salarios(u):
     """Los salarios generales los actualiza Recursos Humanos (y el administrador principal)."""
-    return u["rol"] == "principal" or (u["rol"] == "admin" and bool(u.get("rrhh")))
+    return puede(u, "salarios")
 
 
 # Las claves que asigna el administrador principal se guardan también cifradas (con SECRET_KEY) para que
@@ -214,6 +246,26 @@ def leer_registro(c, col, rid, bloquear=False):
     return r["data"] if r else None
 
 
+def asignar_cc_hojas(c, uid, ccs):
+    """Las horas extras ya cargadas en el libro de una persona se envían a su centro de costo asignado
+    (a las hojas que aún no tienen uno, o cuyo centro ya no le corresponde)."""
+    if not ccs:
+        return 0
+    filas = c.execute("""select id,data from hx_registros where col='formatos' and data->>'dueno'=%s
+                         and not (data ? '_eliminado')""", (uid,)).fetchall()
+    n = 0
+    for r in filas:
+        f = r["data"]
+        if f.get("cc") in ccs:
+            continue
+        f["cc"] = ccs[0]
+        f.setdefault("log", []).append({"t": datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds"),
+                                        "a": "Centro de costo asignado", "d": ccs[0], "por": "Accesos"})
+        guardar_registro(c, "formatos", r["id"], f)
+        n += 1
+    return n
+
+
 def asignar_sin_responsable(c, uid, nombre):
     """Las horas extras que ya existían (cargadas antes de haber libros por persona) son del administrador principal."""
     c.execute("""update hx_registros set data = data || jsonb_build_object('dueno', %s::text, 'duenoNombre', %s::text),
@@ -231,6 +283,8 @@ def asegurar_principal():
         p = c.execute("select id,nombre from hx_usuarios where rol='principal' limit 1").fetchone()
         if p:
             asignar_sin_responsable(c, p["id"], p["nombre"])
+        for u in c.execute("select id,ccs from hx_usuarios where jsonb_array_length(ccs) > 0").fetchall():
+            asignar_cc_hojas(c, u["id"], u["ccs"])
 
 
 def migrar_usuarios():
@@ -238,6 +292,9 @@ def migrar_usuarios():
         c.execute("alter table hx_usuarios add column if not exists clave_ver text")
         c.execute("alter table hx_usuarios add column if not exists ultimo_ingreso bigint")
         c.execute("alter table hx_usuarios add column if not exists rrhh boolean not null default false")
+        c.execute("alter table hx_usuarios add column if not exists nomina boolean not null default false")
+        c.execute("alter table hx_usuarios add column if not exists ccs jsonb not null default '[]'::jsonb")
+        c.execute("alter table hx_usuarios add column if not exists rango text")
 
 
 def recalcular_totales():
@@ -266,8 +323,8 @@ def inicio():
 def manifest():
     return jsonify({
         "id": "/",
-        "name": "Horas Extras Unispan",
-        "short_name": "Horas Extras",
+        "name": "Jornada Ext Laboral · Unispan",
+        "short_name": "Jornada Ext Laboral",
         "description": "Registro, firmas y legalización de horas extras",
         "lang": "es-CO",
         "start_url": "/",
@@ -315,6 +372,21 @@ def logo():
 
 
 # ---------------------------------------------------------------- acceso
+@app.get("/salud")
+def salud():
+    """Dirección liviana para que un monitor externo (cron-job.org, UptimeRobot) mantenga despierto el servidor.
+    Hace una consulta mínima a la base de datos para que también quede lista la conexión."""
+    try:
+        with pool.connection() as c:
+            c.execute("select 1")
+        r = jsonify({"ok": True, "hora": ahora()})
+    except Exception:
+        r = jsonify({"ok": False}), 503
+        return r
+    r.headers["Cache-Control"] = "no-store"
+    return r
+
+
 @app.get("/api/estado")
 def estado():
     with pool.connection() as c:
@@ -426,7 +498,7 @@ def cambiar_clave():
 @requiere("principal")
 def usuarios():
     with pool.connection() as c:
-        rows = c.execute("""select id,nombre,usuario,rol,estado,creado,ultimo_ingreso,rrhh,
+        rows = c.execute("""select id,nombre,usuario,rol,estado,creado,ultimo_ingreso,rrhh,nomina,ccs,rango,
                             (clave_ver is not null) as clave_visible from hx_usuarios order by estado='pendiente' desc, nombre""").fetchall()
     return jsonify({"usuarios": rows})
 
@@ -478,6 +550,9 @@ def crear_usuario():
     usuario, nombre, clave = limpiar_usuario(d.get("usuario")), (d.get("nombre") or "").strip(), d.get("clave") or ""
     rol = d.get("rol") if d.get("rol") in ("admin", "operario") else "operario"
     rrhh = bool(d.get("rrhh")) and rol == "admin"
+    nomina = bool(d.get("nomina")) and rol == "admin"
+    ccs = [str(x)[:40] for x in d.get("ccs") or [] if str(x).strip()][:30]
+    rango = (str(d.get("rango"))[:40] if d.get("rango") and rol == "admin" else None)
     if not usuario or not nombre:
         return error("Escribe el nombre y un usuario.")
     if not re.fullmatch(r"[a-z0-9._-]{3,30}", usuario):
@@ -487,8 +562,8 @@ def crear_usuario():
     with pool.connection() as c:
         if c.execute("select 1 from hx_usuarios where usuario=%s", (usuario,)).fetchone():
             return error("Ese usuario ya existe. Elige otro.", 409)
-        c.execute("insert into hx_usuarios(id,nombre,usuario,clave,rol,estado,creado,aprobado_por,clave_ver,rrhh) values(%s,%s,%s,%s,%s,'activo',%s,%s,%s,%s)",
-                  (uuid.uuid4().hex, nombre[:80], usuario, generate_password_hash(clave), rol, ahora(), request.u["id"], cifrar(clave), rrhh))
+        c.execute("insert into hx_usuarios(id,nombre,usuario,clave,rol,estado,creado,aprobado_por,clave_ver,rrhh,nomina,ccs,rango) values(%s,%s,%s,%s,%s,'activo',%s,%s,%s,%s,%s,%s,%s)",
+                  (uuid.uuid4().hex, nombre[:80], usuario, generate_password_hash(clave), rol, ahora(), request.u["id"], cifrar(clave), rrhh, nomina, Jsonb(ccs), rango))
     return jsonify({"ok": True})
 
 
@@ -530,7 +605,12 @@ def gestionar_usuario(uid):
                 return error("Ese usuario ya existe. Elige otro.", 409)
             rol = u["rol"] if u["rol"] == "principal" else (d.get("rol") if d.get("rol") in ("admin", "operario") else u["rol"])
             rrhh = bool(d.get("rrhh")) and rol == "admin"
-            c.execute("update hx_usuarios set nombre=%s, usuario=%s, rol=%s, rrhh=%s where id=%s", (nombre[:80], usuario, rol, rrhh, uid))
+            nomina = bool(d.get("nomina")) and rol == "admin"
+            ccs = [str(x)[:40] for x in d.get("ccs") or [] if str(x).strip()][:30]
+            rango = (str(d.get("rango"))[:40] if d.get("rango") and rol == "admin" else None)
+            c.execute("update hx_usuarios set nombre=%s, usuario=%s, rol=%s, rrhh=%s, nomina=%s, ccs=%s, rango=%s where id=%s",
+                      (nombre[:80], usuario, rol, rrhh, nomina, Jsonb(ccs), rango, uid))
+            asignar_cc_hojas(c, uid, ccs)
             if d.get("clave"):
                 if (m := validar_clave(d.get("clave"))):
                     return error(m)
@@ -555,7 +635,7 @@ def datos():
     with pool.connection() as c:
         rows = c.execute("select col,id,data from hx_registros where actualizado>%s", (desde - 2000 if desde else -1,)).fetchall()
     out = {}
-    ver = request.u["rol"] in ADMINES
+    ver = puede(request.u, "valores")
     for r in rows:
         data = r["data"]
         if r["col"] == "formatos" and not data.get("_eliminado") and not puede_ver(request.u, data):
@@ -566,7 +646,7 @@ def datos():
 
 def puede_ver(u, f):
     """Los administradores ven todo el libro; cada usuario ve solo las hojas de las que es responsable."""
-    return u["rol"] in ADMINES or (f or {}).get("dueno") == u["id"]
+    return puede(u, "todos") or (f or {}).get("dueno") == u["id"]
 
 
 def sin_valores(col, rid, data):
@@ -576,6 +656,8 @@ def sin_valores(col, rid, data):
         data["filas"] = [{k: v for k, v in r.items() if k not in ("s", "r", "co")} for r in data.get("filas") or []]
     elif col == "catalogo" and rid == "empleados":
         data = dict(data, lista=[e[:3] + [None] + e[4:] for e in data.get("lista") or []])
+    elif col == "catalogo" and rid == "nomina":
+        data = {}
     elif col == "catalogo" and rid == "metas":
         data = dict(data, globalMesC=None, areas=[dict(a, c=None) for a in data.get("areas") or []])
     elif col == "catalogo" and rid == "jornadas":
@@ -749,7 +831,7 @@ def preparar(c, fid, d, antes):
     admin = request.u["rol"] in ADMINES
     if antes:
         dueno = antes.get("dueno"), antes.get("duenoNombre")
-        if admin and d.get("dueno") and d.get("dueno") != antes.get("dueno"):
+        if puede(request.u, "responsable") and d.get("dueno") and d.get("dueno") != antes.get("dueno"):
             dueno = d["dueno"], d.get("duenoNombre")
     else:
         dueno = request.u["id"], request.u["nombre"]
@@ -758,7 +840,14 @@ def preparar(c, fid, d, antes):
             if otro:
                 dueno = otro["id"], otro["nombre"]  # el administrador carga la hoja en el libro de esa persona
     d["dueno"], d["duenoNombre"] = dueno
-    d = completar_valores(c, d, antes, confiar=admin)
+    # Centro de costo de la hoja: las horas se cargan a él, sin importar el área del colaborador.
+    mios = request.u.get("ccs") or []
+    if not admin and mios and d.get("cc") not in mios:
+        d["cc"] = (antes or {}).get("cc") if (antes or {}).get("cc") in mios else mios[0]
+    if not d.get("cc"):
+        due = c.execute("select ccs from hx_usuarios where id=%s", (d["dueno"],)).fetchone()
+        d["cc"] = (due["ccs"] or [None])[0] if due else None
+    d = completar_valores(c, d, antes, confiar=puede(request.u, "valores"))
     return normalizar_formato(d)
 
 
@@ -790,7 +879,7 @@ def revisar_metas():
         if antes and not puede_ver(request.u, antes):
             return error("Esta hoja es de otra persona.", 403)
         d = preparar(c, fid, dict(d), antes if antes and not antes.get("_eliminado") else None)
-        alertas = evaluar_metas(c, fid, d, request.u["rol"] in ADMINES)
+        alertas = evaluar_metas(c, fid, d, puede(request.u, "valores"))
         duplicada = buscar_duplicada(c, fid, d) if b.get("buscarDuplicada") else None
         modo = (leer_registro(c, "catalogo", "metas") or {}).get("modo") or "avisar"
     return jsonify({"alertas": alertas, "bloquea": modo == "bloquear" and request.u["rol"] not in ADMINES, "duplicada": duplicada})
@@ -848,6 +937,12 @@ def aplicar_salarios():
     return jsonify({"ok": True, "hojas": hojas, "filas": filas_cambiadas})
 
 
+@app.get("/api/permisos")
+@requiere()
+def lista_permisos():
+    return jsonify({"permisos": PERMISOS, "base": PERM_BASE})
+
+
 @app.get("/api/responsables")
 @requiere("admin")
 def responsables():
@@ -875,9 +970,10 @@ def guardar_formato(fid, nuevo=None):
         if antes and not puede_ver(request.u, antes):
             return error("Esta hoja es de otra persona.", 403)
         admin = request.u["rol"] in ADMINES
-        if antes and antes.get("estado") == "cerrado" and d.get("estado") != "cerrado" and not admin:
+        reabre = puede(request.u, "reabrir")
+        if antes and antes.get("estado") == "cerrado" and d.get("estado") != "cerrado" and not reabre:
             return error("Solo un administrador puede reabrir una hoja cerrada.", 403)
-        if antes and antes.get("estado") == "cerrado" and d.get("estado") == "cerrado" and not admin:
+        if antes and antes.get("estado") == "cerrado" and d.get("estado") == "cerrado" and not reabre:
             sin = lambda fs: [{k: v for k, v in r.items() if k not in ("s", "r", "co")} for r in fs or []]
             if sin(d.get("filas")) != sin(antes.get("filas")):
                 return error("La hoja está cerrada. Reábrela para cambiarla.", 409)
@@ -893,7 +989,7 @@ def guardar_formato(fid, nuevo=None):
             if any(a["nivel"] == "supera" for a in evaluar_metas(c, fid, d, False)):
                 return error("La hoja supera una meta de horas extras fijada por los administradores. Pida a un administrador que la apruebe.", 409)
         guardar_registro(c, "formatos", fid, d)
-    out = d if admin else sin_valores("formatos", fid, d)
+    out = d if puede(request.u, "valores") else sin_valores("formatos", fid, d)
     return jsonify({"ok": True, "id": fid, "data": out})
 
 
@@ -904,7 +1000,7 @@ def eliminar_formato(fid):
         f = leer_registro(c, "formatos", fid, bloquear=True)
         if not f or f.get("_eliminado") or not puede_ver(request.u, f):
             return error("La hoja no existe.", 404)
-        if (f.get("estado") != "borrador" or f.get("pie")) and request.u["rol"] not in ADMINES:
+        if (f.get("estado") != "borrador" or f.get("pie")) and not puede(request.u, "reabrir"):
             return error("Solo un administrador puede eliminar una hoja firmada o cerrada.", 403)
         c.execute("delete from hx_firmas where formato=%s", (fid,))
         guardar_registro(c, "formatos", fid, {"_eliminado": True})
@@ -918,7 +1014,13 @@ def guardar_catalogo(doc):
         return error("Catálogo no válido.", 404)
     if doc == "empleados" and not puede_salarios(request.u):
         return error("Los colaboradores y salarios generales los actualiza Recursos Humanos.", 403)
-    if doc not in ("empleados", "metas") and request.u["rol"] != "principal":
+    if doc == "nomina" and not puede_nomina(request.u):
+        return error("Solo el administrador de nómina marca revisado y pagado.", 403)
+    if doc == "metas" and not puede(request.u, "metas"):
+        return error("Su rango no permite definir metas.", 403)
+    if doc == "proyectos" and not puede(request.u, "proyectos"):
+        return error("Su rango no permite crear o editar proyectos.", 403)
+    if doc not in ("empleados", "metas", "nomina", "proyectos") and request.u["rol"] != "principal":
         return error("Solo el administrador principal cambia jornadas, recargos y configuración.", 403)
     d = (request.get_json(silent=True) or {}).get("data")
     if not isinstance(d, dict):
@@ -974,7 +1076,7 @@ def quitar_firma(fid, clave):
         f = leer_registro(c, "formatos", fid)
         if not puede_ver(request.u, f):
             return error("Esta hoja es de otra persona.", 403)
-        if f and f.get("estado") == "cerrado" and request.u["rol"] not in ADMINES:
+        if f and f.get("estado") == "cerrado" and not puede(request.u, "reabrir"):
             return error("La hoja está cerrada.", 409)
         c.execute("delete from hx_firmas where formato=%s and clave=%s", (fid, clave))
     return jsonify({"ok": True})
