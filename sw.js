@@ -1,9 +1,9 @@
-// Jornada Ext Laboral · Unispan — permite instalar la app y abrirla al instante.
-// La pantalla de la app se abre desde la copia guardada en el equipo (no espera al servidor) y se actualiza
-// en segundo plano; los datos (/api/) siempre van al servidor.
-const CACHE = "hx-v3";
+// Jornada Ext Laboral · Unispan — permite instalar la app y abrirla rápido.
+// La pantalla se pide primero al servidor; si en 5 segundos no responde (por ejemplo, porque está despertando),
+// se abre la copia guardada en el equipo. Los datos (/api/) siempre van al servidor.
+const CACHE = "hx-v25";
 const BASE = ["/", "/logo.jpg", "/icono-192.png", "/icono-512.png", "/manifest.json"];
-self.addEventListener("install", e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(BASE)).then(() => self.skipWaiting())); });
+self.addEventListener("install", e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(BASE)).catch(() => {}).then(() => self.skipWaiting())); });
 self.addEventListener("activate", e => {
   e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim()));
 });
@@ -12,10 +12,12 @@ self.addEventListener("fetch", e => {
   if (e.request.method !== "GET" || u.origin !== location.origin || u.pathname.startsWith("/api/") || u.pathname === "/salud") return;
   const clave = e.request.mode === "navigate" ? "/" : e.request;
   const red = fetch(e.request).then(r => {
-    if (r.ok && r.type === "basic") { const copia = r.clone(); caches.open(CACHE).then(c => c.put(clave, copia)); }
+    if (r.ok && r.type === "basic" && (r.headers.get("content-type") || "").match(/html|image|json|javascript/)) {
+      const copia = r.clone(); caches.open(CACHE).then(c => c.put(clave, copia));
+    }
     return r;
   });
-  // Copia guardada primero (abre al instante aunque el servidor esté despertando); si no hay copia, la red.
-  e.respondWith(caches.match(clave).then(c => c || red).catch(() => red));
+  const espera = new Promise(res => setTimeout(res, 5000)).then(() => caches.match(clave));
+  e.respondWith(Promise.race([red.catch(() => caches.match(clave)), espera.then(c => c || red)]).then(r => r || red));
   e.waitUntil(red.catch(() => {}));
 });

@@ -63,6 +63,15 @@ h1,h2,h3{font-family:var(--f-display);font-weight:700;letter-spacing:.01em;margi
 .nav button[aria-current="page"]{color:var(--fg)}
 .nav button[aria-current="page"] .ico{background:var(--yellow);color:var(--yellow-ink)}
 .nav .ico{display:grid;place-items:center;width:52px;height:30px;border-radius:15px}
+/* Celular: 4 menús + "Más"; el resto se abre en una hoja desde abajo. */
+.nav .nav-mas{display:flex}
+@media (max-width:759px){.nav .extra{display:none}.nav button{min-width:0;font-size:12px}.nav .ico{width:46px}}
+.mas-hoja{position:fixed;left:8px;right:8px;bottom:calc(68px + env(safe-area-inset-bottom,0px));z-index:40;background:var(--surface);border:1px solid var(--line);
+  border-radius:18px;box-shadow:0 12px 40px rgba(20,36,110,.25);padding:12px;display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.mas-hoja button{display:flex;flex-direction:column;align-items:center;gap:4px;background:var(--bg);border:0;border-radius:14px;padding:12px 4px;font:inherit;font-size:13px;font-weight:700;color:var(--fg);cursor:pointer;min-height:76px}
+.mas-hoja button svg{width:26px;height:26px}.mas-hoja button[aria-current="page"]{background:var(--yellow);color:var(--yellow-ink)}
+.mas-fondo{position:fixed;inset:0;z-index:35;background:rgba(10,20,60,.25)}
+@media (min-width:760px){.nav .nav-mas,.mas-hoja,.mas-fondo{display:none!important}}
 .nav .badge{position:absolute;margin-left:30px;margin-top:-4px;background:var(--bad);color:#fff;font-size:11px;border-radius:9px;padding:0 6px;line-height:18px}
 main{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 110px;min-width:0}
 .top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--bg);padding:14px 0 10px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
@@ -72,7 +81,7 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .back{background:none;border:0;color:var(--info);font-weight:700;cursor:pointer;padding:0;font-size:15px;display:block;margin-bottom:2px;font-family:var(--f-body)}
 @media (min-width:760px){
   .app{grid-template-columns:96px minmax(0,1fr)}
-  .nav{position:sticky;top:0;bottom:auto;height:100vh;flex-direction:column;border-top:0;border-right:1px solid var(--line);padding:12px 0;gap:4px;justify-content:flex-start}
+  .nav{position:sticky;top:0;bottom:auto;height:100vh;flex-direction:column;border-top:0;border-right:1px solid var(--line);padding:12px 0;gap:4px;justify-content:flex-start;overflow-y:auto;overflow-x:hidden}
   .nav button{flex:0 0 auto;min-height:74px}
   .nav-brand{display:grid;place-items:center;height:56px;margin-bottom:8px}
   main{padding-bottom:40px;padding-right:24px;padding-left:24px}
@@ -137,7 +146,7 @@ textarea.inp{min-height:96px;resize:vertical}
 .xl tr.rn-fila td{background:#f3f0fb}.xl tr.rn-tot td{background:#ece7f8;font-weight:700}
 .asis{display:flex;gap:10px;justify-content:space-between;align-items:center;flex-wrap:wrap;padding:10px 4px;border-top:1px solid var(--line)}
 .asis.ok{background:linear-gradient(90deg,var(--ok-bg),transparent 60%)}.asis.no{background:linear-gradient(90deg,#fdecec,transparent 60%)}
-.asis-n{display:flex;flex-direction:column;gap:2px;min-width:240px;flex:1}.asis-a{display:flex;gap:6px;align-items:flex-end;flex-wrap:wrap}
+.asis-n{display:flex;flex-direction:column;gap:2px;min-width:240px;flex:1}.asis-n .chip{align-self:flex-start}.asis-a{display:flex;gap:6px;align-items:flex-end;flex-wrap:wrap}
 .c-bad{color:var(--bad);background:#fdecec}
 .dash{display:grid;grid-template-columns:1fr;gap:12px;margin-bottom:14px}
 @media (min-width:1000px){.dash{grid-template-columns:1fr 1fr}}
@@ -256,7 +265,7 @@ details.bulk summary{cursor:pointer;font-weight:700;font-size:18px}
 .inp.manual{background:var(--warn-bg);border-color:var(--warn)} .inp.bad{border-color:var(--bad);background:var(--bad-bg)}
 .icon{border:1px solid var(--line);background:var(--surface-2);cursor:pointer;width:40px;height:40px;border-radius:20px;display:inline-grid;place-items:center;color:var(--fg-2)}
 .icon svg{width:20px;height:20px}
-@media (min-width:1300px){
+@media (min-width:1440px){
   .fila{grid-template-columns:30px 150px 165px minmax(180px,1.3fr) 112px 112px 70px 96px minmax(160px,1fr) 88px;align-items:end;padding:8px 10px}
   .fila .n{grid-column:auto;align-self:center;font-size:15px}
   .fila .emp,.fila .sop{grid-column:auto}
@@ -284,6 +293,23 @@ dialog::backdrop{background:rgba(10,16,22,.55)}
 .pad-wrap::after{content:"";position:absolute;left:8%;right:8%;bottom:56px;border-bottom:1.5px solid #c3cad8;pointer-events:none}
 dialog.trazo .pad-hint{display:none}
 .dlg-foot{display:flex;gap:10px;flex-wrap:wrap}.dlg-foot .sp{flex:1}
+.foto-est{display:flex;gap:6px;flex-wrap:wrap;align-items:center;padding:6px 0;border-top:1px solid var(--line);flex-basis:100%}.foto-est .sp{flex:1}
+.lect-extra{display:flex;flex-direction:column;gap:6px}.lect-extra .lx{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:6px 0;border-bottom:1px solid var(--line)}
+.lect-extra .lx .inp{width:140px}
+@media (max-width:700px){
+  #dlg-lect{width:100vw;max-width:100vw;max-height:100vh;height:100vh;border-radius:0;margin:0}
+  #dlg-lect .dlg{padding:14px;height:100%;box-sizing:border-box;overflow:auto}
+  #dlg-lect table,#dlg-lect tbody{display:block}#dlg-lect thead{display:none}
+  #dlg-lect tr[data-lk]{display:grid;grid-template-columns:30px 1fr 1fr;gap:6px 8px;padding:10px 0;border-bottom:1px solid var(--line)}
+  #dlg-lect tr[data-lk] td{display:block;padding:0;border:0;min-width:0!important}
+  #dlg-lect tr[data-lk] td[data-et]::before{content:attr(data-et);display:block;font-size:12px;color:var(--fg-2);margin-bottom:2px}
+  #dlg-lect tr[data-lk] td:nth-child(1){grid-row:1/4}#dlg-lect tr[data-lk] td:nth-child(2){grid-column:2/4}
+  #dlg-lect tr[data-lk] td:nth-child(5){grid-column:2/4}
+  #dlg-lect tr[data-lk] input[type=time],#dlg-lect tr[data-lk] select{width:100%!important}
+  #dlg-lect div[style*="max-height:58vh"]{max-height:none!important;overflow:visible!important}
+  #dlg-lect .lect-extra .lx .inp{flex:1;width:auto;min-width:120px}
+  #dlg-lect .dlg-foot{position:sticky;bottom:-14px;background:var(--surface);padding:10px 0;margin-bottom:-14px}
+  #dlg-lect .dlg-foot .btn{flex:1}#dlg-lect .dlg-foot .sp{display:none}}
 
 /* ---------- Ingreso ---------- */
 .auth{min-height:100%;display:grid;place-items:center;padding-block:32px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
@@ -364,6 +390,8 @@ const I = {
   pdf:'<path d="M6 2h9l5 5v15H6z"/><path d="M14 2v6h6M9 14h6M9 18h6"/>',
   print:'<path d="M7 9V3h10v6M7 17H4v-7h16v7h-3"/><path d="M7 14h10v7H7z"/>',
   xls:'<path d="M4 4h16v16H4z"/><path d="M4 10h16M10 4v16"/>',
+  camera:'<path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>',
+  user:'<circle cx="12" cy="8" r="4"/><path d="M4 21c1-4.5 4.5-7 8-7s7 2.5 8 7"/>',
   copy:'<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M4 16V4h12"/>',
   x:'<path d="M6 6l12 12M18 6L6 18"/>',
   check:'<path d="M5 12l5 5 9-10"/>',
@@ -457,9 +485,51 @@ const PAPELES = {
   a3: { n: 'A3 (29,7 × 42 cm)', w: 420, h: 297, x: 8 } };
 const impDefecto = () => Object.assign({ papel: 'carta', orient: 'landscape' }, cfg().impresion || {});
 const jorCod = c => S.jor.find(j => j.c === c);
+/* Festivos de Colombia: fijos, los que se corren al lunes (Ley Emiliani) y los que dependen de la Pascua. */
+const _FEST = {};
+function festivosCO(y) {
+  if (_FEST[y]) return _FEST[y];
+  const iso = d => d.toISOString().slice(0, 10), D = (m, d) => new Date(Date.UTC(y, m - 1, d));
+  const lunes = d => { const w = d.getUTCDay(); if (w !== 1) d.setUTCDate(d.getUTCDate() + ((8 - w) % 7)); return d; };
+  const a = y % 19, b = Math.floor(y / 100), c = y % 100, dd = Math.floor(b / 4), e = b % 4, f = Math.floor((b + 8) / 25), g = Math.floor((b - f + 1) / 3),
+    h = (19 * a + b - dd - g + 15) % 30, i = Math.floor(c / 4), k = c % 4, l = (32 + 2 * e + 2 * i - h - k) % 7, m = Math.floor((a + 11 * h + 22 * l) / 451),
+    mes = Math.floor((h + l - 7 * m + 114) / 31), dia = ((h + l - 7 * m + 114) % 31) + 1, pascua = D(mes, dia);
+  const masP = n => { const x = new Date(pascua); x.setUTCDate(x.getUTCDate() + n); return x; };
+  const lista = [D(1, 1), D(5, 1), D(7, 20), D(8, 7), D(12, 8), D(12, 25), masP(-3), masP(-2), masP(43), masP(64), masP(71)]
+    .concat([[1, 6], [3, 19], [6, 29], [8, 15], [10, 12], [11, 1], [11, 11]].map(([mm, d]) => lunes(D(mm, d))));
+  return (_FEST[y] = new Set(lista.map(iso)));
+}
+const esFestivo = f => !!f && festivosCO(+f.slice(0, 4)).has(f);
+const finDeSemanaOFestivo = f => !!f && (esFestivo(f) || [0, 6].includes(new Date(f + "T12:00:00Z").getUTCDay()));
+const HORARIO_FDS = ["07:00", "13:00"]; // fines de semana y festivos: hasta la 1:00 p. m. (se puede cambiar)
 const empCed = c => S.emp.find(e => e[0] === c);
-const listaForms = () => Object.entries(S.forms).map(([id, f]) => Object.assign({ id }, f));
-const editable = f => f.estado === "borrador" && !Object.keys(f.pie || {}).length;
+const listaForms = () => Object.entries(S.forms).filter(([, f]) => !f._soloLlegada).map(([id, f]) => Object.assign({ id }, f));
+const listaFormsLlegada = () => Object.entries(S.forms).map(([id, f]) => Object.assign({ id }, f));
+/* Horas de llegada y salida: las cambian el responsable de la hoja, los administradores y Nómina. Los demás solo marcan asistencia. */
+const puedeHoras = f => !f._soloLlegada && (esAdmin() || puedeNomina() || f.dueno === S.yo.id);
+/* Programación repetida: el mismo colaborador, el mismo día y con horario cruzado en dos filas (de hojas que cuentan).
+   Las autorizaciones ya legalizadas no cuentan (su legalización las reemplaza). El recargo nocturno no se compara. */
+function rangoMin(r) { const a = minutos(r.hi || "00:00"); let b = minutos(r.hf || "00:00"); if (b <= a) b += 1440; return [a, b]; }
+function repetidas(fuente) {
+  const g = {}, out = {};
+  for (const f of (fuente || listaFormsLlegada())) { if (f.estado === "legalizado") continue;
+    for (const r of f.filas) if (r.f && r.c && !esRN(r)) (g[r.c + "|" + r.f] ??= []).push({ f, r }); }
+  for (const l of Object.values(g)) if (l.length > 1)
+    for (let i = 0; i < l.length; i++) for (let j = i + 1; j < l.length; j++) {
+      const [a1, b1] = rangoMin(l[i].r), [a2, b2] = rangoMin(l[j].r);
+      if (a1 < b2 && a2 < b1) { (out[l[i].f.id + "|" + l[i].r.id] ??= []).push(l[j]); (out[l[j].f.id + "|" + l[j].r.id] ??= []).push(l[i]); }
+    }
+  return out;
+}
+async function quitarFilaRepetida(fid, rid) {
+  const g = JSON.parse(JSON.stringify(S.forms[fid])), r = g.filas.find(x => x.id === rid); if (!r) return;
+  if (!await confirmar(`¿Quitar a ${r.n} del ${fc(r.f)} de la hoja «${g.titulo}»? Queda en la otra hoja donde está repetido.`, "Quitar fila repetida", "Quitar")) return false;
+  g.filas = g.filas.filter(x => x.id !== rid); if ((g.firmadas || {})[rid]) { delete g.firmadas[rid]; g._quitarFirmas = [rid]; }
+  recalcular(g); log(g, "Quitó fila repetida", `${r.n} · ${fc(r.f)} ${r.hi}-${r.hf}`); await guardarForm(fid, g); toast("Fila repetida quitada."); return true;
+}
+const sinFirmasPie = f => f.estado === "borrador" && !Object.keys(f.pie || {}).length;
+/* Se edita en borrador; ya firmada (pie o colaboradores) también, si el rango lo permite. Legalizada o cerrada: reabrir. */
+const editable = f => sinFirmasPie(f) || (["borrador", "firmado"].includes(f.estado) && puede('editar'));
 const firmable = f => f.filas.length > 0; // se puede firmar en cualquier estado: la firma no cambia el contenido
 const puedeQuitar = f => ["borrador", "firmado"].includes(f.estado) || puede('reabrir');
 const sigNum = () => Math.max(0, ...listaForms().map(f => f.num || 0)) + 1;
@@ -491,6 +561,7 @@ async function sync(){
     if(cat.centros){ S.centros = cat.centros.lista || []; cambio=true; }
     if(cat.proyectos){ S.proyectos = cat.proyectos.lista || []; cambio=true; }
     if(cat.rangos){ S.rangos = cat.rangos.lista || []; cambio=true; }
+    if(cat.divisiones){ S.divisiones = cat.divisiones.lista || null; cambio=true; }
     if(cat.nomina){ S.nomina = cat.nomina; cambio=true; }
     S.ultimo=d.ahora; S.yo=d.yo; S.cargado=true;
     if(cambio) refrescar();
@@ -499,7 +570,7 @@ async function sync(){
 async function guardarForm(id, f){
   const datos = JSON.parse(JSON.stringify(f)); delete datos.id;
   const r = await api('PUT','/api/formatos/'+id,{data:datos});
-  S.forms[id] = r.data; return r.data;
+  S.forms[id] = r.data; S.replicadas = r.replicadas || 0; if (S.replicadas) S.firAct[id] = null; return r.data;
 }
 /* Hoja nueva: el servidor asigna el número para que no se repita entre usuarios. */
 async function crearForm(f){
@@ -552,7 +623,10 @@ function recalcular(f) {
 
 /* ================= Navegación ================= */
 function vistas(){
-  const v=[['libro','Libro','book'],['asistencia','Llegada','clock'],['nuevo','Nuevo','plus'],['informe', esAdmin() ? 'Informes' : 'Consolidado','chart']];
+  const v=[['libro','Libro','book']];
+  if(puede('asistencia') || puede('salida')) v.push(['asistencia','Llegada','clock']);
+  if(puede('crear')) v.push(['nuevo','Nuevo','plus']);
+  v.push(['informe', esAdmin() ? 'Informes' : 'Consolidado','chart']);
   if(esAdmin() && puede('valores')) v.push(['personal','Personal','team']);
   if(puedeNomina()) v.push(['nomina','Nómina','money']);
   if(esPrincipal()) v.push(['accesos','Accesos','key'],['ajustes','Ajustes','gear']);
@@ -567,8 +641,21 @@ function navSubLibro(){
 function renderNav(){
   const pend = listaForms().filter(f=>['borrador','firmado'].includes(f.estado)).length;
   const actual = {hoja:'libro',editar:'libro',cuenta:''}[S.vista] ?? S.vista;
+  const vs = vistas(), MAX = 4, extras = vs.length > MAX + 1 ? vs.slice(MAX) : [];
+  const boton = ([k,l,ic], i) => `<button data-go="${k}" class="${extras.length && i >= MAX ? 'extra' : ''}" ${actual===k?'aria-current="page"':''}><span class="ico">${svg(ic)}</span>${l}${k==='libro'&&pend?`<span class="badge">${pend}</span>`:''}</button>${k==='libro'?navSubLibro():''}${k==='nomina'?navSubNomina():''}`;
+  const enExtras = extras.some(([k]) => k === actual);
   $('#nav').innerHTML = `<div class="nav-brand" aria-hidden="true"><span style="background:#14246e;color:#fff;width:48px;height:48px;border-radius:12px;display:grid;place-items:center">${MARCA(28)}</span></div>` +
-    vistas().map(([k,l,ic])=>`<button data-go="${k}" ${actual===k?'aria-current="page"':''}><span class="ico">${svg(ic)}</span>${l}${k==='libro'&&pend?`<span class="badge">${pend}</span>`:''}</button>${k==='libro'?navSubLibro():''}`).join('');
+    vs.map(boton).join('') +
+    (extras.length ? `<button class="nav-mas" id="nav-mas" aria-expanded="${!!S.masAbierto}" ${enExtras?'aria-current="page"':''}><span class="ico">${svg('more')}</span>Más</button>` : '');
+  let hoja = $('#mas-hoja'), fondo = $('#mas-fondo');
+  if (hoja) hoja.remove(); if (fondo) fondo.remove();
+  if (extras.length && S.masAbierto) {
+    document.body.insertAdjacentHTML('beforeend', `<div class="mas-fondo" id="mas-fondo"></div><div class="mas-hoja" id="mas-hoja" role="menu">
+      ${extras.map(([k,l,ic]) => `<button data-go="${k}" role="menuitem" ${actual===k?'aria-current="page"':''}>${svg(ic)}${l}</button>`).join('')}
+      <button data-go="cuenta" role="menuitem" ${S.vista==='cuenta'?'aria-current="page"':''}>${svg('team')}Mi cuenta</button></div>`);
+    $('#mas-fondo').onclick = () => { S.masAbierto = false; renderNav(); };
+  }
+  if ($('#nav-mas')) $('#nav-mas').onclick = e => { e.stopPropagation(); S.masAbierto = !S.masAbierto; renderNav(); };
 }
 /* ----- Instalar como app en el celular ----- */
 let instalarEvt = null;
@@ -601,7 +688,8 @@ function render(cambioForzado){
   let v = h, id = null;
   const m = h.match(/^(hoja|editar)-(.+)$/); if (m) { v = m[1]; id = m[2]; }
   if (!["libro","hoja","editar","nuevo","personal","ajustes","cuenta","informe","accesos","nomina","asistencia"].includes(v)) v = "libro";
-  if ((v === "personal" && !(esAdmin() && puede('valores'))) || (["ajustes", "accesos"].includes(v) && !esPrincipal()) || (v === "nomina" && !puedeNomina())) v = "libro";
+  if ((v === "personal" && !(esAdmin() && puede('valores'))) || (["ajustes", "accesos"].includes(v) && !esPrincipal()) || (v === "nomina" && !puedeNomina())
+    || (v === "nuevo" && !puede('crear')) || (v === "asistencia" && !puede('asistencia') && !puede('salida'))) v = "libro";
   const cambio = cambioForzado !== false && (S.vista !== v || S.vistaId !== id);
   S.vista = v; S.vistaId = id;
   renderNav();
@@ -688,7 +776,7 @@ function vLibro(app) {
       ${F.anioAbierto ? `<div class="actions" style="gap:6px;margin-top:8px;padding-top:8px;border-top:1px solid var(--line)">${Object.keys(mm).filter(k => k.startsWith(F.anioAbierto)).sort().reverse().map(k => `<button class="pill" data-mes="${k}" aria-pressed="${k === mesSel}">${MESES[+k.slice(5, 7) - 1]} <small>(${mm[k]})</small></button>`).join("")}</div>` : ""}
       <p class="hint" style="margin:6px 0 0">${mesSel === "curso" ? "Hojas en curso, sin confirmar. Al confirmarlas pasan a su mes, dentro del año." : mesSel ? `Hojas confirmadas de ${nombreMes(mesSel)}.` : "Todas las hojas."}
       ${(F.desde || F.hasta || F.q.trim()) ? " Con fechas o búsqueda se muestran todas." : ""}</p></div>`;
-  app.innerHTML = topbar(esAdmin() ? 'Libro de horas extras' : 'Mi libro de horas extras', `${mesSel === "curso" ? "En curso · " : mesSel ? nombreMes(mesSel) + " · " : ""}${lista.length} hojas · ${pend} pendientes`, `<div class="actions">${botonExcel(esAdmin() ? "Actualizar desde Excel" : "Cargar mi libro Excel")}<button class="btn accent small" data-go="nuevo">${svg('plus')}Nuevo formato</button></div>`) +
+  app.innerHTML = topbar(esAdmin() ? 'Libro de horas extras' : 'Mi libro de horas extras', `${mesSel === "curso" ? "En curso · " : mesSel ? nombreMes(mesSel) + " · " : ""}${lista.length} hojas · ${pend} pendientes`, `<div class="actions">${puede('importar') ? botonExcel(esAdmin() ? "Actualizar desde Excel" : "Cargar mi libro Excel") : ""}${puede('crear') ? `<button class="btn accent small" data-go="nuevo">${svg('plus')}Nuevo formato</button>` : ""}</div>`) +
   `${(instalarEvt || matchMedia('(max-width:899px)').matches) ? bannerApp() : ''}${navMeses}<div class="filters">
     <div class="field"><label for="f-desde">Desde</label><input class="inp" type="date" id="f-desde" value="${F.desde}"></div>
     <div class="field"><label for="f-hasta">Hasta</label><input class="inp" type="date" id="f-hasta" value="${F.hasta}"></div>
@@ -706,8 +794,8 @@ function vLibro(app) {
     <button class="btn small" id="b-pdf-sel">${svg('print')}Imprimir / PDF</button>
     <button class="btn small" id="b-xls-sel">${svg('xls')}Excel de seleccionadas</button>
     <button class="btn small" id="b-xls-todo">${svg('xls')}Excel de todo el filtro</button>
-    ${mesSel === "curso" || !mesSel ? `<button class="btn small accent" id="b-conf">${svg('check')}Confirmar y enviar a su mes</button>` : `<button class="btn small" id="b-desconf">Devolver a en curso</button>`}</div>
-  ${lista.length ? `<div class="list">${items}</div>` : `<div class="empty"><p>No hay hojas con esos filtros.</p><button class="btn accent" data-go="nuevo">${svg('plus')}Nuevo formato</button></div>`}`;
+    ${!puede('confirmar') ? "" : mesSel === "curso" || !mesSel ? `<button class="btn small accent" id="b-conf">${svg('check')}Confirmar y enviar a su mes</button>` : `<button class="btn small" id="b-desconf">Devolver a en curso</button>`}</div>
+  ${lista.length ? `<div class="list">${items}</div>` : `<div class="empty"><p>No hay hojas con esos filtros.</p>${puede('crear') ? `<button class="btn accent" data-go="nuevo">${svg('plus')}Nuevo formato</button>` : ""}</div>`}`;
   const re = () => { F.sel.clear(); render(false); };
   if ($("#b-instalar")) $("#b-instalar").onclick = instalarApp;
   $("#f-desde").onchange = e => { F.desde = e.target.value; re(); };
@@ -734,6 +822,7 @@ function vLibro(app) {
 
 /* ================= Hoja: consulta y firmas ================= */
 function vHoja(app, id) {
+  if (S.forms[id] && S.forms[id]._soloLlegada) { ir("asistencia"); return; } // hoja de otro responsable: solo se ve en Llegada
   const f = S.forms[id] && Object.assign({ id }, S.forms[id]);
   if (!f) { app.innerHTML = topbar('La hoja no existe','', '', ['libro','Libro']); return; }
   const fir = (S.fir[id] && S.firAct[id] === f.act) ? S.fir[id] : null;
@@ -758,7 +847,7 @@ function vHoja(app, id) {
       case 'c': return `<td class="c">${esc(r.c)}</td>`; case 'n': return `<td class="nm">${esc(r.n)}${asisTag(r)}</td>`; case 's': return `<td class="r nw">${money(r.s)}</td>`;
       case 'a': return `<td>${esc(r.a)}</td>`; case 'hi': return `<td class="c nw">${h12(r.hi)}</td>`; case 'hf': return `<td class="c nw">${h12(r.hf)}</td>`;
       case 'h': return `<td class="c">${num(r.h)}${r.m ? '<sup title="Horas digitadas a mano"> M</sup>' : ""}</td>`; case 'co': return `<td class="r nw">${money(r.co)}</td>`;
-      case 'so': return `<td class="sop">${esc(r.so)}${r.ju ? `<i>${esc(r.ju)}</i>` : ""}</td>`; default: return celdaFirma(r);
+      case 'so': return `<td class="sop">${esc(r.so)}${r.ju ? `<i>${esc(r.ju)}</i>` : ""}${proyFilaTxt(r, f) ? `<i><b>${esc(proyFilaTxt(r, f))}</b></i>` : ""}</td>`; default: return celdaFirma(r);
     } };
   const filasX = f.filas.map((r, i) => `<tr${esRN(r) ? ' class="rn-fila" title="Recargo nocturno: no es hora extra"' : ""}>${rn(i + 4)}${cols.map(c => celda(c.k, r)).join("")}</tr>`).join("");
   const iH = cols.findIndex(c => c.k === 'h');
@@ -790,17 +879,20 @@ function vHoja(app, id) {
     <div class="step ${f.estado==='firmado' ? 'done' : 'cur'}"><i></i>Firmas</div><div class="step ${f.estado==='firmado'?'cur':''}"><i></i>${f.tipo === "AUTORIZACION" ? "Legalizar" : "Cerrar"}</div></div>` : "";
   const botones = `<div class="actions"><button class="btn small" id="a-imp">${svg('print')}Imprimir</button>
       ${editable(f) ? `<button class="btn small" data-go="editar-${esc(id)}">${svg('pen')}Editar</button>` : ""}
-      ${f.tipo === "AUTORIZACION" && f.estado === "firmado" ? `<button class="btn small accent" id="a-legalizar">${svg('check')}Legalizar</button>` : ""}
-      ${f.estado === "firmado" ? `<button class="btn small ${f.tipo === "LEGALIZACION" ? "accent" : ""}" id="a-cerrar">${svg('check')}Cerrar y archivar</button>` : ""}
-      ${f.conf ? `<button class="btn small" id="a-desconf">Devolver a en curso</button>` : `<button class="btn small" id="a-conf">${svg('check')}Confirmar y enviar a ${esc(MESES[+(f.fi || ahora()).slice(5, 7) - 1])}</button>`}
+      ${f.tipo === "AUTORIZACION" && f.estado === "firmado" && puede('cerrar') ? `<button class="btn small accent" id="a-legalizar">${svg('check')}Legalizar</button>` : ""}
+      ${f.estado === "firmado" && puede('cerrar') ? `<button class="btn small ${f.tipo === "LEGALIZACION" ? "accent" : ""}" id="a-cerrar">${svg('check')}Cerrar y archivar</button>` : ""}
+      ${!puede('confirmar') ? "" : f.conf ? `<button class="btn small" id="a-desconf">Devolver a en curso</button>` : `<button class="btn small" id="a-conf">${svg('check')}Confirmar y enviar a ${esc(MESES[+(f.fi || ahora()).slice(5, 7) - 1])}</button>`}
       <div class="menu"><button class="btn small" id="a-mas" aria-label="Más opciones">${svg('more')}</button><div class="menu-body" id="a-menu" hidden>
         <button id="a-pdf">${svg('pdf','style="width:18px;vertical-align:-3px"')} Descargar PDF</button>
         <button id="a-xls">${svg('xls','style="width:18px;vertical-align:-3px"')} Exportar a Excel</button>
-        <button id="a-dup">${svg('copy','style="width:18px;vertical-align:-3px"')} Duplicar como nueva hoja</button>
+        ${puede('crear') ? `<button id="a-dup">${svg('copy','style="width:18px;vertical-align:-3px"')} Duplicar como nueva hoja</button>` : ""}
         ${puede('responsable') ? '<button id="a-resp">Cambiar responsable</button>' : ""}
-        ${["firmado", "cerrado"].includes(f.estado) && !hija && (f.estado!=='cerrado'||puede('reabrir')) ? '<button id="a-reabrir">Reabrir para editar</button>' : ""}
-        ${(editable(f) || puede('reabrir')) && !hija ? '<button id="a-borrar" class="danger">Eliminar hoja</button>' : ""}</div></div></div>`;
+        ${["firmado", "cerrado"].includes(f.estado) && !hija && (f.estado!=='cerrado'||puede('reabrir')) ? `<button id="a-reabrir">${editable(f) ? "Quitar firmas del pie y reabrir" : "Reabrir para editar"}</button>` : ""}
+        ${((sinFirmasPie(f) && puede('eliminar')) || puede('reabrir')) && !hija ? '<button id="a-borrar" class="danger">Eliminar hoja</button>' : ""}</div></div></div>`;
   app.innerHTML = topbar(esc(f.titulo || "Hoja #" + f.num), `${TIPOS[f.tipo]} · Hoja #${f.num} · ${fc(f.fi)}${f.ff !== f.fi ? " – " + fc(f.ff) : ""}`, botones, ['libro','Libro']) +
+  (() => { if (f.estado === "legalizado") return ""; const R = repetidas(), l = f.filas.filter(r => R[f.id + "|" + r.id]);
+    return l.length ? `<div class="notice" style="margin:0 0 12px;border-color:#c62828"><b>⚠ ${l.length} filas de esta hoja están repetidas en otra hoja</b> (mismo colaborador, día y hora); en nómina se sumarían dos veces:
+      ${l.slice(0, 8).map(r => `<br>· ${esc(r.n)} · ${fc(r.f)} ${hora12(r.hi)} – ${hora12(r.hf)} → también en «${R[f.id + "|" + r.id].map(x => esc(x.f.titulo)).join("», «")}»${puedeHoras(f) ? ` <button class="lnk" data-hquitar="${r.id}" style="color:var(--bad)">Quitar de esta hoja</button>` : ""}`).join("")}${l.length > 8 ? `<br>… y ${l.length - 8} más.` : ""}</div>` : ""; })() +
   `<div class="actions" style="margin-bottom:12px">${chipT(f.tipo)} ${chipE(f.estado)}${f.imp ? '<span class="tag">Importada del Excel</span>' : ""}
     <span class="tag">Responsable: <b>${esc(f.duenoNombre || "Sin responsable")}</b></span>
     <span class="tag">Centro de costo: <b>${esc(nombreCC(f.cc))}</b></span>
@@ -822,7 +914,8 @@ function vHoja(app, id) {
   $("#a-pdf").onclick = () => exportarPDF([id]);
   $("#a-mas").onclick = e => { e.stopPropagation(); $("#a-menu").hidden = !$("#a-menu").hidden; };
   $("#a-xls").onclick = () => exportarExcel([id]);
-  $("#a-dup").onclick = () => duplicar(id);
+  if ($("#a-dup")) $("#a-dup").onclick = () => duplicar(id);
+  $$("[data-hquitar]").forEach(b => b.onclick = () => ejecutar(async () => { if (await quitarFilaRepetida(id, b.dataset.hquitar)) render(false); }));
   if ($("#a-resp")) $("#a-resp").onclick = () => ejecutar(async () => {
     const rs = (await api('GET', '/api/responsables')).responsables;
     const v = await elegir("Responsable de la hoja", "La hoja pasa al libro de esta persona; solo ella y los administradores la verán.", rs.map(u => [u.id, u.nombre + " · " + (ROL_TXT[u.rol] || u.rol)]), S.forms[id].dueno);
@@ -999,6 +1092,44 @@ async function quitarFirmaRol(fid, k) {
 }
 
 /* ================= Editor (registro) ================= */
+/* ---- Actividades (soportes) que cada usuario crea y guarda ---- */
+async function cargarActividades() {
+  try { S.actividades = (await api("GET", "/api/actividades")).lista || []; } catch (e) { S.actividades = S.actividades || []; return; }
+  if (S.vista === "nuevo" || String(S.vista).startsWith("editar")) { pintarActividades(); refrescarDatalist(); }
+}
+async function guardarActividades(lista) { S.actividades = (await api("PUT", "/api/actividades", { lista })).lista; pintarActividades(); refrescarDatalist(); }
+async function agregarActividad(t) {
+  t = String(t || "").replace(/\s+/g, " ").trim(); if (!t) throw new Error("Escriba la actividad.");
+  if ((S.actividades || []).some(x => x.toUpperCase() === t.toUpperCase())) return toast("Esa actividad ya está en su lista.");
+  await guardarActividades([t].concat(S.actividades || [])); toast("Actividad guardada en su lista.");
+}
+let MA_EDIT = -1;
+/* Soportes que el usuario ya usó en sus hojas (para traerlos a su lista y poder editarlos o eliminarlos). */
+const soportesUsados = () => [...new Set(listaForms().filter(f => !f.dueno || f.dueno === S.yo.id).flatMap(x => x.filas.map(r => (r.so || "").trim())).filter(Boolean))].slice(0, 150);
+function pintarActividades() {
+  const c = $("#ma-lista"); if (!c) return; const l = S.actividades || [];
+  if ($("#ma-n")) $("#ma-n").textContent = l.length;
+  const usadas = soportesUsados().filter(x => !l.some(y => y.toUpperCase() === x.toUpperCase()));
+  c.innerHTML = (l.length ? l.map((t, i) => MA_EDIT === i
+      ? `<span style="display:flex;gap:6px;flex-basis:100%"><input class="inp" id="ma-ed" value="${esc(t)}" maxlength="150" style="flex:1;min-width:0" aria-label="Editar actividad"><button class="btn small primary" data-maok="${i}">Guardar</button><button class="btn small" data-mano>Cancelar</button></span>`
+      : `<span class="chip c-info" style="gap:6px;white-space:normal">${esc(t)}<button class="lnk" data-maed="${i}" aria-label="Editar ${esc(t)}">Editar</button><button class="lnk" data-maq="${i}" aria-label="Eliminar ${esc(t)}" style="color:var(--bad)">✕</button></span>`).join("")
+      : '<span class="tag">Aún no tiene actividades guardadas.</span>')
+    + (usadas.length ? `<span style="flex-basis:100%"></span><button class="btn small" id="ma-imp" type="button">Traer ${usadas.length} ${usadas.length === 1 ? "actividad usada" : "actividades usadas"} en mis hojas</button>` : "");
+  $$("[data-maq]").forEach(b => b.onclick = () => ejecutar(async () => { if (!await confirmar(`¿Eliminar "${l[+b.dataset.maq]}" de sus actividades? Las hojas que ya la usan no cambian.`, "Eliminar actividad", "Eliminar")) return;
+    await guardarActividades(l.filter((_, i) => i !== +b.dataset.maq)); }));
+  $$("[data-maed]").forEach(b => b.onclick = () => { MA_EDIT = +b.dataset.maed; pintarActividades(); $("#ma-ed").focus(); });
+  $$("[data-mano]").forEach(b => b.onclick = () => { MA_EDIT = -1; pintarActividades(); });
+  $$("[data-maok]").forEach(b => b.onclick = () => ejecutar(async () => { const t = $("#ma-ed").value.replace(/\s+/g, " ").trim(); if (!t) throw new Error("La actividad no puede quedar vacía.");
+    const i = +b.dataset.maok; if (l.some((x, j) => j !== i && x.toUpperCase() === t.toUpperCase())) throw new Error("Ya tiene una actividad con ese nombre.");
+    MA_EDIT = -1; await guardarActividades(l.map((x, j) => j === i ? t : x)); toast("Actividad actualizada."); }));
+  if ($("#ma-ed")) $("#ma-ed").onkeydown = e => { if (e.key === "Enter") { e.preventDefault(); $("[data-maok]").click(); } if (e.key === "Escape") $("[data-mano]").click(); };
+  if ($("#ma-imp")) $("#ma-imp").onclick = () => ejecutar(async () => { await guardarActividades(l.concat(usadas)); toast(`Se agregaron ${usadas.length} actividades. Puede editarlas o eliminarlas.`); });
+}
+function refrescarDatalist() {
+  const d = $("#dl-sop"); if (!d) return;
+  const vs = (S.actividades || []).length ? S.actividades : soportesUsados();
+  d.innerHTML = vs.map(x => `<option value="${esc(x)}"></option>`).join("");
+}
 function vEditor(app, id) {
   const f = id ? S.forms[id] : null;
   if (id && !f) { app.innerHTML = topbar('La hoja no existe','', '', ['libro','Libro']); return; }
@@ -1009,9 +1140,13 @@ function vEditor(app, id) {
     filas: f ? f.filas.map(r => Object.assign({}, r, { _f: !!(f.firmadas || {})[r.id], _jOrig: r.j })) : [] };
   const jor = S.jor.filter(j => j.a !== 0), emp = S.emp.filter(e => e[4] !== 0);
   const ePorNom = Object.fromEntries(emp.map(e => [e[1], e])), ePorCed = Object.fromEntries(emp.map(e => [e[0], e]));
-  const soportes = [...new Set(listaForms().flatMap(x => x.filas.map(r => r.so)).filter(Boolean))].slice(0, 60);
+  if (!S.actividades) cargarActividades(); // la primera vez trae la lista guardada del usuario
+  const soportes = (S.actividades || []).length ? S.actividades : soportesUsados(); // el desplegable lo maneja cada usuario
   const optJ = sel => jor.map(j => `<option value="${j.c}" ${j.c === sel ? "selected" : ""}>${esc(j.n)}${verValores() ? ` (${String(j.r).replace(".", ",")})` : ""}</option>`).join("");
   const areas = [...new Set(emp.map(e => e[2]).filter(Boolean))].sort();
+  const hayProy = proyectos().length > 0;
+  const optP = sel => `<option value="">${E.proy ? "El de la hoja" : "Sin proyecto"}</option>` + (misProyectos().some(p => p.id === sel) || !sel ? misProyectos() : proyectos().filter(p => p.id === sel).concat(misProyectos()))
+    .map(p => `<option value="${esc(p.id)}" ${sel === p.id ? "selected" : ""}>${esc(p.n)}</option>`).join("");
   const volver = id ? ['hoja-' + id, 'Volver a la hoja'] : ['libro', 'Libro'];
   app.innerHTML = topbar(id ? "Editar: " + esc(f.titulo) : "Nuevo formato", 'Registro de horas extras', '', volver) +
   `<div class="stack">
@@ -1025,6 +1160,13 @@ function vEditor(app, id) {
     ${centros().length ? `<div class="field"><label for="e-cc">Centro de costo (las horas de esta hoja se cargan aquí, sin importar el área de cada colaborador)</label>
       <select class="inp" id="e-cc">${esAdmin() ? '<option value="">Sin centro de costo</option>' : ""}${(misCC().includes(E.cc) || !E.cc ? misCC() : [E.cc].concat(misCC())).map(k => `<option value="${esc(k)}" ${E.cc === k ? "selected" : ""}>${esc(nombreCC(k))}</option>`).join("")}</select></div>` : ""}
   </div>
+  ${f && (!sinFirmasPie(f) || Object.keys(f.firmadas || {}).length) ? `<div class="notice" style="margin:0">Esta hoja ya tiene firmas y se conservan. Puede agregar o cambiar colaboradores:
+    si agrega a alguien que <b>ya firmó en esta hoja</b>, su firma se copia a las filas nuevas. Si cambia la fecha u horario de una fila firmada, esa fila toma de nuevo la firma de la persona cuando tenga otra fila firmada; si no, queda pendiente de firmar.${Object.keys(f.pie || {}).length ? " Las firmas de Elabora, Autoriza y Liquida se mantienen." : ""}</div>` : ""}
+  <details class="bulk" id="mis-act"><summary>Mis actividades (soportes) · <span id="ma-n">${(S.actividades || []).length}</span></summary>
+    <p class="hint" style="margin:6px 0">Las actividades que guarde aparecen primero en la lista de Soporte, en esta y en sus próximas hojas. Son suyas: cada usuario tiene las propias.</p>
+    <div style="display:flex;gap:6px;flex-wrap:wrap"><input class="inp" id="ma-nueva" placeholder="Nueva actividad, ej. Cargue de formaleta obra Brassika" maxlength="150" style="flex:1;min-width:220px">
+      <button class="btn small primary" id="ma-add" type="button">${svg("plus")}Agregar</button></div>
+    <div id="ma-lista" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px"></div></details>
   <details class="bulk" ${E.filas.length ? "" : "open"}><summary>Agregar varios colaboradores</summary>
     <p class="hint" style="margin:6px 0 0">Misma fecha, jornada, horario y actividad para todos los que marque.</p>
     <div class="bulk-fields">
@@ -1032,8 +1174,11 @@ function vEditor(app, id) {
       <div class="field"><label for="b-jor">Jornada</label><select class="inp" id="b-jor">${optJ("D")}</select></div>
       <div class="field"><label for="b-ini">Inicio</label><input class="inp" type="time" id="b-ini" value="07:00"></div>
       <div class="field"><label for="b-fin">Fin</label><input class="inp" type="time" id="b-fin" value="13:00"></div>
-      <div class="field w2"><label for="b-sop">Soporte (actividad)</label><input class="inp" id="b-sop" list="dl-sop"></div>
-      <div class="field w2"><label for="b-just">Justificación</label><input class="inp" id="b-just"></div></div>
+      <p class="hint" id="b-fds" style="grid-column:1/-1;margin:0" aria-live="polite"></p>
+      <div class="field" style="grid-column:1/-1"><label for="b-sop">Soporte (actividad)</label><div style="display:flex;gap:6px;max-width:720px"><input class="inp" id="b-sop" list="dl-sop" placeholder="Elija de sus actividades o escriba una nueva" style="flex:1;min-width:0">
+        <button class="btn small" id="b-sop-g" type="button" title="Guardar en mis actividades">${svg("plus")}Guardar</button></div></div>
+      <div class="field" style="grid-column:1/-1"><label for="b-just">Justificación</label><input class="inp" id="b-just" style="max-width:720px"></div>
+      ${hayProy ? `<div class="field" style="grid-column:1/-1"><label for="b-proy">Proyecto de estos colaboradores</label><select class="inp" id="b-proy" style="max-width:520px"><option value="">El asignado a cada colaborador o el de la hoja</option>${misProyectos().map(p => `<option value="${esc(p.id)}">${esc(p.n)}</option>`).join("")}</select></div>` : ""}</div>
     <div class="pick-head"><input class="inp" id="b-q" type="search" placeholder="Buscar colaborador o cédula" autocomplete="off"><select class="inp" id="b-area" style="max-width:260px"><option value="">Todas las áreas</option>${areas.map(a => `<option>${esc(a)}</option>`).join("")}</select>
       <button class="btn small" id="b-todos">Marcar visibles</button><button class="btn small" id="b-ninguno">Desmarcar</button></div>
     <div class="checklist" id="b-lista">${emp.map(e => `<label data-a="${esc(e[2])}" data-q="${esc(e[1] + " " + e[0])}"><input type="checkbox" value="${esc(e[0])}"><span>${esc(e[1])}</span><small>${esc(e[2])}</small></label>`).join("")}</div>
@@ -1048,15 +1193,17 @@ function vEditor(app, id) {
   const tb = $("#e-filas");
   const recDe = r => r.r != null && r._jOrig === r.j ? r.r : (jorCod(r.j) || {}).r || 0;
   const cst = r => costo(r.s || 0, recDe(r), r.h || 0, E.div);
-  function domingo(r) {
-    if (!r.f) return; const d = dow(r.f) === 0;
-    const mapa = d ? { D: "DD", N: "ND" } : { DD: "D", ND: "N" };
-    if (mapa[r.j] && jorCod(mapa[r.j])) r.j = mapa[r.j];
+  function domingo(r) { // domingo → DD/ND, festivo → FD/FN, otro día → D/N
+    if (!r.f) return; const d = dow(r.f) === 0, fe = !d && esFestivo(r.f);
+    const base = { D: "D", DD: "D", FD: "D", N: "N", ND: "N", FN: "N" }[r.j]; if (!base) return;
+    const cod = d ? (base === "D" ? "DD" : "ND") : fe ? (base === "D" ? "FD" : "FN") : base;
+    if (jorCod(cod)) r.j = cod;
   }
   const acciones = i => `<button class="icon" data-act="dup" title="Duplicar fila" aria-label="Duplicar fila">${svg('copy')}</button><button class="icon" data-act="del" title="Quitar fila" aria-label="Quitar fila" style="color:var(--bad)">${svg('x')}</button>`;
   function pintar() {
+    const yaFirmo = new Set(E.filas.filter(r => r._f && r.c).map(r => r.c));
     tb.innerHTML = E.filas.map((r, i) => `<div class="fila ${r._f ? "firmada" : ""}" data-i="${i}">
-      <div class="n"><span>${i + 1}${r._f ? ' · <span style="color:var(--ok)">firmó</span>' : ''}</span><span class="acts">${acciones(i)}</span></div>
+      <div class="n"><span>${i + 1}${r._f ? ' · <span style="color:var(--ok)">firmó</span>' : yaFirmo.has(r.c) ? ' · <span style="color:var(--ok)">se copia su firma</span>' : ''}</span><span class="acts">${acciones(i)}</span></div>
       <label><span class="l">Fecha</span><input class="inp" type="date" data-k="f" value="${r.f || ""}"></label>
       <label><span class="l">Jornada</span><select class="inp" data-k="j">${optJ(r.j)}</select></label>
       <label class="emp"><span class="l">Colaborador</span><input class="inp" data-k="n" list="dl-emp" value="${esc(r.n || "")}" placeholder="Nombre o cédula" autocomplete="off"><span class="info">${esc([r.c, r.a, r.s && verValores() ? money(r.s) : ''].filter(Boolean).join(' · '))}</span></label>
@@ -1064,7 +1211,7 @@ function vEditor(app, id) {
       <label><span class="l">Fin</span><input class="inp" type="time" data-k="hf" value="${r.hf || ""}"></label>
       <label><span class="l">Horas</span><input class="inp num ${r.m ? "manual" : ""}" type="number" step="0.25" min="0" max="24" inputmode="decimal" data-k="h" value="${r.h || ""}" title="${r.m ? "Horas a mano. Doble toque para volver al cálculo." : "Se calcula con inicio y fin; puede escribir otro valor."}"></label>
       <span class="costo">${verValores() ? money(cst(r)) : ""}</span>
-      <label class="sop"><span class="l">Soporte / justificación</span><input class="inp" data-k="so" list="dl-sop" placeholder="Soporte / actividad" value="${esc(r.so || "")}"><input class="inp" style="margin-top:4px;font-size:14px" data-k="ju" placeholder="Justificación (opcional)" value="${esc(r.ju || "")}"></label>
+      <label class="sop"><span class="l">Soporte / justificación</span><input class="inp" data-k="so" list="dl-sop" placeholder="Soporte / actividad" value="${esc(r.so || "")}"><input class="inp" style="margin-top:4px;font-size:14px" data-k="ju" placeholder="Justificación (opcional)" value="${esc(r.ju || "")}">${hayProy ? `<select class="inp" style="margin-top:4px;font-size:14px" data-k="py" aria-label="Proyecto de esta fila" title="Proyecto al que se cargan estas horas">${optP(r.py || "")}</select>` : ""}</label>
       <span class="acts2">${acciones(i)}</span></div>`).join("")
       || '<div class="empty"><p>Agregue colaboradores con el panel de arriba o con “Agregar fila”.</p></div>';
     totales();
@@ -1072,18 +1219,20 @@ function vEditor(app, id) {
   function totales() {
     const h = E.filas.reduce((a, r) => a + (r.h || 0), 0), c2 = E.filas.reduce((a, r) => a + cst(r), 0);
     const dias = new Set(E.filas.map(r => r.f).filter(Boolean)).size;
-    $("#e-res").textContent = E.filas.length ? `${E.filas.length} filas · ${dias} día(s) · ${num(h)} h${verValores() ? " · " + money(c2) : ""}` : "Sin filas";
+    const porP = {}; E.filas.forEach(r => { const k = r.py || E.proy; if (k && k !== E.proy) porP[k] = (porP[k] || 0) + (r.h || 0); });
+    const extra = Object.entries(porP).map(([k, v]) => `${nombreProy(k)}: ${num(v)} h`).join(" · ");
+    $("#e-res").textContent = E.filas.length ? `${E.filas.length} filas · ${dias} día(s) · ${num(h)} h${verValores() ? " · " + money(c2) : ""}${extra ? " · " + extra : ""}` : "Sin filas";
   }
   tb.onchange = ev => {
     const fd = ev.target.closest(".fila[data-i]"); if (!fd) return;
     const r = E.filas[+fd.dataset.i], k = ev.target.dataset.k, v = ev.target.value;
     if (k === "n") {
       const t = v.trim().toUpperCase(), e = ePorNom[t] || ePorCed[t.replace(/\D/g, "")];
-      if (e) { if (r.c !== e[0]) Object.assign(r, { c: e[0], n: e[1], a: e[2], s: e[3], _f: false }); pintar(); }
+      if (e) { if (r.c !== e[0]) { Object.assign(r, { c: e[0], n: e[1], a: e[2], s: e[3], _f: false }); if (!r.py) r.py = proyDeCol(e[0]); } pintar(); }
       else { r.n = v; r.c = ""; ev.target.classList.add("bad"); toast("Elija un colaborador de la lista.", true); }
       return;
     }
-    if (k === "so" || k === "ju") { r[k] = v; return; }
+    if (k === "so" || k === "ju" || k === "py") { r[k] = v; if (k === "py") totales(); return; }
     if (k === "h") { r.h = parseFloat(v) || 0; r.m = Math.abs(r.h - horasEntre(r.hi, r.hf)) > 0.001 ? 1 : 0; }
     else r[k] = v;
     if (k === "f") domingo(r);
@@ -1100,7 +1249,8 @@ function vEditor(app, id) {
   };
   $("#e-add").onclick = () => {
     const b = E.filas[E.filas.length - 1] || {};
-    E.filas.push({ f: b.f || "", j: b.j || "D", c: "", n: "", a: "", s: 0, hi: b.hi || "07:00", hf: b.hf || "13:00", h: b.m ? b.h : horasEntre(b.hi || "07:00", b.hf || "13:00"), m: b.m || 0, so: b.so || "", ju: b.ju || "" });
+    const [hi0, hf0] = !b.f || (finDeSemanaOFestivo(b.f) && !b.hi) ? HORARIO_FDS : [b.hi, b.hf];
+    E.filas.push({ f: b.f || "", j: b.j || "D", c: "", n: "", a: "", s: 0, hi: hi0, hf: hf0, h: b.m ? b.h : horasEntre(hi0, hf0), m: b.m || 0, so: b.so || "", ju: b.ju || "" });
     pintar(); $(`.fila[data-i="${E.filas.length - 1}"] [data-k="n"]`).focus();
   };
   const checks = () => $$("#b-lista input"), contar = () => { const n = checks().filter(c => c.checked).length; $("#b-add").innerHTML = `${svg('plus')}Agregar ${n} fila${n === 1 ? "" : "s"}`; $("#b-add").disabled = !n; };
@@ -1108,14 +1258,21 @@ function vEditor(app, id) {
   $("#b-q").oninput = filtrarL; $("#b-area").onchange = filtrarL; $("#b-lista").onchange = contar;
   $("#b-todos").onclick = () => { $$("#b-lista label").filter(l => !l.hidden).forEach(l => l.querySelector("input").checked = true); contar(); };
   $("#b-ninguno").onclick = () => { checks().forEach(c => c.checked = false); contar(); };
-  $("#b-fecha").onchange = () => { const t = { f: $("#b-fecha").value, j: $("#b-jor").value }; domingo(t); $("#b-jor").value = t.j; };
+  pintarActividades();
+  $("#ma-add").onclick = () => ejecutar(async () => { await agregarActividad($("#ma-nueva").value); $("#ma-nueva").value = ""; });
+  $("#ma-nueva").onkeydown = e => { if (e.key === "Enter") { e.preventDefault(); $("#ma-add").click(); } };
+  $("#b-sop-g").onclick = () => ejecutar(async () => { if (!$("#b-sop").value.trim()) throw new Error("Escriba primero la actividad."); await agregarActividad($("#b-sop").value); });
+  $("#b-fecha").onchange = () => { const fe = $("#b-fecha").value, t = { f: fe, j: $("#b-jor").value }; domingo(t); $("#b-jor").value = t.j;
+    if (finDeSemanaOFestivo(fe)) { [$("#b-ini").value, $("#b-fin").value] = HORARIO_FDS; }
+    $("#b-fds").textContent = finDeSemanaOFestivo(fe) ? `${esFestivo(fe) ? "Festivo" : "Fin de semana"}: horario predeterminado 7:00 a. m. – 1:00 p. m. (puede cambiarlo).` : ""; };
   $("#b-add").onclick = () => {
     const fe = $("#b-fecha").value, hi = $("#b-ini").value, hf = $("#b-fin").value;
     if (!fe) return toast("Seleccione la fecha.", true); if (!hi || !hf) return toast("Indique inicio y fin.", true);
     const rep = [];
     checks().filter(c => c.checked).forEach(c => {
       const e = ePorCed[c.value]; if (E.filas.some(r => r.c === e[0] && r.f === fe)) rep.push(e[1]);
-      E.filas.push({ f: fe, j: $("#b-jor").value, c: e[0], n: e[1], a: e[2], s: e[3], hi, hf, h: horasEntre(hi, hf), m: 0, so: $("#b-sop").value, ju: $("#b-just").value });
+      E.filas.push({ f: fe, j: $("#b-jor").value, c: e[0], n: e[1], a: e[2], s: e[3], hi, hf, h: horasEntre(hi, hf), m: 0, so: $("#b-sop").value, ju: $("#b-just").value,
+        py: ($("#b-proy") && $("#b-proy").value) || proyDeCol(e[0]) });
     });
     E.filas.sort((a, b) => (a.f || "").localeCompare(b.f || ""));
     checks().forEach(c => c.checked = false); contar(); pintar();
@@ -1151,7 +1308,8 @@ async function guardarEditor() {
   try {
     const nuevo = !E.id; let id = E.id;
     const prev = nuevo ? null : JSON.parse(JSON.stringify(S.forms[id]));
-    if (prev && !editable(prev)) { toast("La hoja ya fue firmada en otro equipo; reábrala para editar.", true); return; }
+    if (prev && !editable(prev)) { toast(["legalizado", "cerrado"].includes(prev.estado) ? "La hoja ya fue legalizada o cerrada en otro equipo; reábrala para editar." : "Su rango no permite editar hojas ya firmadas.", true); return; }
+    const conFirmas = prev && (!sinFirmasPie(prev) || Object.keys(prev.firmadas || {}).length);
     const prevF = Object.fromEntries((prev ? prev.filas : []).map(r => [r.id, r]));
     const firmadas = Object.assign({}, prev ? prev.firmadas : {}), borrar = [];
     const filas = E.filas.map(r => {
@@ -1159,7 +1317,8 @@ async function guardarEditor() {
       const x = { id: r.id || rid(), f: r.f, j: r.j, jn: j.n, r: old && old.j === r.j ? old.r : j.r, c: r.c, n: r.n,
         s: old && old.c === r.c ? old.s : r.s, a: old && old.c === r.c ? old.a : r.a, hi: r.hi, hf: r.hf, h: r2(r.h) };
       if (r.m) x.m = 1; if ((r.so || "").trim()) x.so = r.so.trim(); if ((r.ju || "").trim()) x.ju = r.ju.trim();
-      if (old) for (const k of ["ll", "as", "asPor", "asT"]) if (old[k] !== undefined) x[k] = old[k]; // registro de llegada y asistencia
+      if (r.py && r.py !== E.proy) x.py = r.py; // proyecto propio del colaborador en esta fila
+      if (old) for (const k of ["ll", "as", "asPor", "asT", "sa", "saPor", "saT"]) if (old[k] !== undefined) x[k] = old[k]; // registro de llegada y asistencia
       x.co = costo(x.s, x.r, x.h, E.div);
       if (!verValores()) { delete x.s; delete x.r; delete x.co; } // el servidor pone salario, recargo y costo
       if (old && firmadas[old.id] && !(old.f === x.f && old.j === x.j && old.c === x.c && old.hi === x.hi && old.hf === x.hf && Math.abs(old.h - x.h) < .001)) { delete firmadas[old.id]; borrar.push(old.id); }
@@ -1169,12 +1328,13 @@ async function guardarEditor() {
     Object.keys(firmadas).forEach(k => { if (!ids.has(k)) { delete firmadas[k]; borrar.push(k); } });
     const f = Object.assign(prev || { estado: "borrador", div: E.div, origen: null, imp: 0, creado: ahora(), cerrado: null, pie: {}, log: [] },
       { tipo: E.tipo, titulo: (E.titulo.trim() || tituloAuto(filas.map(r => r.f))).toUpperCase(), obs: E.obs.trim(), filas, firmadas, cc: E.cc || null, proy: E.proy || null });
-    const pr = proyectos().find(x => x.id === E.proy); if (pr && pr.motivo) f.filas.forEach(r => { if (!r.so) r.so = pr.motivo; }); // el porqué del proyecto como soporte
-    recalcular(f); log(f, nuevo ? "Creó la hoja" : "Editó la hoja", filas.length + " filas");
+    f.filas.forEach(r => { const pr = proyectos().find(x => x.id === (r.py || E.proy)); if (pr && pr.motivo && !r.so) r.so = pr.motivo; }); // el porqué del proyecto como soporte
+    if (borrar.length) f._quitarFirmas = borrar; // el servidor las quita al guardar y vuelve a copiar la firma de quien se repite
+    recalcular(f); log(f, nuevo ? "Creó la hoja" : conFirmas ? "Editó la hoja ya firmada" : "Editó la hoja", filas.length + " filas");
     if (!await pasarMetas(id, f)) return;
+    S.replicadas = 0;
     if (nuevo) id = await crearForm(f); else await guardarForm(id, f);
-    for (const k of borrar) await api('DELETE', `/api/firmas/${id}/${k}`).catch(() => {});
-    S.editor = null; toast("Hoja guardada en el libro."); ir("hoja-" + id);
+    S.editor = null; toast(S.replicadas ? `Hoja guardada. Se copió la firma a ${S.replicadas} fila${S.replicadas === 1 ? "" : "s"} de colaboradores que ya habían firmado.` : "Hoja guardada en el libro."); ir("hoja-" + id);
   } catch (e) { toast(e.message, true); } finally { if (btn.isConnected) btn.disabled = false; }
 }
 
@@ -1465,7 +1625,7 @@ async function actualizarConFirmas(h, filas) {
   const copiar = {};
   filas.forEach(r => { if (!firm[r.id] && firmaDe[r.c]) { (copiar[r.c] ??= []).push(r.id); firm[r.id] = t; } });
   const prev = Object.fromEntries(ant.filas.map(r => [r.id, r]));
-  filas.forEach(r => { const o = prev[r.id]; if (o) for (const k of ["ll", "as", "asPor", "asT"]) if (o[k] !== undefined) r[k] = o[k]; });
+  filas.forEach(r => { const o = prev[r.id]; if (o) for (const k of ["ll", "as", "asPor", "asT", "sa", "saPor", "saT"]) if (o[k] !== undefined) r[k] = o[k]; });
   const f = Object.assign(ant, { tipo: h.tipo, filas, firmadas: firm, hojaExcel: h.nombre });
   recalcular(f); log(f, "Actualizada desde el libro Excel", `${filas.length} filas, firmas conservadas`);
   await guardarForm(id, f);
@@ -1495,7 +1655,7 @@ const botonExcel = (txt = "Actualizar desde Excel", cls = "btn small", u) => `<l
 let ajTab = 'calculo';
 function vAjustes(app) {
   const c = cfg();
-  const tabs = `<div class="pills" style="margin-bottom:14px">${[['calculo','Cálculo y firmantes'],['jornadas','Jornadas y recargos'],['impresion','Impresión']].map(([k,l])=>`<button class="pill" data-aj="${k}" aria-pressed="${ajTab===k}">${l}</button>`).join('')}</div>`;
+  const tabs = `<div class="pills" style="margin-bottom:14px">${[['calculo','Cálculo y firmantes'],['jornadas','Jornadas y recargos'],['impresion','Impresión'],['divisiones','Logístico y Planta'],['horario','Horario fines de semana']].map(([k,l])=>`<button class="pill" data-aj="${k}" aria-pressed="${ajTab===k}">${l}</button>`).join('')}</div>`;
   let body = '';
   if (ajTab === 'calculo') body = `<div class="card form" style="max-width:720px">
     <div class="field"><label for="g-div">Divisor de horas mensuales</label><input class="inp" id="g-div" value="${esc(c.divisor)}" inputmode="decimal"><span class="hint">Costo = salario ÷ divisor × recargo × horas. El nuevo valor aplica a las hojas que se creen desde ahora.</span></div>
@@ -1513,22 +1673,77 @@ function vAjustes(app) {
     <div class="field"><label for="p-orient">Orientación por defecto</label><select class="inp" id="p-orient"><option value="landscape" ${im.orient === "landscape" ? "selected" : ""}>Horizontal</option><option value="portrait" ${im.orient === "portrait" ? "selected" : ""}>Vertical</option></select></div>
     <span class="hint">Es lo que aparece seleccionado al imprimir o descargar. Cada persona puede elegir otro tamaño en ese momento. Cada hoja se ajusta completa a una página.</span>
     <button class="btn primary" id="p-save">Guardar</button></div>`; }
+  else if (ajTab === 'horario') {
+    /* Aplica la regla "fines de semana y festivos hasta la 1:00 p. m." a hojas ya registradas, con vista previa.
+       Solo filas diurnas que empiezan antes de la 1:00 p. m.; no toca nocturnas, recargo nocturno ni horas manuales. */
+    const cand = [];
+    for (const f of listaForms()) for (const r of f.filas) {
+      if (!finDeSemanaOFestivo(r.f) || esRN(r) || r.m || !r.hi || r.hi >= "13:00" || r.hf === "13:00") continue;
+      if (!["D", "DD", "FD"].includes(r.j)) continue;
+      cand.push({ f, r, nh: horasEntre(r.hi, "13:00"), abierta: ["borrador", "firmado"].includes(f.estado) });
+    }
+    cand.sort((a, b) => (a.r.f || "").localeCompare(b.r.f || ""));
+    const grupo = (t, lista, marcado) => lista.length ? `<h3 style="margin:14px 0 6px">${t} (${lista.length})</h3><div style="overflow-x:auto;max-height:340px"><table class="tabla"><thead><tr><th><input type="checkbox" data-hgrupo ${marcado ? "checked" : ""} aria-label="Marcar todas"></th><th>Fecha</th><th>Hoja</th><th>Colaborador</th><th>Ahora</th><th>Queda</th></tr></thead><tbody>
+      ${lista.map(x => `<tr><td><input type="checkbox" data-hrow="${x.f.id}|${x.r.id}" ${marcado ? "checked" : ""}></td><td>${DIAS_N[new Date(x.r.f + "T12:00").getDay()].slice(0, 3)} ${fc(x.r.f)}${esFestivo(x.r.f) ? " <b>(festivo)</b>" : ""}</td><td>${esc(x.f.titulo)}<br><span class="tag">${(ESTADOS[x.f.estado] || [""])[0]}${(x.f.firmadas || {})[x.r.id] ? " · firmada" : ""}</span></td>
+        <td>${esc(x.r.n)}</td><td style="white-space:nowrap">${hora12(x.r.hi)} – ${hora12(x.r.hf)} · ${num(x.r.h)} h</td><td style="white-space:nowrap"><b>hasta 1:00 p. m. · ${num(x.nh)} h</b> <span class="tag">(${x.nh - x.r.h > 0 ? "+" : ""}${num(+(x.nh - x.r.h).toFixed(2))} h)</span></td></tr>`).join("")}</tbody></table></div>` : "";
+    const ab = cand.filter(x => x.abierta), ce = cand.filter(x => !x.abierta);
+    body = `<div class="card form" style="max-width:980px"><p class="hint" style="margin:0">Pone la hora fin en <b>1:00 p. m.</b> en las filas de sábado, domingo y festivo que ya están registradas.
+      Solo cambia filas diurnas que empiezan antes de la 1:00 p. m.; no toca turnos de tarde o noche, recargo nocturno ni filas con horas escritas a mano.
+      Se recalculan horas y costos; las firmas se conservan y queda anotado en el historial de cada hoja. Si una semana de nómina ya estaba revisada, vuelve a "Por revisar".</p>
+      ${cand.length ? grupo("En hojas abiertas (borrador o firmadas)", ab, true) + grupo("En hojas cerradas o legalizadas (normalmente ya pagadas)", ce, false)
+        + `<div class="actions" style="margin-top:12px"><button class="btn primary" id="hz-apl" type="button">${svg("check")}Aplicar a las filas marcadas</button><span class="tag" id="hz-n"></span></div>`
+        : '<p class="tag"><b>No hay filas por ajustar:</b> todas las de fin de semana y festivo ya terminan a la 1:00 p. m. o son turnos que no aplican.</p>'}</div>`; }
+  else if (ajTab === 'divisiones') {
+    const areas = [...new Set(S.emp.map(e => e[2]).concat(listaForms().flatMap(f => f.filas.map(r => r.a))).filter(Boolean).map(a => String(a).trim()))].filter(a => !AREA_FUERA.test(normTxt(a))).sort();
+    body = `<div class="card form" style="max-width:760px"><p class="hint" style="margin:0">Elija a qué división pertenece cada área. Los informes se ven <b>unificados</b> o <b>por aparte</b>
+      (Logístico o Planta) según el área del colaborador.${S.divisiones ? "" : " <b>Aún no se ha guardado:</b> la app propone la división por el nombre del área; revise y guarde."}</p>
+      <div style="overflow-x:auto"><table class="tabla"><thead><tr><th>Área</th><th>Colaboradores</th><th>División</th></tr></thead><tbody>${areas.map((a, i) => `<tr><td>${esc(a)}</td><td>${S.emp.filter(e => e[2] === a && e[4] !== 0).length}</td>
+        <td><select class="inp" data-divarea="${esc(a)}" aria-label="División de ${esc(a)}" style="min-width:150px;${divDe(a) ? "" : "border-color:#c62828"}">${divDe(a) ? "" : '<option value="" selected disabled>— Elija —</option>'}${DIV_BASE.map(d => `<option value="${d.id}" ${divDe(a) === d.id ? "selected" : ""}>${d.n}</option>`).join("")}</select></td></tr>`).join("")}</tbody></table></div>
+      <span class="hint">Cada área va a Logístico o a Planta. Un área nueva que llegue con los salarios de Recursos Humanos aparece aquí en rojo para que la asigne; mientras tanto se cuenta solo en el informe unificado.</span>
+      <button class="btn primary" id="dv-save" type="button">${svg("check")}Guardar divisiones</button></div>`; }
   else { ajTab = 'calculo'; return vAjustes(app); }
   app.innerHTML = topbar('Ajustes', 'Solo el administrador principal') + tabs + body;
+  if ($("#hz-apl")) {
+    const contarH = () => { $("#hz-n").textContent = $$("[data-hrow]:checked").length + " filas marcadas"; };
+    $$("[data-hgrupo]").forEach(g => g.onchange = () => { g.closest("table").querySelectorAll("[data-hrow]").forEach(c => c.checked = g.checked); contarH(); });
+    $$("[data-hrow]").forEach(c => c.onchange = contarH); contarH();
+    $("#hz-apl").onclick = () => ejecutar(async () => {
+      const sel = $$("[data-hrow]:checked").map(c => c.dataset.hrow.split("|")); if (!sel.length) throw new Error("Marque al menos una fila.");
+      const porHoja = {}; sel.forEach(([fid, rid]) => (porHoja[fid] ??= []).push(rid));
+      if (!await confirmar(`Se cambiará la hora fin a 1:00 p. m. en ${sel.length} filas de ${Object.keys(porHoja).length} hojas. ¿Continuar?`, "Aplicar horario de fines de semana", "Aplicar")) return;
+      let ok = 0, filas = 0; const fallas = [];
+      for (const [fid, rids] of Object.entries(porHoja)) {
+        const g = JSON.parse(JSON.stringify(S.forms[fid])); let n = 0;
+        for (const r of g.filas) if (rids.includes(r.id)) { r.hf = "13:00"; r.h = horasEntre(r.hi, "13:00"); if (r.s && r.r) r.co = costo(r.s, r.r, r.h, g.div); n++; }
+        recalcular(g); log(g, "Aplicó horario de fin de semana y festivo (hasta 1:00 p. m.)", n + " filas");
+        try { await guardarForm(fid, g); ok++; filas += n; } catch (e) { fallas.push(`${g.titulo}: ${e.message}`); }
+        toast(`Aplicando… ${ok + fallas.length} de ${Object.keys(porHoja).length} hojas`);
+      }
+      await confirmar(`Listo: ${filas} filas actualizadas en ${ok} hojas.` + (fallas.length ? "\n\nNo se pudieron cambiar:\n" + fallas.join("\n") : ""), "Horario aplicado", "Entendido");
+      render(false);
+    });
+  }
+  if ($("#dv-save")) $("#dv-save").onclick = () => ejecutar(async () => {
+    const falta = $$("[data-divarea]").filter(x => !x.value).map(x => x.dataset.divarea);
+    if (falta.length) throw new Error("Elija Logístico o Planta para: " + falta.join(", "));
+    const lista = DIV_BASE.map(d => ({ id: d.id, n: d.n, areas: $$("[data-divarea]").filter(x => x.value === d.id).map(x => x.dataset.divarea) }));
+    await guardarCat("divisiones", { lista }); S.divisiones = lista; toast("Divisiones guardadas"); render(false); });
   $$('[data-aj]').forEach(b => b.onclick = () => { ajTab = b.dataset.aj; if (ajTab === 'accesos') cargarUsuarios(); render(false); });
   enlazarAccesos();
 }
 function enlazarAccesos() {
-  if ($("#rg-nuevo")) $("#rg-nuevo").onclick = () => { RG_EDIT = "nuevo"; render(false); };
+  $$("[data-rgnuevo]").forEach(b => b.onclick = () => { RG_EDIT = "nuevo:" + b.dataset.rgnuevo; render(false); });
+  for (const [rol, rg] of [["#nu-rol", "#nu-rango"], ["#ed-rol", "#ed-rango"]]) if ($(rol) && $(rg)) $(rol).onchange = () => { $(rg).innerHTML = opcionesRango($(rol).value, ""); };
   if ($("#rg-cancel")) $("#rg-cancel").onclick = () => { RG_EDIT = null; render(false); };
   $$("[data-rgedit]").forEach(b => b.onclick = () => { RG_EDIT = b.dataset.rgedit; render(false); });
   $$("[data-rgdel]").forEach(b => b.onclick = () => ejecutar(async () => {
-    if (!await confirmar("¿Quitar este rango? Los administradores que lo tienen quedan con los permisos básicos.", "Quitar rango", "Quitar")) return;
+    const usr = tipoRango(rangos().find(x => x.id === b.dataset.rgdel) || {}) === "usuario";
+    if (!await confirmar(usr ? "¿Quitar este rango? Los usuarios que lo tienen quedan con todos los permisos de usuario." : "¿Quitar este rango? Los administradores que lo tienen quedan con los permisos básicos.", "Quitar rango", "Quitar")) return;
     const lista = rangos().filter(x => x.id !== b.dataset.rgdel); await guardarCat("rangos", { lista }); S.rangos = lista; render(false); }));
   if ($("#rg-save")) $("#rg-save").onclick = () => ejecutar(async () => {
     const n = $("#rg-n").value.trim(); if (!n) throw new Error("Escriba el nombre del rango.");
     const p = $$("[data-rgp]:checked").map(x => x.value), lista = rangos().slice();
-    if (RG_EDIT === "nuevo") lista.push({ id: "r" + Date.now().toString(36), n, p }); else { const i = lista.findIndex(x => x.id === RG_EDIT); lista[i] = Object.assign({}, lista[i], { n, p }); }
+    if (RG_EDIT.startsWith("nuevo:")) lista.push({ id: "r" + Date.now().toString(36), t: $("#rg-save").dataset.t, n, p, v: 2 }); else { const i = lista.findIndex(x => x.id === RG_EDIT); lista[i] = Object.assign({}, lista[i], { n, p }); }
     await guardarCat("rangos", { lista }); S.rangos = lista; RG_EDIT = null; toast("Rango guardado"); render(false); });
   if ($("#frm-cc")) $("#frm-cc").onsubmit = e => { e.preventDefault(); ejecutar(async () => {
     const c = $("#cc-c").value.trim().toUpperCase(), n = $("#cc-n").value.trim();
@@ -1612,27 +1827,39 @@ const fechaCorta = ms => ms ? new Date(+ms).toLocaleString('es-CO',{day:'2-digit
 const ccChecks = (pref, sel) => centros().length ? `<div class="field" style="grid-column:1/-1"><span class="lbl">Centros de costo asignados (las hojas de esta persona se cargan a ellos)</span>
   <div style="display:flex;flex-wrap:wrap;gap:6px 14px">${centros().map(c => `<label class="check"><input type="checkbox" data-cc-${pref} value="${esc(c.c)}" ${sel.includes(c.c) ? "checked" : ""}> ${esc(c.c)} · ${esc(c.n)}</label>`).join("")}</div></div>`
   : `<p class="hint" style="margin:0">Cree centros de costo arriba para asignarlos.</p>`;
-/* Rangos (cargos) de administrador: cada uno con sus permisos. Un administrador sin rango tiene los permisos básicos. */
+/* Rangos (cargos): los de administrador reparten permisos de administración; los de usuario, lo que cada usuario
+   puede hacer en su libro. Sin rango: el administrador tiene los permisos básicos y el usuario todos los de usuario. */
 const PERMISOS_TXT = { valores: "Ver salarios, recargos y costos", todos: "Ver los libros de todas las personas", metas: "Definir metas",
   proyectos: "Crear y editar proyectos", reabrir: "Reabrir hojas cerradas, quitar firmas y eliminar hojas", responsable: "Cambiar el responsable de las hojas",
-  salarios: "Actualizar salarios (Recursos Humanos)", nomina: "Nómina: planos, revisado y pagado" };
-const PERM_BASE_C = ["valores", "todos", "metas", "proyectos", "reabrir", "responsable"];
-const rangos = () => S.rangos || [];
-let RG_EDIT = null;
-function tarjetaRangos(){
-  const fila = r => `<tr><td><b>${esc(r.n)}</b></td><td>${(r.p || []).map(k => `<span class="chip c-info" style="margin:2px">${esc(PERMISOS_TXT[k] || k)}</span>`).join("") || '<span class="tag">Sin permisos especiales</span>'}</td>
+  salarios: "Actualizar salarios (Recursos Humanos)", nomina: "Nómina: planos, revisado y pagado",
+  asistencia: "Registrar llegada y confirmar asistencia", salida: "Registrar salida" };
+const PERMISOS_USR_TXT = { valores: "Ver salarios, recargos y costos", crear: "Crear hojas nuevas", editar: "Editar hojas con firmas de Elabora o Autoriza (agregar o cambiar colaboradores)", importar: "Cargar libros de Excel",
+  asistencia: "Registrar llegada y confirmar asistencia", salida: "Registrar salida", confirmar: "Confirmar hojas y enviarlas a su mes", cerrar: "Legalizar, cerrar y archivar hojas",
+  eliminar: "Eliminar hojas en borrador", llegada_todos: "Ver la Llegada de todos los responsables (solo marca asistió / no asistió)" };
+const PERM_BASE_C = ["valores", "todos", "metas", "proyectos", "reabrir", "responsable", "asistencia", "salida"];
+const tipoRango = r => r.t || "admin";
+/* Rangos creados antes de "Registrar salida" (sin v): se muestran con lo que el servidor les reconoce. */
+const rangoAl = r => r.v ? r : Object.assign({}, r, { v: 2, p: [...new Set((r.p || []).concat(tipoRango(r) === "admin" ? ["asistencia", "salida"] : (r.p || []).includes("asistencia") ? ["salida"] : []))] });
+const rangos = t => (S.rangos || []).map(rangoAl).filter(r => !t || tipoRango(r) === t);
+let RG_EDIT = null; // "nuevo:admin", "nuevo:usuario" o el id del rango
+function tarjetaRangos(t){
+  const usr = t === "usuario", TXT = usr ? PERMISOS_USR_TXT : PERMISOS_TXT, lista = rangos(t);
+  const CORTO = usr ? { valores: "Ver salarios y costos", crear: "Crear", editar: "Editar firmadas", importar: "Cargar Excel", asistencia: "Llegada", salida: "Salida", llegada_todos: "Llegada de todos (portería)", confirmar: "Confirmar", cerrar: "Legalizar y cerrar", eliminar: "Eliminar" } : TXT;
+  const fila = r => `<tr><td><b>${esc(r.n)}</b></td><td style="white-space:normal">${(r.p || []).map(k => `<span class="chip c-info" style="margin:2px;white-space:normal">${esc(CORTO[k] || k)}</span>`).join("") || `<span class="tag">${usr ? "Solo consulta su libro" : "Sin permisos especiales"}</span>`}</td>
     <td>${S.usuarios.filter(u => u.rango === r.id).length}</td><td style="white-space:nowrap"><button class="lnk" data-rgedit="${esc(r.id)}">Editar</button> <button class="lnk" data-rgdel="${esc(r.id)}" style="color:var(--bad);margin-left:8px">Quitar</button></td></tr>`;
-  const ed = RG_EDIT ? (RG_EDIT === "nuevo" ? { n: "", p: PERM_BASE_C.slice() } : rangos().find(x => x.id === RG_EDIT)) : null;
-  return `<details class="card" style="margin-bottom:12px" ${RG_EDIT ? "open" : ""}><summary style="cursor:pointer;font-weight:700">Rangos de administrador (${rangos().length})</summary>
-    <p class="hint" style="margin:8px 0">Cree cargos (por ejemplo Coordinador, Jefe de área, Gerente) con los permisos de cada uno y asígnelos a los administradores con <b>Editar</b>.
-    Un administrador sin rango tiene los permisos básicos: ver valores y todos los libros, metas, proyectos, reabrir hojas y cambiar responsable.</p>
-    <table class="tabla"><thead><tr><th>Rango</th><th>Permisos</th><th>Personas</th><th></th></tr></thead><tbody>${rangos().map(fila).join("") || '<tr><td colspan="4" class="tag">Aún no hay rangos.</td></tr>'}</tbody></table>
-    ${ed ? `<div class="form" style="margin-top:10px"><div class="field"><label for="rg-n">Nombre del rango</label><input class="inp" id="rg-n" value="${esc(ed.n)}" maxlength="40" placeholder="Ej. Jefe de área"></div>
-      <div class="field"><span class="lbl">Permisos</span><div style="display:grid;gap:4px">${Object.entries(PERMISOS_TXT).map(([k, t]) => `<label class="check"><input type="checkbox" data-rgp value="${k}" ${(ed.p || []).includes(k) ? "checked" : ""}> ${esc(t)}</label>`).join("")}</div></div>
-      <div class="actions"><button class="btn primary" id="rg-save" type="button">Guardar rango</button><button class="btn" id="rg-cancel" type="button">Cancelar</button></div></div>`
-      : `<button class="btn small" id="rg-nuevo" type="button" style="margin-top:10px">${svg("plus")}Nuevo rango</button>`}</details>`;
+  const ed = !RG_EDIT ? null : RG_EDIT === "nuevo:" + t ? { n: "", p: usr ? Object.keys(PERMISOS_USR_TXT).filter(k => !["valores", "llegada_todos"].includes(k)) : PERM_BASE_C.slice() } : lista.find(x => x.id === RG_EDIT);
+  return `<details class="card" style="margin-bottom:12px" ${ed ? "open" : ""}><summary style="cursor:pointer;font-weight:700">Rangos de ${usr ? "usuario" : "administrador"} (${lista.length})</summary>
+    <p class="hint" style="margin:8px 0">${usr
+      ? "Cree niveles para los usuarios (por ejemplo Operario, Supervisor, Líder de turno) con lo que cada uno puede hacer en su libro, y asígnelos con <b>Editar</b>. Un usuario sin rango puede hacer todo lo de esta lista menos ver salarios, recargos y costos: eso solo lo ven los usuarios cuyo rango lo tenga marcado."
+      : "Cree cargos (por ejemplo Coordinador, Jefe de área, Gerente) con los permisos de cada uno y asígnelos a los administradores con <b>Editar</b>. Un administrador sin rango tiene los permisos básicos: ver valores y todos los libros, metas, proyectos, reabrir hojas y cambiar responsable."}</p>
+    <div style="overflow-x:auto"><table class="tabla"><thead><tr><th>Rango</th><th>Permisos</th><th>Personas</th><th></th></tr></thead><tbody>${lista.map(fila).join("") || '<tr><td colspan="4" class="tag">Aún no hay rangos.</td></tr>'}</tbody></table></div>
+    ${ed ? `<div class="form" style="margin-top:10px"><div class="field"><label for="rg-n">Nombre del rango</label><input class="inp" id="rg-n" value="${esc(ed.n)}" maxlength="40" placeholder="${usr ? "Ej. Supervisor" : "Ej. Jefe de área"}"></div>
+      <div class="field"><span class="lbl">Permisos</span><div style="display:grid;gap:4px">${Object.entries(TXT).map(([k, x]) => `<label class="check"><input type="checkbox" data-rgp value="${k}" ${(ed.p || []).includes(k) ? "checked" : ""}> ${esc(x)}</label>`).join("")}</div></div>
+      <div class="actions"><button class="btn primary" id="rg-save" type="button" data-t="${t}">Guardar rango</button><button class="btn" id="rg-cancel" type="button">Cancelar</button></div></div>`
+      : `<button class="btn small" data-rgnuevo="${t}" type="button" style="margin-top:10px">${svg("plus")}Nuevo rango de ${usr ? "usuario" : "administrador"}</button>`}</details>`;
 }
-const rangoSelect = (id, sel) => rangos().length ? `<div class="field"><label for="${id}">Rango (cargo, solo para administradores)</label><select class="inp" id="${id}"><option value="">Sin rango (permisos básicos)</option>${rangos().map(r => `<option value="${esc(r.id)}" ${sel === r.id ? "selected" : ""}>${esc(r.n)}</option>`).join("")}</select></div>` : "";
+const opcionesRango = (rol, sel) => `<option value="">${rol === "admin" ? "Sin rango (permisos básicos)" : "Sin rango (todos los permisos de usuario)"}</option>${rangos(rol === "admin" ? "admin" : "usuario").map(r => `<option value="${esc(r.id)}" ${sel === r.id ? "selected" : ""}>${esc(r.n)}</option>`).join("")}`;
+const rangoSelect = (id, sel, rol) => rangos().length ? `<div class="field"><label for="${id}">Rango (cargo o nivel)</label><select class="inp" id="${id}">${opcionesRango(rol, sel)}</select></div>` : "";
 function tarjetaCentros(){
   return `<details class="card" style="margin-bottom:12px" ${centros().length ? "" : "open"}><summary style="cursor:pointer;font-weight:700">Centros de costo (${centros().length})</summary>
     <p class="hint" style="margin:8px 0">Las horas de cada hoja se cargan al centro de costo elegido, sin importar el área del colaborador. Asígnelos a cada persona con <b>Editar</b>.</p>
@@ -1645,7 +1872,7 @@ function tarjetaCentros(){
 }
 function vAccesos(){
   const us=S.usuarios;
-  let h=`${tarjetaCred()}${tarjetaRangos()}${tarjetaCentros()}
+  let h=`${tarjetaCred()}${tarjetaRangos('admin')}${tarjetaRangos('usuario')}${tarjetaCentros()}
     <details class="card" style="margin-bottom:12px"><summary style="cursor:pointer;font-weight:700">${svg('plus','style="width:18px;vertical-align:-3px"')} Crear administrador o usuario</summary>
     <form class="form" id="frm-nuevo-u" style="margin-top:10px"><div class="row2"><div class="field"><label for="nu-nom">Nombre completo</label><input class="inp" id="nu-nom" required></div>
     <div class="field"><label for="nu-usr">Usuario</label><input class="inp" id="nu-usr" required autocomplete="off" autocapitalize="none"></div></div>
@@ -1653,10 +1880,10 @@ function vAccesos(){
     <div class="field"><label for="nu-rol">Nivel</label><select class="inp" id="nu-rol"><option value="operario">Usuario</option><option value="admin">Administrador (ve salarios)</option></select></div></div>
     <label class="check"><input type="checkbox" id="nu-rrhh"> Recursos Humanos: actualiza los salarios generales (solo para administradores)</label>
     <label class="check"><input type="checkbox" id="nu-nomina"> Nómina: descarga los planos semanales y marca revisado y pagado (solo para administradores)</label>
-    ${rangoSelect('nu-rango', '')}
+    ${rangoSelect('nu-rango', '', 'operario')}
     ${ccChecks('nu', [])}
     <button class="btn primary" type="submit">Crear</button></form></details>
-    <details class="card" style="margin-bottom:14px;font-size:15px"><summary style="cursor:pointer;font-weight:700">Qué puede hacer cada nivel</summary><p style="margin:8px 0 0"><b>Usuario:</b> registra, firma, legaliza y descarga en su propio libro; no ve salarios, recargos ni costos.<br>
+    <details class="card" style="margin-bottom:14px;font-size:15px"><summary style="cursor:pointer;font-weight:700">Qué puede hacer cada nivel</summary><p style="margin:8px 0 0"><b>Usuario:</b> registra, firma, legaliza y descarga en su propio libro; no ve salarios, recargos ni costos. Con un <b>rango de usuario</b> se limita lo que puede hacer.<br>
     <b>Administrador:</b> ve todos los libros, salarios, recargos y costos, y define las metas.<br><b>Recursos Humanos</b> (administrador marcado): además carga el libro con los salarios generales, que aplican para todos.<br><b>Administrador principal (usted):</b> además cambia jornadas, recargos, firmantes, impresión y accesos.</p></details>`;
   if(!us.length) return h+`<div class="loading">Cargando…</div>`;
   const nHojas = uid => listaForms().filter(f=>f.dueno===uid).length;
@@ -1673,7 +1900,7 @@ function vAccesos(){
       <div class="row2">${u.rol==='principal'?'':`<div class="field"><label for="ed-rol">Nivel</label><select class="inp" id="ed-rol"><option value="operario" ${u.rol==='operario'?'selected':''}>Usuario</option><option value="admin" ${u.rol==='admin'?'selected':''}>Administrador (ve salarios)</option></select></div>`}
       ${u.rol==='principal'?'':`<label class="check" style="align-self:end"><input type="checkbox" id="ed-rrhh" ${u.rrhh?'checked':''}> Recursos Humanos (actualiza salarios)</label>
       <label class="check" style="align-self:end"><input type="checkbox" id="ed-nomina" ${u.nomina?'checked':''}> Nómina (planos semanales, revisado y pagado)</label>`}
-      ${u.rol==='principal' ? '' : rangoSelect('ed-rango', u.rango || '')}
+      ${u.rol==='principal' ? '' : rangoSelect('ed-rango', u.rango || '', u.rol)}
       ${ccChecks('ed', u.ccs || [])}
       <div class="field"><label for="ed-clv">Clave nueva (déjela vacía para no cambiarla)</label><div style="display:flex;gap:6px"><input class="inp" id="ed-clv" minlength="6" autocomplete="off"><button class="btn" type="button" data-gen="ed-clv">Generar</button></div></div></div>
       <div class="actions"><button class="btn primary" type="submit">Guardar cambios</button><button class="btn" type="button" id="ed-cancel">Cancelar</button></div></form>`;
@@ -1681,7 +1908,7 @@ function vAccesos(){
       : u.clave_visible ? `<span>Clave: <b class="clave-v" data-cv="${u.id}" style="font-family:monospace;font-size:17px">••••••••</b> <button class="lnk" style="margin-left:10px" data-uacc="ver-clave" data-u="${u.id}">Ver</button><button class="lnk" style="margin-left:14px" data-uacc="copiar-acc" data-u="${u.id}">Copiar acceso</button></span>`
       : `<span class="tag">Esta clave no se puede ver (se asignó antes de esta versión o la cambió la persona).</span> <button class="lnk" style="margin-left:8px" data-uacc="nueva-clave" data-u="${u.id}">Asignar clave nueva visible</button>`;
     return `<div class="usr"><div class="h"><span class="avatar">${esc(iniciales(u.nombre))}</span><span style="flex:1"><b style="display:block">${esc(u.nombre)}${yo?' (usted)':''}</b>
-      <span class="tag">@${esc(u.usuario)} · ${ROL_TXT[u.rol]||u.rol}${u.rrhh?' · <b>Recursos Humanos</b>':''}${u.nomina?' · <b>Nómina</b>':''}${u.rango&&rangos().find(r=>r.id===u.rango)?' · Rango: <b>'+esc(rangos().find(r=>r.id===u.rango).n)+'</b>':''}${(u.ccs||[]).length?' · CC: '+(u.ccs||[]).map(esc).join(', '):''} · ${pendiente?'pidió acceso '+fechaCorta(u.creado):'último ingreso: '+fechaCorta(u.ultimo_ingreso)}${pendiente?'':' · '+nHojas(u.id)+' hojas en su libro'}</span></span>
+      <span class="tag">@${esc(u.usuario)} · ${ROL_TXT[u.rol]||u.rol}${u.rrhh?' · <b>Recursos Humanos</b>':''}${u.nomina?' · <b>Nómina</b>':''}${u.rango&&rangos(u.rol==='admin'?'admin':'usuario').find(r=>r.id===u.rango)?' · Rango: <b>'+esc(rangos().find(r=>r.id===u.rango).n)+'</b>':''}${(u.ccs||[]).length?' · CC: '+(u.ccs||[]).map(esc).join(', '):''} · ${pendiente?'pidió acceso '+fechaCorta(u.creado):'último ingreso: '+fechaCorta(u.ultimo_ingreso)}${pendiente?'':' · '+nHojas(u.id)+' hojas en su libro'}</span></span>
       ${u.estado==='inactivo'?'<span class="chip c-mute">Sin acceso</span>':''}</div>
       <div style="margin:6px 0 0">${clave}</div>${acc}</div>`;
   };
@@ -1736,7 +1963,18 @@ async function accionUsuario(btn){
 }
 
 /* ================= Informes y consolidado (tipo Power BI) ================= */
-const INF = { desde: "", hasta: "", area: "", resp: "", jor: "", col: "", cc: "", proy: "", tab: "tablero", todos: false };
+/* ---- Divisiones de los informes: Logístico y Planta, según el área del colaborador. ----
+   El principal las ajusta en Ajustes; mientras no las guarde, se reparten por el nombre del área. */
+const DIV_BASE = [{ id: "log", n: "Logístico", color: "#2a78d6", re: /DEVOLU|DESPACH|LOGIST|ALMAC|TRANSP|INVENT|COMPRAS|RECIB|CARGUE/ },
+                  { id: "pla", n: "Planta", color: "#d9822b", re: /MTTO|MANTEN|TECNIC|TRANSFORM|PLANTA|PRODUC|ENCOFR|COMPON|SOLDAD|PINT|REACOND|TALLER|BOD|TERMINAD/ }];
+const divisiones = () => DIV_BASE.map(d => Object.assign({}, d, { areas: ((S.divisiones || []).find(x => x.id === d.id) || {}).areas || null }));
+const AREA_FUERA = /INCAPACIDAD/; // áreas que no son de trabajo: no se reparten en Logístico ni Planta
+const divDe = area => { const a = String(area || "").trim(); if (!a || AREA_FUERA.test(normTxt(a))) return null;
+  const ds = divisiones(); if (S.divisiones) return (ds.find(d => (d.areas || []).includes(a)) || {}).id || null;
+  const t = normTxt(a); return (ds.find(d => d.re.test(t)) || {}).id || null; };
+const nombreDiv = id => (DIV_BASE.find(d => d.id === id) || {}).n || "Sin división";
+const enDiv = r => !INF.div || divDe(r.a) === INF.div;
+const INF = { div: "", desde: "", hasta: "", area: "", resp: "", jor: "", col: "", cc: "", proy: "", tab: "tablero", todos: false };
 const SERIE = "#2a78d6", ESTADO_C = { ok: "#0ca30c", cerca: "#fab219", supera: "#d03b3b" };
 /* Escala de un solo tono (azul, claro → oscuro): las barras más altas, las más relevantes, salen más oscuras. */
 const ESCALA = ["#86b6ef", "#6da7ec", "#5598e7", "#3987e5", "#2a78d6", "#256abf", "#1c5cab", "#184f95", "#104281", "#0d366b"];
@@ -1774,10 +2012,10 @@ function filasInforme(sinFiltro, soloRN) {
   for (const f of listaForms()) {
     if (f.estado === "legalizado") continue;
     for (const r of f.filas) {
-      if (!r.f || esRN(r) !== !!soloRN) continue;
+      if (!r.f || esRN(r) !== !!soloRN || !enDiv(r)) continue;
       if (!sinFiltro) {
         if ((INF.desde && r.f < INF.desde) || (INF.hasta && r.f > INF.hasta)) continue;
-        if ((INF.area && r.a !== INF.area) || (INF.jor && r.jn !== INF.jor) || (INF.col && r.c !== INF.col) || (INF.resp && (f.dueno || "-") !== INF.resp) || (INF.cc && (f.cc || "-") !== INF.cc) || (INF.proy && (f.proy || "-") !== INF.proy)) continue;
+        if ((INF.area && r.a !== INF.area) || (INF.jor && r.jn !== INF.jor) || (INF.col && r.c !== INF.col) || (INF.resp && (f.dueno || "-") !== INF.resp) || (INF.cc && (f.cc || "-") !== INF.cc) || (INF.proy && (proyDe(r, f) || "-") !== INF.proy)) continue;
       }
       out.push({ r, f });
     }
@@ -1801,8 +2039,11 @@ function vInforme(app) {
   const adm = esAdmin(), val = verValores();
   const tabs = adm ? `<div class="pills" style="margin-bottom:14px">${[["tablero", "Tablero"], ["tabla", "Consolidado por colaborador"], ["proyectos", "Proyectos"]].concat(puede('metas') ? [["metas", "Metas"]] : []).map(([k, l]) => `<button class="pill" data-it="${k}" aria-pressed="${INF.tab === k}">${l}</button>`).join("")}</div>`
     : `<div class="pills" style="margin-bottom:14px">${[["tablero", "Mis gráficos"], ["tabla", "Consolidado por colaborador"], ["proyectos", "Proyectos"]].map(([k, l]) => `<button class="pill" data-it="${k}" aria-pressed="${INF.tab === k}">${l}</button>`).join("")}</div>`;
-  if (INF.tab === "proyectos") { app.innerHTML = topbar(adm ? "Informes" : "Mi consolidado", "Proyectos") + tabs + vProyectosHtml(); enlazarInforme(); enlazarProyectos(); return; }
-  if (INF.tab === "metas" && adm && puede('metas')) { app.innerHTML = topbar("Informes", "Metas de horas extras") + tabs + vMetasHtml(); enlazarInforme(); enlazarMetas(); return; }
+  const vistaDiv = `<div class="pills" role="group" aria-label="Vista del informe" style="margin-bottom:10px">${[["", "Unificado"]].concat(DIV_BASE.map(d => [d.id, d.n]))
+    .map(([k, l]) => `<button class="pill" data-idiv="${k}" aria-pressed="${INF.div === k}">${k ? `<i style="display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;background:${DIV_BASE.find(d => d.id === k).color}"></i>` : ""}${l}</button>`).join("")}</div>`;
+  const tit = t => INF.div ? t + " · " + nombreDiv(INF.div) : t;
+  if (INF.tab === "proyectos") { app.innerHTML = topbar(tit(adm ? "Informes" : "Mi consolidado"), "Proyectos") + vistaDiv + tabs + vProyectosHtml(); enlazarInforme(); enlazarProyectos(); return; }
+  if (INF.tab === "metas" && adm && puede('metas')) { app.innerHTML = topbar("Informes", "Metas de horas extras") + vistaDiv + tabs + vMetasHtml(); enlazarInforme(); enlazarMetas(); return; }
   if (INF.tab === "metas") INF.tab = "tablero";
   const todas = filasInforme(true), fs = filasInforme();
   const areas = [...new Set(todas.map(x => x.r.a).filter(Boolean))].sort(), jors = [...new Set(todas.map(x => x.r.jn).filter(Boolean))].sort();
@@ -1814,7 +2055,7 @@ function vInforme(app) {
     <div class="field"><label for="i-desde">Desde</label><input class="inp" type="date" id="i-desde" value="${INF.desde}"></div>
     <div class="field"><label for="i-hasta">Hasta</label><input class="inp" type="date" id="i-hasta" value="${INF.hasta}"></div>
     <div class="field"><label for="i-area">Área</label><select class="inp" id="i-area"><option value="">Todas</option>${areas.map(a => `<option ${INF.area === a ? "selected" : ""}>${esc(a)}</option>`).join("")}</select></div>
-    ${proyectos().length ? `<div class="field"><label for="i-proy">Proyecto</label><select class="inp" id="i-proy"><option value="">Todos</option>${[...new Set(todas.map(x => x.f.proy || "-"))].sort().map(k => `<option value="${esc(k)}" ${INF.proy === k ? "selected" : ""}>${esc(k === "-" ? "Sin proyecto" : nombreProy(k) || k)}</option>`).join("")}</select></div>` : ""}
+    ${proyectos().length ? `<div class="field"><label for="i-proy">Proyecto</label><select class="inp" id="i-proy"><option value="">Todos</option>${[...new Set(todas.map(x => proyDe(x.r, x.f) || "-"))].sort().map(k => `<option value="${esc(k)}" ${INF.proy === k ? "selected" : ""}>${esc(k === "-" ? "Sin proyecto" : nombreProy(k) || k)}</option>`).join("")}</select></div>` : ""}
     ${centros().length ? `<div class="field"><label for="i-cc">Centro de costo</label><select class="inp" id="i-cc"><option value="">Todos</option>${[...new Set(todas.map(x => x.f.cc || "-"))].sort().map(k => `<option value="${esc(k)}" ${INF.cc === k ? "selected" : ""}>${esc(k === "-" ? "Sin centro de costo" : nombreCC(k))}</option>`).join("")}</select></div>` : ""}
     <div class="field"><label for="i-jor">Jornada</label><select class="inp" id="i-jor"><option value="">Todas</option>${jors.map(a => `<option ${INF.jor === a ? "selected" : ""}>${esc(a)}</option>`).join("")}</select></div>
     ${adm ? `<div class="field"><label for="i-resp">Responsable</label><select class="inp" id="i-resp"><option value="">Todos</option>${resp.map(([k, n]) => `<option value="${esc(k || "-")}" ${INF.resp === (k || "-") ? "selected" : ""}>${esc(n)}</option>`).join("")}</select></div>` : ""}
@@ -1834,10 +2075,11 @@ function vInforme(app) {
   else if (INF.tab === "tabla") cuerpo = tablaConsolidado(fs, val);
   else {
     const p = (id, t, sub) => `<div class="panel"><h3>${t}</h3><p class="sub">${sub}</p><div class="cv"><canvas id="${id}" role="img" aria-label="${esc(t)}"></canvas></div></div>`;
-    cuerpo = `<div class="dash">${p("g-mes", "Horas extras por mes", "Toque una barra para ver solo ese mes")}
+    cuerpo = `<div class="dash">${INF.div ? "" : p("g-div", "Logístico y Planta por mes", "Horas extras de cada división · toque una barra para ver esa división")}${p("g-mes", "Horas extras por mes", "Toque una barra para ver solo ese mes")}
       ${p("g-part", "Participación por área", "Porcentaje de las horas extras · toque una porción para filtrar")}
       ${val ? p("g-cmes", "Costo por mes", "Pesos colombianos") : p("g-jor", "Horas por jornada", "Toque una barra para filtrar")}
-      ${proyectos().length ? p("g-proy", "Horas por proyecto", "Por qué se hicieron las horas extras · toque para filtrar") : ""}
+      ${proyectos().length ? p("g-proy", "Horas por proyecto", "Horas de cada colaborador cargadas a su proyecto · la marca negra es la meta · toque para filtrar") : ""}
+      ${proyectos().length && val ? p("g-pcos", "Costo por proyecto", "Pesos colombianos · toque para filtrar") : ""}
       ${centros().length ? p("g-cc", "Horas por centro de costo", "Las horas se cargan al centro de costo de cada hoja · toque para filtrar") : ""}
       ${p("g-area", "Horas por área", "Las 10 áreas con más horas · la marca negra es la meta del área · toque para filtrar")}
       ${p("g-col", "Colaboradores con más horas", "Los 10 primeros · tono más oscuro = más horas · toque para ver solo esa persona")}
@@ -1845,9 +2087,20 @@ function vInforme(app) {
       ${adm ? p("g-resp", "Horas por responsable (libro)", "Toque para filtrar") : ""}</div>
       ${panelMetas(val)}`;
   }
-  app.innerHTML = topbar(adm ? "Informe global" : "Mi consolidado", adm ? "Todos los libros de horas extras" : "Horas extras de mi libro", `<div class="actions"><button class="btn small" id="i-xls">${svg("xls")}Descargar consolidado</button></div>`) + tabs + filtros + kpis + cuerpo;
+  app.innerHTML = topbar(tit(adm ? "Informe global" : "Mi consolidado"), INF.div ? `Solo las áreas de ${nombreDiv(INF.div)} · ${adm ? "todos los libros" : "mi libro"}` : adm ? "Todos los libros · Logístico y Planta juntos" : "Horas extras de mi libro", `<div class="actions"><button class="btn small" id="i-xls">${svg("xls")}Descargar consolidado</button></div>`) + vistaDiv + tabs + filtros + kpis + (INF.div ? "" : resumenDivisiones(val)) + cuerpo;
   enlazarInforme();
   if (fs.length && INF.tab === "tablero") cargarLib(CDN + "chart.js@4.4.1/dist/chart.umd.js").then(() => dibujarGraficos(fs, val, adm, nombreCol)).catch(e => toast(e.message, true));
+}
+/* Unificado: tarjetas de Logístico, Planta (y sin división) con sus horas y costos, para comparar y abrir cada una. */
+function resumenDivisiones(val) {
+  const fs = filasInforme(), g = {}; fs.forEach(({ r }) => { const k = divDe(r.a) || "-", a = g[k] ??= { h: 0, c: 0, col: new Set() }; a.h += r.h || 0; a.c += r.co || 0; a.col.add(r.c); });
+  const T = fs.reduce((a, x) => a + (x.r.h || 0), 0) || 1;
+  const t = (k, n, color) => { const a = g[k] || { h: 0, c: 0, col: new Set() };
+    return `<button class="stat" data-idiv="${k === "-" ? "" : k}" ${k === "-" ? "disabled" : ""} style="text-align:left;cursor:${k === "-" ? "default" : "pointer"};border-left:5px solid ${color}">
+      <span>${n}${k === "-" ? "" : " · ver por aparte ›"}</span><b>${num(a.h)} h</b><span class="tag">${Math.round(a.h / T * 100)} %${val ? " · " + money(a.c) : ""} · ${a.col.size} colaboradores</span></button>`; };
+  const sin = g["-"] && g["-"].h;
+  return `<div class="stats" style="margin-top:-4px">${DIV_BASE.map(d => t(d.id, d.n, d.color)).join("")}${sin ? t("-", "Áreas sin división", "#b4b2a9") : ""}</div>
+    ${sin && esPrincipal() ? `<p class="hint" style="margin:-6px 0 12px">Hay áreas sin Logístico ni Planta: asígnelas en <a href="#ajustes" data-ajdiv>Ajustes → Logístico y Planta</a>.</p>` : ""}`;
 }
 function tablaConsolidado(fs, val) {
   const meses = [...new Set(fs.map(x => x.r.f.slice(0, 7)))].sort();
@@ -1907,15 +2160,26 @@ function dibujarGraficos(fs, val, adm, nombreCol) {
   const meses = agrupar(fs, x => x.r.f.slice(0, 7)).sort((a, b) => a.k.localeCompare(b.k));
   const elegirMes = i => { const k = meses[i].k, [y, m] = k.split("-").map(Number); INF.desde = k + "-01"; INF.hasta = new Date(Date.UTC(y, m, 0)).toISOString().slice(0, 10); render(false); };
   const metaMes = adm ? +mt.globalMesH : +((mt.usuarios || []).find(u => u.u === S.yo.id) || {}).h;
+  if (!INF.div && document.getElementById("g-div")) {
+    const dsD = DIV_BASE.map(d => ({ label: d.n, data: meses.map(m => fs.filter(x => x.r.f.slice(0, 7) === m.k && divDe(x.r.a) === d.id).reduce((a, x) => a + (x.r.h || 0), 0)),
+      backgroundColor: d.color, borderRadius: 4, borderSkipped: "start", maxBarThickness: 26, borderColor: "#fff", borderWidth: { left: 1, right: 1 } }));
+    const o = base(false, hfmt, null); o.plugins.legend = { display: true, position: "top", align: "start", labels: { boxWidth: 12, boxHeight: 12, useBorderRadius: true, borderRadius: 3 } };
+    o.plugins.tooltip.callbacks.label = c => " " + c.dataset.label + ": " + hfmt(c.parsed.y);
+    o.onClick = (e, el) => { if (el.length) { INF.div = DIV_BASE[el[0].datasetIndex].id; setTimeout(() => render(false), 0); } };
+    o.onHover = (e, el) => { e.native.target.style.cursor = el.length ? "pointer" : "default"; };
+    GRAF.push(new Ch(document.getElementById("g-div"), { type: "bar", data: { labels: meses.map(g => mesTxt(g.k)), datasets: dsD }, options: o }));
+  }
   barras("g-mes", meses.map(g => mesTxt(g.k)), meses.map(g => g.h), base(false, hfmt, elegirMes, metaMes ? { valor: metaMes, texto: "Meta " + hfmt(metaMes) } : null));
   if (val) barras("g-cmes", meses.map(g => mesTxt(g.k)), meses.map(g => g.c), base(false, cfmt, elegirMes, +mt.globalMesC ? { valor: +mt.globalMesC, texto: "Meta " + cfmt(+mt.globalMesC) } : null));
   const top = (arr, n) => { arr.sort((a, b) => b.h - a.h); return arr.slice(0, n); };
   const ar = top(agrupar(fs, x => x.r.a || "Sin área"), 10);
   const metaArea = ar.map(g => { const m = (mt.areas || []).find(a => a.a === g.k); return m && +m.h ? m.h * nMeses : 0; });
   barras("g-area", ar.map(g => g.k), ar.map(g => g.h), base(true, hfmt, i => { INF.area = ar[i].k; render(false); }, metaArea.some(Boolean) && adm ? { valores: metaArea } : null));
-  const ps = top(agrupar(fs, x => x.f.proy || "-"), 12);
+  const ps = top(agrupar(fs, x => proyDe(x.r, x.f) || "-"), 12);
   barras("g-proy", ps.map(g => g.k === "-" ? "Sin proyecto" : nombreProy(g.k) || g.k), ps.map(g => g.h), base(true, hfmt, i => { INF.proy = ps[i].k; render(false); },
     ps.some(g => (proyectos().find(p => p.id === g.k) || {}).meta) ? { valores: ps.map(g => (proyectos().find(p => p.id === g.k) || {}).meta || 0) } : null));
+  if (val && $("#g-pcos")) { const pc = agrupar(fs, x => proyDe(x.r, x.f) || "-").sort((a, b) => b.c - a.c).slice(0, 12);
+    barras("g-pcos", pc.map(g => g.k === "-" ? "Sin proyecto" : nombreProy(g.k) || g.k), pc.map(g => g.c), base(true, cfmt, i => { INF.proy = pc[i].k; render(false); })); }
   const cs = top(agrupar(fs, x => x.f.cc || "-"), 12);
   barras("g-cc", cs.map(g => g.k === "-" ? "Sin centro de costo" : nombreCC(g.k)), cs.map(g => g.h), base(true, hfmt, i => { INF.cc = cs[i].k; render(false); }));
   const co = top(agrupar(fs, x => x.r.c), 10), mCol = +mt.colMes ? mt.colMes * nMeses : 0;
@@ -1948,6 +2212,8 @@ function dibujarGraficos(fs, val, adm, nombreCol) {
 }
 function enlazarInforme() {
   $$("[data-it]").forEach(b => b.onclick = () => { INF.tab = b.dataset.it; render(false); });
+  $$("[data-idiv]").forEach(b => b.onclick = () => { INF.div = b.dataset.idiv; if (INF.area && divDe(INF.area) !== INF.div && INF.div) INF.area = ""; render(false); });
+  $$("[data-ajdiv]").forEach(a => a.onclick = () => { ajTab = "divisiones"; });
   const on = (sel, k) => { if ($(sel)) $(sel).onchange = e => { INF[k] = e.target.value; render(false); }; };
   on("#i-desde", "desde"); on("#i-hasta", "hasta"); on("#i-area", "area"); on("#i-jor", "jor"); on("#i-resp", "resp"); on("#i-cc", "cc"); on("#i-proy", "proy");
   $$("[data-rr]").forEach(b => b.onclick = () => { rangoRapido(b.dataset.rr); render(false); });
@@ -1965,7 +2231,7 @@ async function exportarConsolidado(proyecto) {
     const ws = wb.addWorksheet("CONSOLIDADO", { pageSetup: { orientation: "landscape", fitToPage: true, fitToWidth: 1, fitToHeight: 0 } });
     const cab = ["CÉDULA", "COLABORADOR", "ÁREA", ...meses.map(mesTxt), "TOTAL HORAS EXTRAS"].concat(val ? ["COSTO"] : [], ["REC. NOCTURNO H"], val ? ["COSTO REC. NOCT."] : []);
     const rnP = {}; for (const { r } of filasInforme(false, true)) { const g = rnP[r.c] || (rnP[r.c] = { h: 0, co: 0, n: r.n, a: r.a }); g.h += r.h || 0; g.co += r.co || 0; }
-    ws.addRow([`${proyecto ? "INFORME DEL PROYECTO " + proyecto.toUpperCase() : esAdmin() ? "INFORME GLOBAL" : "CONSOLIDADO DE " + S.yo.nombre.toUpperCase()} · HORAS EXTRAS · ${cfg().empresa}`]);
+    ws.addRow([`${proyecto ? "INFORME DEL PROYECTO " + proyecto.toUpperCase() : esAdmin() ? "INFORME GLOBAL" : "CONSOLIDADO DE " + S.yo.nombre.toUpperCase()}${INF.div ? " · " + nombreDiv(INF.div).toUpperCase() : esAdmin() && !proyecto ? " · UNIFICADO (LOGÍSTICO Y PLANTA)" : ""} · HORAS EXTRAS · ${cfg().empresa}`]);
     const pr = proyecto && proyectos().find(p => p.id === INF.proy); if (pr) ws.addRow([`Por qué: ${pr.motivo || "—"}${pr.cc ? " · Centro de costo " + nombreCC(pr.cc) : ""}${pr.meta ? " · Meta " + pr.meta + " h" : ""}`]); ws.getRow(1).font = { bold: true, size: 14 };
     ws.addRow([`Rango: ${INF.desde ? fc(INF.desde) : "inicio"} a ${INF.hasta ? fc(INF.hasta) : "hoy"}${INF.area ? " · Área " + INF.area : ""}${INF.jor ? " · " + INF.jor : ""} · Generado ${fh(ahora())}`]);
     ws.addRow([]); const hr = ws.addRow(cab); hr.font = { bold: true }; hr.eachCell(c => c.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFD9E1F2" } });
@@ -1977,9 +2243,22 @@ async function exportarConsolidado(proyecto) {
     if (val) { ws.getColumn(5 + meses.length).numFmt = '"$" #,##0'; ws.getColumn(cab.length).numFmt = '"$" #,##0'; }
     const det = wb.addWorksheet("DETALLE");
     det.addRow(["FECHA", "HOJA", "RESPONSABLE", "PROYECTO", "CENTRO DE COSTO", "CÉDULA", "COLABORADOR", "ÁREA", "JORNADA", "INICIO", "FIN", "HORAS"].concat(val ? ["RECARGO", "SALARIO", "COSTO"] : [])).font = { bold: true };
-    for (const { r, f } of fs.concat(filasInforme(false, true)).sort((a, b) => a.r.f.localeCompare(b.r.f))) det.addRow([fc(r.f), f.titulo, f.duenoNombre || "", f.proy ? nombreProy(f.proy) : "", f.cc ? nombreCC(f.cc) : "", r.c, r.n, r.a, r.jn, r.hi, r.hf, r.h].concat(val ? [r.r, r.s, r.co] : []));
+    for (const { r, f } of fs.concat(filasInforme(false, true)).sort((a, b) => a.r.f.localeCompare(b.r.f))) det.addRow([fc(r.f), f.titulo, f.duenoNombre || "", proyDe(r, f) ? nombreProy(proyDe(r, f)) : "", f.cc ? nombreCC(f.cc) : "", r.c, r.n, r.a, r.jn, r.hi, r.hf, r.h].concat(val ? [r.r, r.s, r.co] : []));
     det.columns = [12, 30, 22, 28, 26, 13, 34, 22, 22, 8, 8, 8, 9, 13, 13].map(w => ({ width: w }));
-    descargar(`${proyecto ? "Proyecto " + proyecto.replace(/[\\/:*?"<>|]/g, "-") : "Consolidado horas extras"} ${ahora().slice(0, 10)}.xlsx`, await wb.xlsx.writeBuffer(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+    if (!INF.div && !proyecto) { // unificado: hoja con Logístico y Planta por aparte
+      const wd = wb.addWorksheet("POR DIVISIÓN"), cols = ["DIVISIÓN", "ÁREA", "COLABORADORES", "HORAS EXTRAS"].concat(val ? ["COSTO"] : []);
+      wd.addRow([`HORAS EXTRAS POR DIVISIÓN · ${INF.desde ? fc(INF.desde) : "inicio"} a ${INF.hasta ? fc(INF.hasta) : "hoy"}`]).font = { bold: true, size: 13 };
+      wd.addRow([]); const h = wd.addRow(cols); h.font = { bold: true }; h.eachCell(c => c.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFD9E1F2" } });
+      for (const d of DIV_BASE.map(d => [d.id, d.n]).concat([[null, "SIN DIVISIÓN"]])) {
+        const fd = fs.filter(x => divDe(x.r.a) === d[0]); if (!fd.length) continue;
+        const porA = {}; fd.forEach(({ r }) => { const a = porA[r.a || "Sin área"] ??= { h: 0, c: 0, col: new Set() }; a.h += r.h || 0; a.c += r.co || 0; a.col.add(r.c); });
+        Object.entries(porA).sort((a, b) => b[1].h - a[1].h).forEach(([a, v]) => wd.addRow([d[1], a, v.col.size, +v.h.toFixed(2)].concat(val ? [Math.round(v.c)] : [])));
+        const tt = wd.addRow([d[1] + " TOTAL", "", new Set(fd.map(x => x.r.c)).size, +fd.reduce((a, x) => a + (x.r.h || 0), 0).toFixed(2)].concat(val ? [Math.round(fd.reduce((a, x) => a + (x.r.co || 0), 0))] : []));
+        tt.font = { bold: true }; wd.addRow([]);
+      }
+      [14, 34, 14, 14, 16].forEach((w, i) => wd.getColumn(i + 1).width = w); wd.getColumn(4).numFmt = "#,##0.00"; if (val) wd.getColumn(5).numFmt = '"$"#,##0';
+    }
+    descargar(`${proyecto ? "Proyecto " + proyecto.replace(/[\\/:*?"<>|]/g, "-") : "Consolidado horas extras" + (INF.div ? " " + nombreDiv(INF.div) : "")} ${ahora().slice(0, 10)}.xlsx`, await wb.xlsx.writeBuffer(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
   } catch (e) { toast(e.message, true); }
 }
 /* ----- Metas (administradores) ----- */
@@ -2026,82 +2305,319 @@ function enlazarMetas() {
 
 /* ================= Llegada de operarios y confirmación de asistencia ================= */
 const hora12 = t => { if (!t) return ""; const [h, m] = t.split(":").map(Number); return `${(h % 12) || 12}:${String(m).padStart(2, "0")} ${h < 12 ? "a. m." : "p. m."}`; };
-const ASI = { fecha: "" };
+const ASI = { fecha: "", resp: "" };
+const respDe = f => f.duenoNombre || (S.usuarios || []).find(u => u.id === f.dueno)?.nombre || "Sin responsable";
 const hoyISO = () => { const d = new Date(Date.now() - 5 * 3600 * 1000); return d.toISOString().slice(0, 10); }; // hora de Colombia
 const horaAhora = () => new Date().toLocaleTimeString("es-CO", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "America/Bogota" });
 const minutos = t => { const [h, m] = (t || "0:0").split(":").map(Number); return h * 60 + m; };
+/* Diferencia en minutos entre dos horas "HH:MM", entendiendo que una jornada puede pasar la medianoche. */
+const difMin = (a, b) => { let d = minutos(a) - minutos(b); if (d > 720) d -= 1440; if (d < -720) d += 1440; return d; };
+/* Horas reales entre la llegada y la salida (si cruzó la medianoche, suma el día). */
+const horasReales = r => r.ll && r.sa ? ((minutos(r.sa) - minutos(r.ll) + 1440) % 1440 || 0) / 60 : null;
+const finProg = r => finDeSemanaOFestivo(r.f) && r.hi && r.hi < "13:00" && !esRN(r) ? HORARIO_FDS[1] : r.hf;
+const salidaTxt = r => { if (!r.sa) return ""; const d = difMin(r.sa, finProg(r));
+  return "Salió " + hora12(r.sa) + (d < -5 ? " · " + -d + " min antes" : d > 5 ? " · " + d + " min después" : ""); };
 function asisTag(r) {
+  const sal = r.sa ? ` <span class="chip ${difMin(r.sa, finProg(r)) < -5 ? "c-warn" : "c-info"}" style="font-size:11px">${salidaTxt(r)}</span>` : "";
   if (r.as === "no") return ' <span class="chip c-bad" style="font-size:11px">✕ No asistió</span>';
-  if (r.as === "si") { const tarde = r.ll && minutos(r.ll) - minutos(r.hi) > 5 ? minutos(r.ll) - minutos(r.hi) : 0;
-    return ` <span class="chip c-ok" style="font-size:11px">✓ ${r.ll ? "Llegó " + hora12(r.ll) : "Asistió"}${tarde ? " · " + tarde + " min tarde" : ""}</span>`; }
-  if (r.ll) return ` <span class="chip c-info" style="font-size:11px">Llegó ${hora12(r.ll)}</span>`;
-  return "";
+  const tarde = r.ll && difMin(r.ll, r.hi) > 0 ? difMin(r.ll, r.hi) : 0, tTxt = tarde ? ` <span class="chip c-bad" style="font-size:11px">Llegó tarde ${hora12(r.ll)} · ${tarde} min</span>` : "";
+  if (r.as === "si") return ` <span class="chip c-ok" style="font-size:11px">✓ ${!tarde && r.ll ? "Llegó " + hora12(r.ll) : "Asistió"}</span>` + tTxt + sal;
+  if (r.ll) return (tarde ? tTxt : ` <span class="chip c-info" style="font-size:11px">Llegó ${hora12(r.ll)}</span>`) + sal;
+  return sal;
 }
 function programados(fecha) {
   const out = [];
-  for (const f of listaForms()) { if (f.estado === "legalizado") continue;
+  for (const f of listaFormsLlegada()) { if (f.estado === "legalizado") continue;
     f.filas.forEach(r => { if (r.f === fecha) out.push({ f, r }); }); }
   return out.sort((a, b) => a.r.hi.localeCompare(b.r.hi) || a.r.n.localeCompare(b.r.n));
 }
+/* ---- Foto o escáner de la planilla física: el bot propone llegada, salida y asistencia; la persona revisa y aplica. ---- */
+async function comprimirFoto(archivo) {
+  if (archivo.type === "application/pdf") {
+    if (archivo.size > 8 * 1024 * 1024) throw new Error("El PDF pesa más de 8 MB. Escanéelo con menos resolución o tome una foto.");
+    return await new Promise((ok, mal) => { const r = new FileReader(); r.onload = () => ok(r.result); r.onerror = () => mal(new Error("No se pudo leer el archivo.")); r.readAsDataURL(archivo); });
+  }
+  const img = await new Promise((ok, mal) => { const i = new Image(); i.onload = () => ok(i); i.onerror = () => mal(new Error("No se pudo abrir la imagen. Use JPG o PNG.")); i.src = URL.createObjectURL(archivo); });
+  const lado = 2000, k = Math.min(1, lado / Math.max(img.naturalWidth, img.naturalHeight)); // suficiente para leer letra a mano
+  const cv = document.createElement("canvas"); cv.width = Math.round(img.naturalWidth * k); cv.height = Math.round(img.naturalHeight * k);
+  const cx = cv.getContext("2d"); cx.fillStyle = "#fff"; cx.fillRect(0, 0, cv.width, cv.height); cx.drawImage(img, 0, 0, cv.width, cv.height); URL.revokeObjectURL(img.src);
+  return cv.toDataURL("image/jpeg", 0.82);
+}
+/* Planillas del día con su estado: en cola (Google ocupado, el bot reintenta solo), leída (para revisar), aplicada o con error.
+   Mientras haya alguna en cola, la lista se actualiza sola y avisa cuando una queda leída. */
+let FOTOS_T = null, FOTOS_EST = {};
+const horaMs = ms => ms ? hora12(new Date(ms).toTimeString().slice(0, 5)) : "";
+async function listarFotos() {
+  clearTimeout(FOTOS_T);
+  const caja = $("#as-fotos"); if (!caja) return;
+  try { const { fotos } = await api("GET", "/api/llegada/fotos?fecha=" + ASI.fecha);
+    if (!$("#as-fotos")) return;
+    const nuevasLeidas = fotos.filter(f => f.estado === "leida" && !f.aplicada && FOTOS_EST[f.id] && FOTOS_EST[f.id] !== "leida");
+    fotos.forEach(f => FOTOS_EST[f.id] = f.estado);
+    if (nuevasLeidas.length) toast(`El bot ya leyó ${nuevasLeidas.length === 1 ? "una planilla que estaba en cola" : nuevasLeidas.length + " planillas que estaban en cola"}: toque Revisar.`);
+    const est = f => f.aplicada ? `<span class="chip c-ok" style="font-size:11px">Aplicada</span>`
+      : f.estado === "leida" ? `<span class="chip c-ok" style="font-size:11px">Leída · ${f.leidas ?? 0}</span> <button class="btn small primary" data-frev="${f.id}">Revisar</button>`
+      : f.estado === "cola" ? `<span class="chip c-warn" style="font-size:11px">En cola · Google ocupado</span><span class="tag">intento ${f.intentos || 1}${f.proximo ? ", próximo " + horaMs(f.proximo) : ""}</span> <button class="lnk" data-freint="${f.id}">Intentar ya</button>`
+      : f.estado === "leyendo" ? `<span class="chip c-info" style="font-size:11px">Leyendo…</span>`
+      : f.estado === "error" ? `<span class="chip c-bad" style="font-size:11px" title="${esc(f.error || "")}">No se pudo leer</span> <button class="lnk" data-freint="${f.id}">Reintentar</button>` : "";
+    const leidas = fotos.filter(f => f.estado === "leida" && !f.aplicada);
+    caja.innerHTML = (leidas.length > 1 ? `<button class="btn small primary" data-frevtodas>Revisar las ${leidas.length} leídas juntas</button>` : "")
+      + fotos.map((f, i) => `<div class="foto-est">${f.tipo === "application/pdf" ? "Escaneo" : "Foto"} ${i + 1} · ${horaMs(f.ts)} · ${esc(f.por || "")} ${est(f)}
+      <span class="sp"></span><button class="lnk" data-fver="${f.id}" data-tipo="${f.tipo}">Ver</button><button class="lnk" data-fdel="${f.id}" style="color:var(--bad)" aria-label="Eliminar foto ${i + 1}">✕</button>
+      ${f.estado === "error" && f.error ? `<span class="tag" style="flex-basis:100%">${esc(f.error)}</span>` : ""}</div>`).join("");
+    $$("[data-fver]").forEach(b => b.onclick = () => ejecutar(async () => { const { img } = await api("GET", "/api/llegada/fotos/" + b.dataset.fver);
+      const w = window.open(); if (!w) throw new Error("Permita las ventanas emergentes para ver la foto.");
+      w.document.write(b.dataset.tipo === "application/pdf" ? `<iframe src="${img}" style="border:0;width:100%;height:100vh"></iframe>` : `<img src="${img}" style="max-width:100%">`); w.document.title = "Registro físico"; }));
+    $$("[data-fdel]").forEach(b => b.onclick = () => ejecutar(async () => { if (!await confirmar("¿Eliminar esta foto del registro? Las horas ya aplicadas no cambian.", "Eliminar foto", "Eliminar")) return;
+      await api("DELETE", "/api/llegada/fotos/" + b.dataset.fdel); listarFotos(); }));
+    $$("[data-freint]").forEach(b => b.onclick = () => ejecutar(async () => { await api("POST", `/api/llegada/fotos/${b.dataset.freint}/reintentar`); toast("En cola: el bot la intenta en menos de un minuto."); listarFotos(); }));
+    $$("[data-frev]").forEach(b => b.onclick = () => ejecutar(() => revisarGuardadas([b.dataset.frev])));
+    $$("[data-frevtodas]").forEach(b => b.onclick = () => ejecutar(() => revisarGuardadas(leidas.map(f => f.id))));
+    if (fotos.some(f => f.estado === "cola" || f.estado === "leyendo")) FOTOS_T = setTimeout(() => { if (S.vista === "asistencia") listarFotos(); }, 30000);
+  } catch (e) { caja.innerHTML = ""; }
+}
+async function revisarGuardadas(ids) {
+  const rs = []; for (const id of ids) rs.push(await api("GET", `/api/llegada/fotos/${id}/lectura`));
+  revisarLectura(mezclarLecturas(rs), [], ids);
+}
+/* Lote de planillas del día: se juntan varias fotos o escaneos y el bot las lee una por una. */
+let LOTE = [];
+async function agregarAlLote(archivos) {
+  if (LOTE.length + archivos.length > 8) throw new Error("Máximo 8 planillas por lectura.");
+  toast("Preparando " + (archivos.length === 1 ? "la foto…" : archivos.length + " archivos…"));
+  for (const a of archivos) LOTE.push({ img: await comprimirFoto(a), tipo: a.type === "application/pdf" ? "application/pdf" : "image/jpeg" });
+  render(false);
+}
+async function leerLote() {
+  if (!LOTE.length) return;
+  const res = [], errores = []; let enCola = 0;
+  for (let i = 0; i < LOTE.length; i++) {
+    toast(LOTE.length > 1 ? `El bot está leyendo la planilla ${i + 1} de ${LOTE.length}…` : "El bot está leyendo la planilla… puede tardar unos segundos.");
+    try { let r;
+      for (let k = 0; ; k++) { // si la base está ocupada un momento (503), reintenta solo hasta 3 veces
+        try { r = await api("POST", "/api/llegada/escanear", { fecha: ASI.fecha, img: LOTE[i].img }); break; }
+        catch (e) { if (e.status !== 503 || k >= 2) throw e; toast(`La base está ocupada, reintentando la planilla ${i + 1}…`); await new Promise(ok => setTimeout(ok, 6000 * (k + 1))); } }
+      if (r.ok) res.push(r); else if (r.cola) enCola++; else errores.push(`Planilla ${i + 1}: ${r.error}`); }
+    catch (e) { errores.push(`Planilla ${i + 1}: ${e.message}`); }
+    if (i < LOTE.length - 1) await new Promise(ok => setTimeout(ok, 1500)); // no pasar el cupo por minuto del bot gratis
+  }
+  LOTE = []; render(false); listarFotos();
+  const aviso = enCola ? `${enCola === 1 ? "Una planilla quedó" : enCola + " planillas quedaron"} en cola porque Google está ocupado (pasa con el servicio gratis en horas pico). El bot las vuelve a intentar solo cada pocos minutos; cuando estén leídas aparecen aquí con el botón Revisar. Puede salir de la app.` : "";
+  if (!res.length) { await confirmar([aviso].concat(errores).filter(Boolean).join("\n\n"), enCola && !errores.length ? "En cola para leer" : "El bot no pudo leer", "Entendido"); return; }
+  revisarLectura(mezclarLecturas(res), aviso ? [aviso].concat(errores) : errores, res.map(r => r.foto));
+}
+/* Junta lo leído en varias planillas: para cada operario, la primera hora que se leyó; los no programados sin repetir. */
+function mezclarLecturas(rs) {
+  const filas = rs[rs.length - 1].filas, prop = {}, extra = [], obs = [];
+  for (const r of rs) {
+    for (const p of r.propuestas) { const a = prop[p.k];
+      if (!a) { prop[p.k] = Object.assign({}, p); continue; }
+      for (const k of ["ll", "sa", "as"]) if (!a[k] && p[k]) a[k] = p[k];
+      if (p.nota && !a.nota.includes(p.nota)) a.nota = (a.nota ? a.nota + " · " : "") + p.nota;
+      if (p.seg === "baja" || a.seg === "baja") a.seg = "baja"; }
+    for (const x of r.extra) { const ya = extra.find(e => (x.cedula && e.cedula === x.cedula) || normTxt(e.nombre) === normTxt(x.nombre));
+      if (ya) { ya.llegada = ya.llegada || x.llegada; ya.salida = ya.salida || x.salida; } else extra.push(Object.assign({}, x)); }
+    if (r.obs) obs.push(r.obs);
+  }
+  return { filas, propuestas: Object.values(prop), extra, obs: obs.join(" · ") };
+}
+function revisarLectura(r, errores = [], fotosIds = []) {
+  const porK = Object.fromEntries(r.filas.map(x => [x.k, x])), prop = r.propuestas.filter(p => p.ll || p.sa || p.as);
+  const sinLeer = r.filas.filter(x => !prop.some(p => p.k === x.k));
+  const hojasDia = [...new Map(r.filas.map(x => [x.k.split("|")[0], x.hoja])).entries()].filter(([fid]) => S.forms[fid]);
+  const empDe = x => S.emp.find(e => (x.cedula && String(e[0]) === x.cedula)) || S.emp.find(e => normTxt(e[1]) === normTxt(x.nombre));
+  const puedeAgregar = puede("editar") || puede("crear");
+  const pLl = puede("asistencia"), pSa = puede("salida");
+  let d = $("#dlg-lect"); if (d) d.remove();
+  document.body.insertAdjacentHTML("beforeend", `<dialog id="dlg-lect" aria-labelledby="dl-t" style="width:min(980px,98vw)"><div class="dlg">
+    <h3 id="dl-t">Lo que leyó el bot</h3>
+    <p class="tag">Revise y corrija antes de aplicar. Las filas con seguridad baja vienen sin marcar. ${r.obs ? "<br><b>Observación:</b> " + esc(r.obs) : ""}</p>
+    ${errores.length ? `<div class="notice" style="margin:0;border-color:#c62828">${errores.map(esc).join("<br>")}<br>Puede volver a intentar esas planillas en un momento.</div>` : ""}
+    <div style="overflow:auto;max-height:58vh"><table class="tabla"><thead><tr><th><input type="checkbox" id="dl-todos" checked aria-label="Aplicar todas"></th><th>Operario y nota del bot</th><th>Llegada</th><th>Salida</th><th>Asistencia</th></tr></thead><tbody>
+    ${prop.map(p => { const x = porK[p.k], tarde = p.ll && difMin(p.ll, x.hi) > 0;
+      return `<tr data-lk="${esc(p.k)}"><td><input type="checkbox" data-lap ${p.seg === "baja" ? "" : "checked"} aria-label="Aplicar ${esc(x.n)}"></td><td style="white-space:normal;min-width:220px"><b>${esc(x.n)}</b><br><span class="tag">${esc(x.c)} · turno ${hora12(x.hi)} – ${hora12(x.hf)}</span>
+          <br><span class="tag">${p.seg ? `<span class="chip ${p.seg === "alta" ? "c-ok" : p.seg === "media" ? "c-warn" : "c-bad"}" style="font-size:11px">Seguridad ${esc(p.seg)}</span> ` : ""}${esc(p.nota)}</span></td>
+        <td data-et="Llegada"><input class="inp" type="time" data-lll aria-label="Llegada de ${esc(x.n)}" value="${p.ll || ""}" ${pLl ? "" : "disabled"} style="width:148px;${tarde ? "border-color:#c62828;color:#c62828;font-weight:700" : ""}"></td>
+        <td data-et="Salida"><input class="inp" type="time" data-lsa aria-label="Salida de ${esc(x.n)}" value="${p.sa || ""}" ${pSa ? "" : "disabled"} style="width:148px"></td>
+        <td data-et="Asistencia"><select class="inp" data-las aria-label="Asistencia de ${esc(x.n)}" ${pLl ? "" : "disabled"} style="min-width:130px"><option value="">—</option><option value="si" ${p.as === "si" ? "selected" : ""}>Asistió</option><option value="no" ${p.as === "no" ? "selected" : ""}>No asistió</option></select></td>
+        </tr>`; }).join("") || '<tr><td colspan="5" class="tag">El bot no encontró horas de los operarios programados en la foto.</td></tr>'}
+    </tbody></table></div>
+    ${sinLeer.length ? `<p class="tag"><b>No aparecen en la foto (${sinLeer.length}):</b> ${sinLeer.map(x => esc(x.n)).join(", ")}</p>` : ""}
+    ${r.extra.length ? `<h4 style="margin:4px 0 0">En la planilla pero no programados ese día (${r.extra.length})</h4>
+      <p class="tag" style="margin:0">${puedeAgregar && hojasDia.length ? "Marque los que quiere agregar a una hoja de este día; quedan con el turno de esa hoja y la hora leída." : "Para cargarlos, agréguelos a la hoja desde el editor."}</p>
+      <div class="lect-extra">${r.extra.map((x, i) => { const e = empDe(x), tarde = x.llegada && hojasDia.length;
+        return `<div class="lx" data-lx="${i}"><label class="check" style="flex:1;min-width:200px"><input type="checkbox" data-lxa ${e && puedeAgregar && hojasDia.length ? "" : "disabled"}>
+          <span><b>${esc(e ? e[1] : x.nombre)}</b><br><span class="tag">${esc(x.cedula || (e ? e[0] : ""))}${e ? " · " + esc(e[2] || "") : " · <b style='color:#c62828'>no está en Personal</b>"}</span></span></label>
+          <input class="inp" type="time" data-lxll value="${x.llegada || ""}" aria-label="Llegada" ${e ? "" : "disabled"}><input class="inp" type="time" data-lxsa value="${x.salida || ""}" aria-label="Salida" ${e ? "" : "disabled"}></div>`; }).join("")}
+      ${puedeAgregar && hojasDia.length ? `<div class="field" style="margin-top:6px"><label for="dl-hoja">Agregarlos a la hoja</label><select class="inp" id="dl-hoja">${hojasDia.map(([fid, t]) => `<option value="${fid}">${esc(t)}</option>`).join("")}</select></div>` : ""}</div>` : ""}
+    <div class="dlg-foot"><button class="btn" id="dl-no" type="button">Cancelar</button><span class="sp"></span><button class="btn primary" id="dl-si" type="button" ${prop.length || r.extra.length ? "" : "disabled"}>${svg("check")}Aplicar a Llegada</button></div></div></dialog>`);
+  d = $("#dlg-lect"); d.showModal();
+  $("#dl-todos").onchange = e => $$("[data-lap]").forEach(c => c.checked = e.target.checked);
+  $("#dl-no").onclick = () => d.close();
+  $("#dl-si").onclick = () => ejecutar(async () => {
+    const cambios = {};
+    $$("#dlg-lect tr[data-lk]").forEach(tr => { if (!tr.querySelector("[data-lap]").checked) return;
+      const [fid, rid] = tr.dataset.lk.split("|"), ll = tr.querySelector("[data-lll]").value, sa = tr.querySelector("[data-lsa]").value, as = tr.querySelector("[data-las]").value;
+      (cambios[fid] ??= []).push({ rid, ll, sa, as }); });
+    let n = 0;
+    for (const [fid, lista] of Object.entries(cambios)) {
+      const g = JSON.parse(JSON.stringify(S.forms[fid])); if (!g) continue;
+      const phF = puedeHoras(Object.assign({ id: fid }, S.forms[fid]));
+      for (const c of lista) { const r = g.filas.find(x => x.id === c.rid); if (!r) continue; n++; if (!phF) { c.ll = ""; c.sa = ""; }
+        if (pLl) { if (c.as === "no") { r.as = "no"; delete r.ll; delete r.sa; delete r.saPor; delete r.saT; }
+          else { if (c.ll) r.ll = c.ll; if (c.as === "si") r.as = "si"; }
+          if (c.as) { r.asPor = S.yo.nombre + " (foto)"; r.asT = ahora(); } }
+        if (pSa && c.sa && c.as !== "no") { r.sa = c.sa; r.saPor = S.yo.nombre + " (foto)"; r.saT = ahora(); } }
+      log(g, "Llenó llegada desde foto del registro", lista.length + " colaboradores"); await guardarForm(fid, g);
+    }
+    // no programados marcados: se agregan a la hoja elegida con el turno de esa hoja
+    const nuevos = $$("#dlg-lect [data-lx]").filter(x => x.querySelector("[data-lxa]").checked);
+    let ag = 0;
+    if (nuevos.length && $("#dl-hoja")) {
+      const fid = $("#dl-hoja").value, g = JSON.parse(JSON.stringify(S.forms[fid])), t = g.filas.find(x => x.f === ASI.fecha) || g.filas[0], jor = jorCod(t.j) || {};
+      for (const el of nuevos) { const x = r.extra[+el.dataset.lx], e = empDe(x); if (!e) continue;
+        if (g.filas.some(f => f.f === ASI.fecha && f.c === e[0])) continue;
+        const ll = el.querySelector("[data-lxll]").value, sa = el.querySelector("[data-lxsa]").value;
+        const nr = { id: rid(), f: ASI.fecha, j: t.j, jn: t.jn || jor.n, r: jor.r, c: e[0], n: e[1], a: e[2], s: e[3], hi: t.hi, hf: t.hf, h: t.h };
+        if (t.so) nr.so = t.so; if (t.ju) nr.ju = t.ju;
+        if (pLl && ll) { nr.ll = ll; nr.as = "si"; nr.asPor = S.yo.nombre + " (foto)"; nr.asT = ahora(); }
+        if (pSa && sa) { nr.sa = sa; nr.saPor = S.yo.nombre + " (foto)"; nr.saT = ahora(); }
+        nr.co = costo(nr.s, nr.r, nr.h, g.div); if (!verValores()) { delete nr.s; delete nr.r; delete nr.co; }
+        g.filas.push(nr); ag++; }
+      if (ag) { recalcular(g); log(g, "Agregó desde foto del registro", ag + " colaboradores no programados"); await guardarForm(fid, g); }
+    }
+    for (const id of fotosIds) await api("POST", `/api/llegada/fotos/${id}/aplicada`).catch(() => {});
+    d.close(); toast(`Listo: ${n} operario${n === 1 ? "" : "s"} actualizados${ag ? ` y ${ag} agregado${ag === 1 ? "" : "s"} a la hoja` : ""} desde las planillas.`); render(false);
+  });
+}
 function vAsistencia(app) {
   if (!ASI.fecha) ASI.fecha = hoyISO();
-  const ps = programados(ASI.fecha), llegaron = ps.filter(x => x.r.ll || x.r.as === "si").length, conf = ps.filter(x => x.r.as === "si").length, no = ps.filter(x => x.r.as === "no").length;
+  /* Solo los registros de la fecha elegida, separados por Responsable del proceso; se puede ver un responsable a la vez. */
+  const todosDia = programados(ASI.fecha), resps = {};
+  todosDia.forEach(x => { const k = respDe(x.f); resps[k] = (resps[k] || 0) + 1; });
+  if (ASI.resp && !resps[ASI.resp]) ASI.resp = "";
+  const ps = ASI.resp ? todosDia.filter(x => respDe(x.f) === ASI.resp) : todosDia, llegaron = ps.filter(x => x.r.ll || x.r.as === "si").length, conf = ps.filter(x => x.r.as === "si").length, no = ps.filter(x => x.r.as === "no").length;
+  const salieron = ps.filter(x => x.r.sa).length, pLl = puede("asistencia"), pSa = puede("salida");
   const grupos = {}; ps.forEach(x => (grupos[x.f.id] ??= []).push(x));
-  const fila = ({ f, r }) => { const bloq = f.estado === "cerrado" && !puede("reabrir"), tarde = r.ll && minutos(r.ll) - minutos(r.hi) > 5 ? minutos(r.ll) - minutos(r.hi) : 0;
+  const porResp = {}; Object.values(grupos).forEach(g => (porResp[respDe(g[0].f)] ??= []).push(g));
+  // fechas cercanas con registros (una semana antes y después), para pasar de un día a otro sin mezclarlos
+  const cerca = {}; for (const f of listaForms()) { if (f.estado === "legalizado") continue;
+    for (const r of f.filas) if (r.f && Math.abs((new Date(r.f) - new Date(ASI.fecha)) / 864e5) <= 7) cerca[r.f] = (cerca[r.f] || 0) + 1; }
+  const REP = repetidas();
+  const fila = ({ f, r }) => { const bloq = f.estado === "cerrado" && !puede("reabrir"), tarde = r.ll && difMin(r.ll, r.hi) > 0 ? difMin(r.ll, r.hi) : 0, ph = puedeHoras(f), rep = REP[f.id + "|" + r.id];
+    const no = r.as === "no", vLl = no ? "" : r.ll || r.hi, porDef = !no && !r.ll;
+    const estLl = tarde ? "border-color:#c62828;color:#c62828;font-weight:700;background:#fdecec" : porDef ? "color:var(--fg-2);font-style:italic" : "";
+    const bA = bloq || !pLl ? "disabled" : "", bL = bloq || !pLl || !ph ? "disabled" : "", bS = bloq || !pSa || !ph || r.as === "no" ? "disabled" : "", hr = horasReales(r), fp = finProg(r), antes = r.sa && difMin(r.sa, fp) < -5;
+    const vSa = no ? "" : r.sa || fp, porDefSa = !no && !r.sa, fds = finDeSemanaOFestivo(r.f);
     return `<div class="asis ${r.as === "si" ? "ok" : r.as === "no" ? "no" : ""}">
-      <div class="asis-n"><b>${esc(r.n)}</b><span class="tag">${esc(r.c)} · ${esc(r.jn)} · programado ${hora12(r.hi)} – ${hora12(r.hf)}</span>
-        ${tarde ? `<span class="chip c-warn" style="font-size:12px">${tarde} min tarde</span>` : ""}${r.asPor ? `<span class="tag">Confirmó ${esc(r.asPor)}</span>` : ""}</div>
+      <div class="asis-n"><b>${esc(r.n)}</b><span class="tag">${esc(r.c)} · ${esc(r.jn)} · programado ${hora12(r.hi)} – ${hora12(fp)} (${num(fp === r.hf ? r.h : horasEntre(r.hi, fp))} h)${fds && fp !== r.hf ? ` · <b>${esFestivo(r.f) ? "festivo" : "fin de semana"}: hasta la 1:00 p. m.</b>` : ""}</span>
+        ${rep ? `<span class="chip c-bad" style="font-size:12px;font-weight:700;white-space:normal">⚠ Repetido el mismo día y hora en: ${rep.map(x => esc(x.f.titulo)).join(", ")}</span>${ph && !bloq ? `<button class="btn small danger" data-aquitar="${f.id}|${r.id}" style="align-self:flex-start">Quitar de esta hoja</button>` : ""}` : ""}
+        ${tarde ? `<span class="chip c-bad" style="font-size:12px;font-weight:700">Llegó tarde · ${tarde} min</span>` : ""}${r.sa ? `<span class="chip ${antes ? "c-warn" : "c-info"}" style="font-size:12px">${salidaTxt(r)}</span>` : ""}
+        ${hr !== null ? `<span class="tag">Tiempo real: <b>${num(+hr.toFixed(2))} h</b></span>` : ""}${r.asPor ? `<span class="tag">Confirmó ${esc(r.asPor)}</span>` : ""}${r.saPor ? `<span class="tag">Salida: ${esc(r.saPor)}</span>` : ""}</div>
       <div class="asis-a">
-        <label class="tag" style="display:flex;flex-direction:column;gap:2px">Llegada<input class="inp" type="time" value="${r.ll || ""}" data-allega="${f.id}|${r.id}" ${bloq ? "disabled" : ""} style="min-height:42px;width:130px"></label>
-        <button class="btn small" data-aahora="${f.id}|${r.id}" ${bloq ? "disabled" : ""}>Llegó ahora</button>
-        <button class="btn small ${r.as === "si" ? "primary" : ""}" data-aas="si" data-ar="${f.id}|${r.id}" aria-pressed="${r.as === "si"}" ${bloq ? "disabled" : ""}>✓ Asistió</button>
-        <button class="btn small ${r.as === "no" ? "danger" : ""}" data-aas="no" data-ar="${f.id}|${r.id}" aria-pressed="${r.as === "no"}" ${bloq ? "disabled" : ""}>✕ No asistió</button></div></div>`; };
-  app.innerHTML = topbar("Llegada de operarios", "Registro de llegada y confirmación de asistencia") +
+        <label class="tag" style="display:flex;flex-direction:column;gap:2px">${no ? "Llegada (no asistió)" : porDef ? "Llegada · hora del turno" : tarde ? '<b style="color:#c62828">Llegada · tarde</b>' : "Llegada"}<input class="inp" type="time" value="${vLl}" data-allega="${f.id}|${r.id}" ${bL || (no ? "disabled" : "")} style="min-height:42px;width:156px;${estLl}" aria-label="Hora de llegada de ${esc(r.n)}${porDef ? ", hora del turno, sin confirmar" : ""}"></label>
+        <button class="btn small" data-aahora="${f.id}|${r.id}" ${bL || (no ? "disabled" : "")}>Llegó ahora</button>
+        ${r.ll ? `<button class="btn small" data-areset="ll" data-ar="${f.id}|${r.id}" ${bL} title="Volver a la hora del turno" aria-label="Reiniciar llegada de ${esc(r.n)}">↺ Reiniciar</button>` : ""}
+        <label class="tag" style="display:flex;flex-direction:column;gap:2px">${no ? "Salida (no asistió)" : porDefSa ? "Salida · hora programada" : "Salida"}<input class="inp" type="time" value="${vSa}" data-asale="${f.id}|${r.id}" ${bS} style="min-height:42px;width:156px;${porDefSa ? "color:var(--fg-2);font-style:italic" : ""}" aria-label="Hora de salida de ${esc(r.n)}${porDefSa ? ", hora programada, sin confirmar" : ""}"></label>
+        <button class="btn small" data-asahora="${f.id}|${r.id}" ${bS}>Salió ahora</button>
+        ${r.sa ? `<button class="btn small" data-areset="sa" data-ar="${f.id}|${r.id}" ${bS} title="Borrar la salida registrada" aria-label="Reiniciar salida de ${esc(r.n)}">↺ Reiniciar</button>` : ""}
+        <button class="btn small ${r.as === "si" ? "primary" : ""}" data-aas="si" data-ar="${f.id}|${r.id}" aria-pressed="${r.as === "si"}" ${bA}>✓ Asistió</button>
+        <button class="btn small ${r.as === "no" ? "danger" : ""}" data-aas="no" data-ar="${f.id}|${r.id}" aria-pressed="${r.as === "no"}" ${bA}>✕ No asistió</button>
+        ${!ph ? '<span class="tag" style="flex-basis:100%">Las horas las cambian el responsable, los administradores y Nómina.</span>' : ""}</div></div>`; };
+  const fotosBar = (pLl || pSa) && ps.length ? `<div class="card" style="margin-bottom:12px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+      <span style="flex:1;min-width:220px"><b>Registro físico</b><br><span class="tag">Tome fotos o suba escaneos de las planillas de este día (puede ser una o varias hojas): el bot lee las horas y llena llegada, salida y asistencia para que usted las revise.</span></span>
+      <label class="btn small accent" style="cursor:pointer">${svg("camera")}${LOTE.length ? "Tomar otra foto" : "Tomar foto"}<input type="file" accept="image/*" capture="environment" data-afoto hidden></label>
+      <label class="btn small" style="cursor:pointer">Subir imágenes o escaneos<input type="file" accept="image/*,application/pdf" multiple data-afoto hidden></label>
+      ${LOTE.length ? `<div style="flex-basis:100%;display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:8px;border:1px dashed var(--line);border-radius:10px">
+        <b>${LOTE.length} ${LOTE.length === 1 ? "planilla lista" : "planillas listas"} para leer</b>
+        ${LOTE.map((x, i) => `<span style="position:relative">${x.tipo === "application/pdf" ? `<span class="chip c-info">PDF ${i + 1}</span>` : `<img src="${x.img}" alt="Planilla ${i + 1}" style="height:56px;border-radius:6px;border:1px solid var(--line)">`}<button class="lnk" data-lquita="${i}" aria-label="Quitar planilla ${i + 1}" style="position:absolute;top:-8px;right:-8px;background:var(--surface);border-radius:50%;width:24px;height:24px;color:var(--bad)">✕</button></span>`).join("")}
+        <span style="flex:1"></span><button class="btn small primary" id="b-leer">${svg("check")}Leer con el bot</button></div>` : ""}
+      <div id="as-fotos" style="flex-basis:100%;display:flex;gap:8px;flex-wrap:wrap"></div></div>` : "";
+  app.innerHTML = topbar("Llegada y salida de operarios", "Registro de llegada, salida y confirmación de asistencia") +
     `<div class="filters"><div class="field"><label for="as-f">Fecha</label><input class="inp" type="date" id="as-f" value="${ASI.fecha}"></div>
       <div class="field" style="justify-content:flex-end"><div class="actions">${[[-1, "Ayer"], [0, "Hoy"], [1, "Mañana"]].map(([n, l]) => `<button class="btn small" data-adia="${n}">${l}</button>`).join("")}</div></div></div>
+    ${Object.keys(cerca).length ? `<div class="pills" role="group" aria-label="Fechas con registros" style="margin:-4px 0 10px"><span class="tag" style="align-self:center">Fechas con registros:</span>${Object.keys(cerca).sort().map(d => `<button class="pill" data-afecha="${d}" aria-pressed="${d === ASI.fecha}">${DIAS_N[new Date(d + "T12:00").getDay()].slice(0, 3)} ${fc(d).slice(0, 5)} <small>${cerca[d]}</small></button>`).join("")}</div>` : ""}
+    ${Object.keys(resps).length > 1 ? `<div class="pills" role="group" aria-label="Responsable del proceso" style="margin:0 0 10px"><span class="tag" style="align-self:center">Responsable:</span><button class="pill" data-aresp="" aria-pressed="${!ASI.resp}">Todos <small>${todosDia.length}</small></button>${Object.keys(resps).sort().map(k => `<button class="pill" data-aresp="${esc(k)}" aria-pressed="${ASI.resp === k}">${esc(k)} <small>${resps[k]}</small></button>`).join("")}</div>` : ""}
     <div class="stats"><div class="stat"><span>Programados</span><b>${ps.length}</b></div><div class="stat"><span>Llegaron</span><b>${llegaron}</b></div>
-      <div class="stat"><span>Asistencia confirmada</span><b>${conf}</b></div><div class="stat"><span>No asistieron</span><b>${no}</b></div><div class="stat"><span>Pendientes</span><b>${ps.length - conf - no}</b></div></div>
-    ${ps.length ? Object.values(grupos).map(g => `<div class="card" style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:6px">
-        <a href="#hoja-${g[0].f.id}"><b>${esc(g[0].f.titulo)}</b></a><span class="tag">${TIPOS[g[0].f.tipo]} · ${(ESTADOS[g[0].f.estado] || [""])[0]}${g[0].f.proy ? " · " + esc(nombreProy(g[0].f.proy)) : ""}</span>
-        ${g.some(x => !x.r.as) ? `<button class="btn small" data-atodos="${g[0].f.id}">✓ Confirmar a todos los que llegaron</button>` : ""}</div>${g.map(fila).join("")}</div>`).join("")
-      : `<div class="empty"><p>No hay operarios programados el ${fc(ASI.fecha)}.</p></div>`}
-    <p class="hint">Si alguien no asistió, al legalizar la autorización esa fila no pasa a la legalización.</p>`;
+      <div class="stat"><span>Salieron</span><b>${salieron}</b></div><div class="stat"><span>Asistencia confirmada</span><b>${conf}</b></div><div class="stat"><span>No asistieron</span><b>${no}</b></div><div class="stat"><span>Pendientes</span><b>${ps.length - conf - no}</b></div></div>
+    ${(() => { const n = ps.filter(x => REP[x.f.id + "|" + x.r.id]).length; return n ? `<div class="notice" style="margin:0 0 12px;border-color:#c62828"><b>⚠ ${n} filas repetidas este día:</b> el mismo colaborador está programado a la misma hora en dos hojas. Eso duplica las horas en nómina. Quite la fila de la hoja que no corresponde con "Quitar de esta hoja".</div>` : ""; })()}
+    ${fotosBar}
+    ${ps.length ? Object.keys(porResp).sort().map(resp => `<h3 class="resp-tit" style="margin:16px 0 8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">${svg("user", `style="width:20px;height:20px;flex:none"`)}${esc(resp)}
+        <span class="tag">${porResp[resp].length} ${porResp[resp].length === 1 ? "formato" : "formatos"} · ${((n) => n + (n === 1 ? " operario" : " operarios"))(porResp[resp].reduce((a, g) => a + g.length, 0))} · ${DIAS_N[new Date(ASI.fecha + "T12:00").getDay()]} ${fc(ASI.fecha)}</span></h3>`
+      + porResp[resp].map(g => `<div class="card" style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:6px">
+        <span><a href="#hoja-${g[0].f.id}"><b>${esc(g[0].f.titulo)}</b></a><br><span class="tag">Registros del <b>${fc(ASI.fecha)}</b> · Responsable: ${esc(resp)}${g[0].f.filas.some(r => r.f !== ASI.fecha) ? ` · ${((n) => n === 1 ? "la hoja tiene 1 fila de otra fecha (no se muestra)" : `la hoja tiene ${n} filas de otras fechas (no se muestran)`)(g[0].f.filas.filter(r => r.f !== ASI.fecha).length)}` : ""}</span></span>
+        <span class="tag">${TIPOS[g[0].f.tipo]} · ${(ESTADOS[g[0].f.estado] || [""])[0]}${g[0].f.proy ? " · " + esc(nombreProy(g[0].f.proy)) : ""}</span>
+        <span class="actions">${pLl && g.some(x => !x.r.as) ? `<button class="btn small" data-atodos="${g[0].f.id}">✓ Confirmar asistencia de todos</button>` : ""}
+        ${pSa && puedeHoras(g[0].f) && g.some(x => !x.r.sa && x.r.as !== "no") ? `<button class="btn small" data-asalprog="${g[0].f.id}">Salida de todos a la hora programada</button>` : ""}
+        ${pSa && puedeHoras(g[0].f) && g.some(x => x.r.ll && !x.r.sa && x.r.as !== "no") ? `<button class="btn small" data-asaltodos="${g[0].f.id}">Registrar salida de todos ahora</button>` : ""}</span></div>${g.map(fila).join("")}</div>`).join("")).join("")
+      : `<div class="empty"><p>No hay operarios programados el ${fc(ASI.fecha)}${ASI.resp ? " para " + esc(ASI.resp) : ""}.</p></div>`}
+    <p class="hint">La llegada trae la <b>hora del turno</b> (en gris) hasta que se confirme o se cambie; si llega después de esa hora queda <b style="color:#c62828">en rojo</b>.
+      Al marcar <b>No asistió</b> se borran la llegada y la salida. Si alguien no asistió, al legalizar la autorización esa fila no pasa a la legalización. La salida se compara con la hora fin programada
+      y, con la llegada, da el tiempo real; las horas extras de la hoja no cambian solas.</p>`;
   const de = v => { const [fid, rid2] = v.split("|"); return { fid, rid2 }; };
-  const guardar = (fid, ids, cambio) => ejecutar(async () => { const g = copia(fid);
+  const guardar = (fid, ids, cambio, nota) => ejecutar(async () => { const g = copia(fid);
     g.filas.forEach(r => { if (!ids.includes(r.id)) return; const c = typeof cambio === "function" ? cambio(r) : cambio; Object.assign(r, c);
-      if ("as" in c) { r.asPor = S.yo.nombre; r.asT = ahora(); if (!c.as) { delete r.as; delete r.asPor; delete r.asT; } } });
+      if ("ll" in c && !c.ll) delete r.ll;
+      if ("as" in c) { r.asPor = S.yo.nombre; r.asT = ahora(); if (!c.as) { delete r.as; delete r.asPor; delete r.asT; } }
+      if ("sa" in c) { r.saPor = S.yo.nombre; r.saT = ahora(); if (!c.sa) { delete r.sa; delete r.saPor; delete r.saT; } } });
     if (typeof cambio !== "function" && "as" in cambio) log(g, cambio.as === "no" ? "Marcó inasistencia" : "Confirmó asistencia", ids.length + " colaboradores");
+    if (typeof cambio !== "function" && cambio.sa) log(g, "Registró salida", ids.length + " colaboradores");
+    if (nota) log(g, nota, ids.length + " colaboradores");
     await guardarForm(fid, g); render(false); });
   $("#as-f").onchange = e => { ASI.fecha = e.target.value; render(false); };
+  $$("[data-afecha]").forEach(b => b.onclick = () => { ASI.fecha = b.dataset.afecha; render(false); });
+  $$("[data-aresp]").forEach(b => b.onclick = () => { ASI.resp = b.dataset.aresp; render(false); });
+  $$("[data-afoto]").forEach(i => i.onchange = () => { const as = [...i.files]; i.value = ""; if (as.length) ejecutar(() => agregarAlLote(as)); });
+  $$("[data-lquita]").forEach(b => b.onclick = () => { LOTE.splice(+b.dataset.lquita, 1); render(false); });
+  if ($("#b-leer")) $("#b-leer").onclick = () => ejecutar(leerLote);
+  if ($("#as-fotos")) listarFotos();
   $$("[data-adia]").forEach(b => b.onclick = () => { ASI.fecha = isoMas(hoyISO(), +b.dataset.adia); render(false); });
   $$("[data-allega]").forEach(i => i.onchange = () => { const { fid, rid2 } = de(i.dataset.allega); guardar(fid, [rid2], { ll: i.value || undefined }); });
   $$("[data-aahora]").forEach(b => b.onclick = () => { const { fid, rid2 } = de(b.dataset.aahora); guardar(fid, [rid2], { ll: horaAhora() }); });
-  $$("[data-aas]").forEach(b => b.onclick = () => { const { fid, rid2 } = de(b.dataset.ar), r = S.forms[fid].filas.find(x => x.id === rid2);
-    guardar(fid, [rid2], { as: r.as === b.dataset.aas ? undefined : b.dataset.aas }); });
-  $$("[data-atodos]").forEach(b => b.onclick = () => { const fid = b.dataset.atodos, ids = S.forms[fid].filas.filter(r => r.f === ASI.fecha && r.ll && !r.as).map(r => r.id);
-    if (!ids.length) return toast("Primero registre la llegada de cada operario.", true); guardar(fid, ids, { as: "si" }); });
+  $$("[data-asale]").forEach(i => i.onchange = () => { const { fid, rid2 } = de(i.dataset.asale); guardar(fid, [rid2], { sa: i.value || undefined }); });
+  $$("[data-asahora]").forEach(b => b.onclick = () => { const { fid, rid2 } = de(b.dataset.asahora); guardar(fid, [rid2], { sa: horaAhora() }); });
+  $$("[data-asaltodos]").forEach(b => b.onclick = () => { const fid = b.dataset.asaltodos, ids = S.forms[fid].filas.filter(r => r.f === ASI.fecha && r.ll && !r.sa && r.as !== "no").map(r => r.id);
+    if (!ids.length) return toast("No hay operarios con llegada y sin salida.", true); guardar(fid, ids, { sa: horaAhora() }); });
+  /* Asistió: si no se cambió la hora, queda la del turno. No asistió: se borran la llegada y la salida. */
+  /* Reiniciar el reloj: la llegada vuelve a la hora del turno y la salida queda sin registrar. */
+  $$("[data-areset]").forEach(b => b.onclick = () => { const { fid, rid2 } = de(b.dataset.ar), k = b.dataset.areset;
+    guardar(fid, [rid2], k === "ll" ? { ll: undefined } : { sa: undefined }, k === "ll" ? "Reinició la hora de llegada" : "Reinició la hora de salida"); });
+  $$("[data-asalprog]").forEach(b => b.onclick = () => { const fid = b.dataset.asalprog, ids = S.forms[fid].filas.filter(r => r.f === ASI.fecha && !r.sa && r.as !== "no").map(r => r.id);
+    if (ids.length) guardar(fid, ids, r => ({ sa: finProg(r), saPor: S.yo.nombre, saT: ahora() }), "Registró salida a la hora programada"); });
+  $$("[data-aas]").forEach(b => b.onclick = () => { const { fid, rid2 } = de(b.dataset.ar), r = S.forms[fid].filas.find(x => x.id === rid2), k = b.dataset.aas;
+    if (r.as === k) return guardar(fid, [rid2], { as: undefined });
+    guardar(fid, [rid2], k === "no" ? { as: "no", ll: undefined, sa: undefined } : puedeHoras(Object.assign({ id: fid }, S.forms[fid])) ? { as: "si", ll: r.ll || r.hi } : { as: "si" }); });
+  $$("[data-atodos]").forEach(b => b.onclick = () => { const fid = b.dataset.atodos, ids = S.forms[fid].filas.filter(r => r.f === ASI.fecha && !r.as).map(r => r.id);
+    if (!ids.length) return; const ph = puedeHoras(Object.assign({ id: fid }, S.forms[fid]));
+    guardar(fid, ids, r => ph ? { as: "si", ll: r.ll || r.hi, asPor: S.yo.nombre, asT: ahora() } : { as: "si", asPor: S.yo.nombre, asT: ahora() }, "Confirmó asistencia"); });
+  $$("[data-aquitar]").forEach(b => b.onclick = () => ejecutar(async () => { const [fid, rid] = b.dataset.aquitar.split("|"); if (await quitarFilaRepetida(fid, rid)) render(false); }));
 }
 
 /* ================= Proyectos: el porqué de las horas extras ================= */
 const PRY = { editar: null };
 const proyectos = () => S.proyectos || [];
 const nombreProy = id => (proyectos().find(p => p.id === id) || {}).n || "";
+/* Proyecto de una fila: el que se le asignó al colaborador en esa fila o, si no tiene, el de la hoja. */
+const proyDe = (r, f) => r.py || f.proy || null;
+const proyFilaTxt = (r, f) => r.py && r.py !== f.proy ? "Proyecto: " + (nombreProy(r.py) || r.py) : "";
+/* Proyecto activo al que está asignado un colaborador (por su cédula), para proponerlo en sus filas. */
+const proyDeCol = ced => (misProyectos().find(p => (p.cols || []).includes(ced)) || {}).id || "";
 /* Proyectos que la persona puede elegir en sus hojas: los activos que tiene asignados (o todos si los administra). */
 const misProyectos = () => proyectos().filter(p => p.estado !== "cerrado" && (puede("proyectos") || !(p.personas || []).length || (p.personas || []).includes(S.yo.id)));
 function resumenProyecto(p, todas) {
-  const fs = todas.filter(x => x.f.proy === p.id && !esRN(x.r));
+  const fs = todas.filter(x => proyDe(x.r, x.f) === p.id && !esRN(x.r));
   return { fs, h: fs.reduce((a, x) => a + (x.r.h || 0), 0), c: fs.reduce((a, x) => a + (x.r.co || 0), 0), col: new Set(fs.map(x => x.r.c)).size, hojas: new Set(fs.map(x => x.f.id)).size };
 }
 function vProyectosHtml() {
   const val = verValores(), todas = [];
-  for (const f of listaForms()) { if (f.estado === "legalizado") continue; for (const r of f.filas) if (r.f && (!INF.desde || r.f >= INF.desde) && (!INF.hasta || r.f <= INF.hasta)) todas.push({ r, f }); }
-  const sinP = resumenProyecto({ id: undefined }, todas.map(x => x.f.proy ? null : x).filter(Boolean).map(x => ({ r: x.r, f: Object.assign({}, x.f, { proy: undefined }) })));
+  for (const f of listaForms()) { if (f.estado === "legalizado") continue; for (const r of f.filas) if (r.f && enDiv(r) && (!INF.desde || r.f >= INF.desde) && (!INF.hasta || r.f <= INF.hasta)) todas.push({ r, f }); }
+  const sinP = resumenProyecto({ id: null }, todas);
   if (PRY.editar) return formProyecto();
   const tarjeta = p => { const R = resumenProyecto(p, todas), pct = p.meta ? R.h / p.meta : 0, e = pct > 1 ? "supera" : pct >= .9 ? "cerca" : "ok";
     return `<div class="card" style="margin-bottom:10px"><div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-start"><div style="flex:1;min-width:240px">
       <b style="font-size:17px">${esc(p.n)}</b> ${p.estado === "cerrado" ? '<span class="chip c-mute">Cerrado</span>' : '<span class="chip c-ok">Activo</span>'}
       <div style="margin:4px 0"><span class="tag">Por qué:</span> ${esc(p.motivo || "—")}</div>
-      <div class="tag">${[p.cc ? "Centro de costo " + esc(nombreCC(p.cc)) : "", p.desde || p.hasta ? (p.desde ? fc(p.desde) : "…") + " – " + (p.hasta ? fc(p.hasta) : "…") : "",
+      <div class="tag">${[p.cod ? "Código " + esc(p.cod) : "", p.cc ? "Centro de costo " + esc(nombreCC(p.cc)) : "", (p.cols || []).length ? (p.cols || []).length + " colaboradores asignados" : "", p.desde || p.hasta ? (p.desde ? fc(p.desde) : "…") + " – " + (p.hasta ? fc(p.hasta) : "…") : "",
         (p.personas || []).length ? (p.personas || []).length + ((p.personas || []).length === 1 ? " persona asignada" : " personas asignadas") : "todos pueden usarlo"].filter(Boolean).join(" · ")}</div>
       <div style="margin-top:6px"><b>${num(R.h)} h extras</b>${val ? ` · <b>${money(R.c)}</b>` : ""} · ${R.col} colaboradores · ${R.hojas} hojas</div>
       ${p.meta ? `<div class="meta-row" style="border:0;padding:4px 0 0"><span class="tag">Meta ${num(p.meta)} h</span><span class="meta-bar"><i style="width:${Math.min(100, pct * 100)}%;background:${ESTADO_C[e]}"></i></span><span class="est">${{ ok: "✓", cerca: "⚠", supera: "✕" }[e]} ${Math.round(pct * 100)} %</span></div>` : ""}
@@ -2109,17 +2625,33 @@ function vProyectosHtml() {
       ${puede("proyectos") ? `<button class="btn small" data-pedit="${esc(p.id)}">${svg("pen")}Editar</button>` : ""}</div></div></div>`; };
   return `<div class="filters"><div class="field"><label for="i-desde">Desde</label><input class="inp" type="date" id="i-desde" value="${INF.desde}"></div>
       <div class="field"><label for="i-hasta">Hasta</label><input class="inp" type="date" id="i-hasta" value="${INF.hasta}"></div>
-      ${puede("proyectos") ? `<div class="field" style="justify-content:flex-end"><button class="btn primary" id="p-nuevo" type="button">${svg("plus")}Nuevo proyecto</button></div>` : ""}</div>
-    <p class="hint" style="margin:0 0 10px">Cada proyecto explica <b>por qué</b> se hacen las horas extras. Se elige en cada hoja y los informes se agrupan por proyecto.</p>
+      </div><div class="actions" style="margin:-4px 0 12px">${puede("proyectos") ? `<button class="btn primary" id="p-nuevo" type="button">${svg("plus")}Nuevo proyecto</button>
+        <button class="btn" id="p-cargar" type="button">${svg("xls")}Cargar proyectos desde Excel</button><input type="file" id="p-file" accept=".xlsx,.xlsm,.xls,.csv" hidden>
+        <button class="btn" id="p-plantilla" type="button">Descargar plantilla</button>` : ""}
+        ${proyectos().length ? `<button class="btn" id="p-informe" type="button">${svg("xls")}Informe de todos los proyectos</button>` : ""}</div>
+    <p class="hint" style="margin:0 0 10px">Cada proyecto explica <b>por qué</b> se hacen las horas extras. En cada hoja se elige el proyecto de la hoja y, si hace falta, otro proyecto para cada colaborador;
+      las horas y costos se cargan al proyecto de cada fila. Si un proyecto tiene colaboradores asignados, se propone solo al agregarlos a una hoja.</p>
+    ${proyectos().length ? tablaProyectos(todas, val, sinP) : ""}
     ${proyectos().length ? proyectos().slice().sort((a, b) => (a.estado === "cerrado") - (b.estado === "cerrado") || a.n.localeCompare(b.n)).map(tarjeta).join("") : '<div class="empty"><p>Aún no hay proyectos.</p></div>'}
     ${sinP.h ? `<div class="card"><b>Sin proyecto</b><div class="tag">${num(sinP.h)} h extras${val ? " · " + money(sinP.c) : ""} en ${sinP.hojas} hojas que aún no tienen proyecto.</div></div>` : ""}`;
+}
+/* Tabla resumen: horas y costos cargados a cada proyecto en el rango de fechas. */
+function tablaProyectos(todas, val, sinP) {
+  const filas = proyectos().map(p => Object.assign({ p }, resumenProyecto(p, todas))).sort((a, b) => b.h - a.h);
+  const tH = filas.reduce((a, x) => a + x.h, 0) + sinP.h, tC = filas.reduce((a, x) => a + x.c, 0) + sinP.c;
+  const tr = (n, R, meta) => `<tr><td>${n}</td><td class="num">${num(R.h)}</td>${val ? `<td class="num">${money(R.c)}</td>` : ""}<td class="num">${tH ? Math.round(R.h / tH * 100) : 0} %</td><td class="num">${R.col}</td><td class="num">${R.hojas}</td><td>${meta ? Math.round(R.h / meta * 100) + " % de " + num(meta) + " h" : "—"}</td></tr>`;
+  return `<div class="card" style="margin-bottom:12px;overflow-x:auto"><h3 style="margin:0 0 8px">Horas${val ? " y costos" : ""} por proyecto</h3><table class="tabla"><thead><tr><th>Proyecto</th><th class="num">Horas</th>${val ? '<th class="num">Costo</th>' : ""}<th class="num">Part.</th><th class="num">Colab.</th><th class="num">Hojas</th><th>Meta</th></tr></thead><tbody>
+    ${filas.map(x => tr(`<button class="lnk" data-pver="${esc(x.p.id)}">${esc(x.p.n)}</button>${x.p.cod ? ` <span class="tag">${esc(x.p.cod)}</span>` : ""}`, x, x.p.meta)).join("")}
+    ${sinP.h ? tr("<i>Sin proyecto</i>", sinP) : ""}
+    <tr style="font-weight:700"><td>Total</td><td class="num">${num(tH)}</td>${val ? `<td class="num">${money(tC)}</td>` : ""}<td></td><td></td><td></td><td></td></tr></tbody></table></div>`;
 }
 let RESP_P = null;
 function formProyecto() {
   const p = PRY.editar === "nuevo" ? { n: "", motivo: "", cc: "", estado: "activo", personas: [] } : proyectos().find(x => x.id === PRY.editar) || {};
   if (!RESP_P) api("GET", "/api/responsables").then(r => { RESP_P = r.responsables; if (S.vista === "informe" && INF.tab === "proyectos" && PRY.editar) render(false); }).catch(() => { RESP_P = []; });
   return `<div class="card form" style="max-width:820px"><h2 style="margin:0">${PRY.editar === "nuevo" ? "Nuevo proyecto" : "Editar proyecto"}</h2>
-    <div class="field"><label for="p-n">Nombre del proyecto</label><input class="inp" id="p-n" value="${esc(p.n)}" maxlength="80" placeholder="Ej. Despacho obra Brassika"></div>
+    <div class="row2"><div class="field"><label for="p-n">Nombre del proyecto</label><input class="inp" id="p-n" value="${esc(p.n)}" maxlength="80" placeholder="Ej. Despacho obra Brassika"></div>
+      <div class="field"><label for="p-cod">Código (opcional)</label><input class="inp" id="p-cod" value="${esc(p.cod || "")}" maxlength="30" placeholder="Ej. PRY-024"></div></div>
     <div class="field"><label for="p-m">Por qué se hacen las horas extras</label><textarea class="inp" id="p-m" rows="3" maxlength="500" placeholder="Ej. Alistamiento de formaleta para despacho urgente al cliente">${esc(p.motivo || "")}</textarea></div>
     <div class="row2"><div class="field"><label for="p-cc">Centro de costo</label><select class="inp" id="p-cc"><option value="">Ninguno</option>${centros().map(c => `<option value="${esc(c.c)}" ${p.cc === c.c ? "selected" : ""}>${esc(c.c)} · ${esc(c.n)}</option>`).join("")}</select></div>
       <div class="field"><label for="p-meta">Meta de horas (opcional)</label><input class="inp num" id="p-meta" inputmode="decimal" value="${p.meta || ""}" placeholder="Sin meta"></div></div>
@@ -2127,6 +2659,9 @@ function formProyecto() {
     <div class="field"><label for="p-e">Estado</label><select class="inp" id="p-e"><option value="activo" ${p.estado !== "cerrado" ? "selected" : ""}>Activo (se puede elegir en las hojas)</option><option value="cerrado" ${p.estado === "cerrado" ? "selected" : ""}>Cerrado</option></select></div>
     <div class="field"><span class="lbl">Personas asignadas (si no marca ninguna, todos pueden usarlo)</span>
       <div style="display:flex;flex-wrap:wrap;gap:6px 14px">${RESP_P ? RESP_P.map(u => `<label class="check"><input type="checkbox" data-ppers value="${esc(u.id)}" ${(p.personas || []).includes(u.id) ? "checked" : ""}> ${esc(u.nombre)} <span class="tag">${ROL_TXT[u.rol] || u.rol}</span></label>`).join("") : '<span class="loading">Cargando…</span>'}</div></div>
+    <div class="field"><span class="lbl">Colaboradores del proyecto (opcional): al agregarlos a una hoja, sus horas se cargan a este proyecto</span>
+      <div class="pick-head"><input class="inp" id="pc-q" type="search" placeholder="Buscar colaborador o cédula" autocomplete="off"><label class="check"><input type="checkbox" id="pc-sel"> Ver solo los asignados (<b id="pc-n">${(p.cols || []).length}</b>)</label></div>
+      <div class="checklist" id="pc-lista" style="max-height:260px">${S.emp.filter(e => e[4] !== 0 || (p.cols || []).includes(e[0])).map(e => `<label data-q="${esc(e[1] + " " + e[0] + " " + e[2])}"><input type="checkbox" data-pcol value="${esc(e[0])}" ${(p.cols || []).includes(e[0]) ? "checked" : ""}><span>${esc(e[1])}</span><small>${esc(e[2])}</small></label>`).join("")}</div></div>
     <div class="actions"><button class="btn primary" id="p-guardar" type="button">${svg("check")}Guardar proyecto</button><button class="btn" id="p-cancel" type="button">Cancelar</button>
       ${PRY.editar !== "nuevo" ? '<button class="btn danger" id="p-borrar" type="button">Eliminar</button>' : ""}</div></div>`;
 }
@@ -2136,10 +2671,19 @@ function enlazarProyectos() {
   $$("[data-pver]").forEach(b => b.onclick = () => { INF.proy = b.dataset.pver; INF.tab = "tablero"; render(false); });
   $$("[data-pxls]").forEach(b => b.onclick = () => { const id = b.dataset.pxls; const v = INF.proy; INF.proy = id; exportarConsolidado(nombreProy(id)).finally(() => { INF.proy = v; }); });
   if ($("#p-cancel")) $("#p-cancel").onclick = () => { PRY.editar = null; render(false); };
+  if ($("#pc-lista")) { const filtrar = () => { const t = normTxt($("#pc-q").value), solo = $("#pc-sel").checked;
+      $$("#pc-lista label").forEach(l => { l.hidden = !((!t || normTxt(l.dataset.q).includes(t)) && (!solo || l.querySelector("input").checked)); }); };
+    $("#pc-q").oninput = filtrar; $("#pc-sel").onchange = filtrar; $("#pc-lista").onchange = () => { $("#pc-n").textContent = $$("[data-pcol]:checked").length; }; }
+  if ($("#p-cargar")) $("#p-cargar").onclick = () => $("#p-file").click();
+  if ($("#p-file")) $("#p-file").onchange = e => { const a = e.target.files[0]; e.target.value = ""; if (a) ejecutar(() => importarProyectos(a)); };
+  if ($("#p-plantilla")) $("#p-plantilla").onclick = () => ejecutar(plantillaProyectos);
+  if ($("#p-informe")) $("#p-informe").onclick = () => ejecutar(informeProyectos);
   if ($("#p-guardar")) $("#p-guardar").onclick = () => ejecutar(async () => {
     const n = $("#p-n").value.trim(); if (!n) throw new Error("Escriba el nombre del proyecto.");
     const meta = +String($("#p-meta").value).replace(",", ".") || null;
-    const d = { n, motivo: $("#p-m").value.trim(), cc: $("#p-cc").value || null, meta, desde: $("#p-d").value || null, hasta: $("#p-h").value || null,
+    const cod = $("#p-cod").value.trim().toUpperCase();
+    if (cod && proyectos().some(x => x.id !== PRY.editar && (x.cod || "") === cod)) throw new Error("Ese código ya lo tiene otro proyecto.");
+    const d = { n, cod: cod || null, cols: $$("[data-pcol]:checked").map(x => x.value), motivo: $("#p-m").value.trim(), cc: $("#p-cc").value || null, meta, desde: $("#p-d").value || null, hasta: $("#p-h").value || null,
       estado: $("#p-e").value, personas: $$("[data-ppers]:checked").map(x => x.value) };
     const lista = proyectos().slice();
     if (PRY.editar === "nuevo") lista.push(Object.assign({ id: "p" + Date.now().toString(36), creado: ahora(), por: S.yo.nombre }, d));
@@ -2152,8 +2696,108 @@ function enlazarProyectos() {
   });
 }
 
+/* ---- Proyectos desde Excel: una fila por proyecto, o una por colaborador repitiendo el proyecto. ---- */
+const ENC_P = [["cod", /^(CODIGO|COD|ID|N|NO|NUMERO)\b|CODIGO/], ["cc", /CENTRO|^C\.?C\.?$|^CC\b/], ["motivo", /MOTIVO|POR QUE|PORQUE|DESCRIPCION|JUSTIFICACION|OBJETO|ALCANCE/],
+  ["meta", /META|HORAS/], ["desde", /DESDE|INICIO/], ["hasta", /HASTA|FIN|TERMINA/], ["estado", /ESTADO/], ["cols", /COLABORADOR|CEDULA|PERSONAL|OPERARIO|EMPLEADO|TRABAJADOR/], ["n", /PROYECTO|NOMBRE/]];
+function fechaXls(v) {
+  if (v instanceof Date && !isNaN(v)) return new Date(v.getTime() - v.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+  const t = String(v ?? "").trim(); let m = t.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/); if (m) return `${m[1]}-${m[2].padStart(2, "0")}-${m[3].padStart(2, "0")}`;
+  m = t.match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{2,4})$/); if (m) return `${m[3].length === 2 ? "20" + m[3] : m[3]}-${m[2].padStart(2, "0")}-${m[1].padStart(2, "0")}`;
+  return null;
+}
+async function importarProyectos(archivo) {
+  await cargarLib(CDN + "xlsx@0.18.5/dist/xlsx.full.min.js");
+  const wb = XLSX.read(await archivo.arrayBuffer(), { type: "array", cellDates: true });
+  // Encabezado: la fila (de las primeras 15) que más columnas conocidas tiene, con la del nombre del proyecto.
+  let filas = null, mapa = null, mejor = 0;
+  for (const nom of wb.SheetNames) {
+    const rows = XLSX.utils.sheet_to_json(wb.Sheets[nom], { header: 1, raw: true, defval: "" });
+    for (let i = 0; i < Math.min(rows.length, 15); i++) {
+      const m = {}; rows[i].forEach((c, j) => { const t = normTxt(c); if (!t || t.length > 40) return; const k = (ENC_P.find(([k, re]) => re.test(t) && m[k] === undefined) || [])[0]; if (k) m[k] = j; });
+      const n = Object.keys(m).length;
+      if (m.n !== undefined && n > mejor) { filas = rows.slice(i + 1); mapa = m; mejor = n; }
+    }
+    if (mejor >= 2) break;
+  }
+  if (!filas) throw new Error("No encontré la columna del nombre del proyecto. Use la plantilla: CÓDIGO, PROYECTO, POR QUÉ, CENTRO DE COSTO, META HORAS, DESDE, HASTA, ESTADO, COLABORADORES.");
+  const porCed = Object.fromEntries(S.emp.map(e => [String(e[0]), e[0]])), porNom = Object.fromEntries(S.emp.map(e => [normTxt(e[1]), e[0]]));
+  const lista = proyectos().map(p => Object.assign({}, p, { cols: (p.cols || []).slice() })), avisos = new Set(), sinCol = new Set();
+  let nuevos = 0, act = new Set(), vacias = 0;
+  const val = (r, k) => mapa[k] === undefined ? "" : r[mapa[k]];
+  for (const r of filas) {
+    const n = String(val(r, "n") ?? "").trim(), cod = String(val(r, "cod") ?? "").trim().toUpperCase();
+    if (!n && !cod) { vacias++; continue; }
+    let p = lista.find(x => (cod && (x.cod || "") === cod) || (!cod && n && normTxt(x.n) === normTxt(n)) || (cod && !x.cod && n && normTxt(x.n) === normTxt(n)));
+    if (!p) { if (!n) { avisos.add(`Código ${cod} sin nombre: no se creó`); continue; }
+      p = { id: "p" + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), n: "", estado: "activo", personas: [], cols: [], creado: ahora(), por: S.yo.nombre }; lista.push(p); nuevos++; p._nuevo = 1; }
+    else if (!p._nuevo) act.add(p.id);
+    if (n) p.n = n.slice(0, 80); if (cod) p.cod = cod.slice(0, 30);
+    const mo = String(val(r, "motivo") ?? "").trim(); if (mo) p.motivo = mo.slice(0, 500);
+    const cc = String(val(r, "cc") ?? "").trim();
+    if (cc) { const c = centros().find(x => normTxt(x.c) === normTxt(cc) || normTxt(x.n) === normTxt(cc) || normTxt(cc).startsWith(normTxt(x.c) + " "));
+      p.cc = c ? c.c : cc.toUpperCase().slice(0, 20); if (!c) avisos.add(`Centro de costo "${cc}" no está creado en Accesos`); }
+    const mt = parseFloat(String(val(r, "meta") ?? "").replace(",", ".")); if (mt > 0) p.meta = mt;
+    const de = fechaXls(val(r, "desde")), ha = fechaXls(val(r, "hasta")); if (de) p.desde = de; if (ha) p.hasta = ha;
+    const es = normTxt(val(r, "estado")); if (es) p.estado = /CERRAD|INACTIV|TERMIN|FINALIZ/.test(es) ? "cerrado" : "activo";
+    String(val(r, "cols") ?? "").split(/[,;\n\/|]+/).map(x => x.trim()).filter(Boolean).forEach(x => {
+      const ced = porCed[x.replace(/\D/g, "")] || porNom[normTxt(x)]; if (ced) { if (!p.cols.includes(ced)) p.cols.push(ced); } else sinCol.add(x); });
+  }
+  lista.forEach(p => delete p._nuevo);
+  if (!nuevos && !act.size) throw new Error("El archivo no tiene proyectos para cargar.");
+  const msg = `${nuevos} proyecto${nuevos === 1 ? "" : "s"} nuevo${nuevos === 1 ? "" : "s"} y ${act.size} actualizado${act.size === 1 ? "" : "s"}.`
+    + (sinCol.size ? ` ${sinCol.size} colaborador(es) no se encontraron en Personal: ${[...sinCol].slice(0, 6).join(", ")}${sinCol.size > 6 ? "…" : ""}.` : "")
+    + (avisos.size ? " " + [...avisos].slice(0, 4).join(". ") + "." : "");
+  if (!await confirmar(msg + " ¿Cargar los proyectos?", "Cargar proyectos desde Excel", "Cargar")) return;
+  await guardarCat("proyectos", { lista }); S.proyectos = lista; toast(`Proyectos cargados: ${nuevos} nuevos, ${act.size} actualizados`); render(false);
+}
+/* Plantilla con los proyectos actuales: se edita en Excel y se vuelve a cargar. */
+async function plantillaProyectos() {
+  await cargarLib(CDN + "exceljs@4.4.0/dist/exceljs.min.js");
+  const wb = new ExcelJS.Workbook(), ws = wb.addWorksheet("PROYECTOS"), cedA = Object.fromEntries(S.emp.map(e => [e[0], e]));
+  ws.columns = [["CÓDIGO", 12], ["PROYECTO", 34], ["POR QUÉ (MOTIVO)", 48], ["CENTRO DE COSTO", 16], ["META HORAS", 12], ["DESDE", 12], ["HASTA", 12], ["ESTADO", 10], ["COLABORADORES (CÉDULAS)", 40]].map(([header, width]) => ({ header, width }));
+  ws.getRow(1).eachCell(c => { c.font = { bold: true, color: { argb: "FFFFFFFF" }, name: "Arial" }; c.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF14246E" } }; c.alignment = { wrapText: true, vertical: "middle" }; });
+  const ej = !proyectos().length;
+  (ej ? [{ cod: "PRY-001", n: "Despacho obra ejemplo", motivo: "Alistamiento de formaleta para despacho urgente", cc: (centros()[0] || {}).c || "", meta: 120, desde: "2026-11-01", hasta: "2026-11-30", estado: "activo", cols: S.emp.slice(0, 2).map(e => e[0]) }] : proyectos())
+    .forEach(p => ws.addRow([p.cod || "", p.n, p.motivo || "", p.cc || "", p.meta || "", p.desde ? new Date(p.desde + "T12:00") : "", p.hasta ? new Date(p.hasta + "T12:00") : "", p.estado === "cerrado" ? "CERRADO" : "ACTIVO", (p.cols || []).join(", ")]));
+  ws.getColumn(6).numFmt = ws.getColumn(7).numFmt = "dd/mm/yyyy";
+  const ay = wb.addWorksheet("COMO LLENARLA");
+  ["Una fila por proyecto. Solo la columna PROYECTO es obligatoria.", "Si el CÓDIGO o el nombre ya existe, el proyecto se actualiza; si no, se crea.",
+   "CENTRO DE COSTO: el código creado en Accesos.", "ESTADO: ACTIVO o CERRADO.", "COLABORADORES: cédulas (o nombres como están en Personal) separadas por coma.",
+   "También puede poner una fila por colaborador repitiendo el proyecto.", ej ? "La fila de la hoja PROYECTOS es un ejemplo: cámbiela o bórrela." : "La hoja PROYECTOS trae los proyectos actuales."].forEach(t => ay.addRow([t]));
+  ay.getColumn(1).width = 100; ws.views = [{ state: "frozen", ySplit: 1 }];
+  descargar("Proyectos Jornada Ext Laboral.xlsx", await wb.xlsx.writeBuffer(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+}
+/* Informe de todos los proyectos: resumen, por colaborador y detalle, en el rango de fechas del informe. */
+async function informeProyectos() {
+  toast("Generando Excel…"); await cargarLib(CDN + "exceljs@4.4.0/dist/exceljs.min.js");
+  const val = verValores(), todas = [];
+  for (const f of listaForms()) { if (f.estado === "legalizado") continue; for (const r of f.filas) if (r.f && !esRN(r) && enDiv(r) && (!INF.desde || r.f >= INF.desde) && (!INF.hasta || r.f <= INF.hasta)) todas.push({ r, f }); }
+  const wb = new ExcelJS.Workbook(), nom = k => k ? nombreProy(k) || k : "SIN PROYECTO", rango = `${INF.desde ? fc(INF.desde) : "inicio"} a ${INF.hasta ? fc(INF.hasta) : "hoy"}`;
+  const hoja = (n, cols) => { const ws = wb.addWorksheet(n, { pageSetup: { orientation: "landscape", fitToPage: true, fitToWidth: 1, fitToHeight: 0 } });
+    ws.addRow([`Horas extras por proyecto${INF.div ? " · " + nombreDiv(INF.div).toUpperCase() : ""} · ${rango} · Generado ${fc(ahora().slice(0, 10))}`]).font = { bold: true, size: 13, name: "Arial" };
+    ws.addRow([]); const h = ws.addRow(cols.map(c => c[0])); h.eachCell(c => { c.font = { bold: true, color: { argb: "FFFFFFFF" }, name: "Arial" }; c.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF14246E" } }; });
+    cols.forEach((c, i) => ws.getColumn(i + 1).width = c[1]); ws.views = [{ state: "frozen", ySplit: 3 }]; return ws; };
+  const fmt = (ws, cols) => cols.forEach((c, i) => { if (c[2]) ws.getColumn(i + 1).numFmt = c[2]; });
+  const C1 = [["CÓDIGO", 12], ["PROYECTO", 34], ["POR QUÉ", 40], ["CENTRO DE COSTO", 16], ["HORAS", 10, "#,##0.00"]].concat(val ? [["COSTO", 16, '"$"#,##0']] : []).concat([["COLABORADORES", 14], ["HOJAS", 10], ["META HORAS", 12], ["% META", 10, "0%"], ["ESTADO", 10]]);
+  const r1 = hoja("RESUMEN", C1); fmt(r1, C1); const g = {};
+  todas.forEach(x => { const k = proyDe(x.r, x.f) || ""; const a = g[k] ??= { h: 0, c: 0, col: new Set(), hojas: new Set() }; a.h += x.r.h || 0; a.c += x.r.co || 0; a.col.add(x.r.c); a.hojas.add(x.f.id); });
+  const ks = [...new Set(proyectos().map(p => p.id).concat(Object.keys(g)))].sort((a, b) => ((g[b] || {}).h || 0) - ((g[a] || {}).h || 0));
+  const ini = r1.rowCount + 1;
+  ks.forEach(k => { const p = proyectos().find(x => x.id === k) || {}, a = g[k] || { h: 0, c: 0, col: new Set(), hojas: new Set() };
+    r1.addRow([p.cod || "", nom(k), p.motivo || "", p.cc || "", +a.h.toFixed(2)].concat(val ? [Math.round(a.c)] : []).concat([a.col.size, a.hojas.size, p.meta || null, p.meta ? a.h / p.meta : null, k ? (p.estado === "cerrado" ? "CERRADO" : "ACTIVO") : ""])); });
+  const fin = r1.rowCount, tot = r1.addRow(["", "TOTAL", "", "", { formula: `SUM(E${ini}:E${fin})` }].concat(val ? [{ formula: `SUM(F${ini}:F${fin})` }] : [])); tot.font = { bold: true, name: "Arial" };
+  const C2 = [["PROYECTO", 34], ["CÉDULA", 14], ["COLABORADOR", 32], ["ÁREA", 22], ["HORAS", 10, "#,##0.00"]].concat(val ? [["COSTO", 16, '"$"#,##0']] : []).concat([["DÍAS", 8]]);
+  const r2 = hoja("POR COLABORADOR", C2); fmt(r2, C2); const gc = {};
+  todas.forEach(x => { const k = (proyDe(x.r, x.f) || "") + "|" + x.r.c, a = gc[k] ??= { p: proyDe(x.r, x.f) || "", r: x.r, h: 0, c: 0, d: new Set() }; a.h += x.r.h || 0; a.c += x.r.co || 0; a.d.add(x.r.f); });
+  Object.values(gc).sort((a, b) => nom(a.p).localeCompare(nom(b.p)) || b.h - a.h).forEach(a => r2.addRow([nom(a.p), a.r.c, a.r.n, a.r.a || "", +a.h.toFixed(2)].concat(val ? [Math.round(a.c)] : []).concat([a.d.size])));
+  const C3 = [["FECHA", 12], ["PROYECTO", 30], ["HOJA", 26], ["RESPONSABLE", 24], ["CENTRO DE COSTO", 14], ["CÉDULA", 14], ["COLABORADOR", 30], ["ÁREA", 20], ["JORNADA", 22], ["INICIO", 8], ["FIN", 8], ["HORAS", 9, "#,##0.00"]].concat(val ? [["COSTO", 14, '"$"#,##0']] : []).concat([["SOPORTE", 40]]);
+  const r3 = hoja("DETALLE", C3); fmt(r3, C3);
+  todas.sort((a, b) => a.r.f.localeCompare(b.r.f)).forEach(({ r, f }) => r3.addRow([fc(r.f), nom(proyDe(r, f)), f.titulo, f.duenoNombre || "", f.cc || "", r.c, r.n, r.a || "", r.jn, r.hi, r.hf, r.h].concat(val ? [Math.round(r.co || 0)] : []).concat([r.so || ""])));
+  descargar(`Informe de proyectos${INF.div ? " " + nombreDiv(INF.div) : ""} ${(INF.desde || "inicio")} a ${(INF.hasta || ahora().slice(0, 10))}.xlsx`, await wb.xlsx.writeBuffer(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+}
+
 /* ================= Nómina: planos semanales (sábado a viernes, festivos incluidos) ================= */
-const NOM = { aut: false, abierta: null, anio: "" };
+const NOM = { aut: false, abierta: null, mes: "curso", navAbierto: "", anioAbierto: undefined };
 const isoMas = (f, n) => { const d = new Date(f + "T12:00:00Z"); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); };
 const sabadoDe = f => { const d = new Date(f + "T12:00:00Z"); return isoMas(f, -((d.getUTCDay() + 1) % 7)); };
 const DIAS_N = ["DOMINGO", "LUNES", "MARTES", "MIÉRCOLES", "JUEVES", "VIERNES", "SÁBADO"];
@@ -2183,15 +2827,37 @@ function semanasNomina() {
   return Object.values(m).sort((a, b) => b.sem.localeCompare(a.sem));
 }
 const firmaSem = s => ({ filas: s.filas.length, h: r2(s.h + s.rh), v: Math.round(s.v) });
+/* Las semanas revisadas se archivan por el mes del viernes en que cierran; "Por revisar" muestra las pendientes
+   y las revisadas cuyas horas cambiaron después. */
+const mesNom = s => isoMas(s.sem, 6).slice(0, 7);
+const nomCambiada = (s, est) => !!(est[s.sem]?.revisado && JSON.stringify(est[s.sem].revisado.firma) !== JSON.stringify(firmaSem(s)));
+/* Nómina puede ocultar las semanas antiguas (por ejemplo, el histórico cargado hasta noviembre): las que cierran en el mes
+   elegido o antes no salen en Por revisar, en el archivo por meses ni en los contadores; "Ver ocultas" las muestra un momento. */
+const nomOculta = s => { const h = estadoNom().ocultarHasta; return !!h && mesNom(s) <= h; };
+const semanasVisibles = () => semanasNomina().filter(s => NOM.verOcultas || !nomOculta(s));
+function mesesNomina() {
+  const est = estadoNom().semanas, mm = {}, ss = semanasVisibles();
+  ss.forEach(s => { if (est[s.sem]?.revisado) { const k = mesNom(s); mm[k] = (mm[k] || 0) + 1; } });
+  return { mm, pend: ss.filter(s => !est[s.sem]?.revisado || nomCambiada(s, est)).length };
+}
+function navSubNomina() {
+  const { mm, pend } = mesesNomina(), sel = NOM.mes || "curso", anios = [...new Set(Object.keys(mm).map(k => k.slice(0, 4)))].sort().reverse(), aqui = S.vista === "nomina";
+  return `<div class="nav-sub"><button class="nav-mes" data-navnmes="curso" ${aqui && sel === "curso" ? 'aria-current="true"' : ''}>Por revisar <small>${pend}</small></button>${anios.map(a => `<button class="nav-anio" data-navnanio="${a}" aria-expanded="${NOM.navAbierto === a}">${a} <span>${NOM.navAbierto === a ? "▴" : "▾"}</span></button>${NOM.navAbierto !== a ? "" : Object.keys(mm).filter(k => k.startsWith(a)).sort().reverse()
+    .map(k => `<button class="nav-mes" data-navnmes="${k}" ${aqui && k === sel ? 'aria-current="true"' : ''}>${MES3(k)} <small>${mm[k]}</small></button>`).join("")}`).join("")}</div>`;
+}
 function vNomina(app) {
-  const ss = semanasNomina(), est = estadoNom().semanas, val = verValores();
-  const anios = [...new Set(ss.map(s => s.sem.slice(0, 4)))].sort().reverse(); if (!NOM.anio || !anios.includes(NOM.anio)) NOM.anio = anios[0] || "";
-  const ver = ss.filter(s => s.sem.slice(0, 4) === NOM.anio || isoMas(s.sem, 6).slice(0, 4) === NOM.anio);
+  const todasSem = semanasNomina(), ocultas = todasSem.filter(nomOculta), ss = semanasVisibles(), est = estadoNom().semanas, ocHasta = estadoNom().ocultarHasta, val = verValores(), { mm } = mesesNomina();
+  if (!NOM.mes || (NOM.mes !== "curso" && !mm[NOM.mes])) NOM.mes = "curso";
+  const anios = [...new Set(Object.keys(mm).map(k => k.slice(0, 4)))].sort().reverse();
+  if (NOM.anioAbierto === undefined) NOM.anioAbierto = NOM.mes !== "curso" ? NOM.mes.slice(0, 4) : "";
+  const ver = NOM.mes === "curso" ? ss.filter(s => !est[s.sem]?.revisado || nomCambiada(s, est)) : ss.filter(s => est[s.sem]?.revisado && mesNom(s) === NOM.mes).sort((a, b) => b.sem.localeCompare(a.sem));
+  const mesTot = NOM.mes === "curso" ? null : ver.reduce((a, s) => ({ h: a.h + s.h, v: a.v + s.v, pag: a.pag + (est[s.sem]?.pagado ? 1 : 0) }), { h: 0, v: 0, pag: 0 });
   const pendRev = ss.filter(s => !est[s.sem]?.revisado).length, pendPag = ss.filter(s => est[s.sem]?.revisado && !est[s.sem]?.pagado).length;
   const tarjeta = s => {
     const e = est[s.sem] || {}, fin = isoMas(s.sem, 6), cambio = e.revisado && JSON.stringify(e.revisado.firma) !== JSON.stringify(firmaSem(s));
-    const chip = e.pagado ? `<span class="chip c-ok">✓ Pagado</span>` : e.revisado ? `<span class="chip c-info">✓ Revisado · falta pagar</span>` : `<span class="chip c-warn">Pendiente de revisar</span>`;
+    const chip = (nomOculta(s) ? `<span class="chip" style="background:#eceae4">Oculta</span> ` : "") + (e.pagado ? `<span class="chip c-ok">✓ Pagado</span>` : e.revisado ? `<span class="chip c-info">✓ Revisado · falta pagar</span>` : `<span class="chip c-warn">Pendiente de revisar</span>`);
     const abierta = NOM.abierta === s.sem;
+    const RS = repetidas([...new Map(s.filas.map(x => [x.f.id, x.f])).values()]), repS = s.filas.filter(x => RS[x.f.id + "|" + x.r.id]);
     return `<div class="card" style="margin-bottom:10px">
       <div style="display:flex;gap:10px;align-items:flex-start;flex-wrap:wrap"><div style="flex:1;min-width:240px">
         <b style="font-size:17px">Semana sáb ${fc(s.sem)} – vie ${fc(fin)}</b> ${chip}
@@ -2199,22 +2865,37 @@ function vNomina(app) {
           ${s.fest ? ` · <b>${s.fest} en festivo</b>` : ""}${s.dom ? ` · ${s.dom} en domingo` : ""}</div>
         ${e.revisado ? `<div class="tag">Revisado por ${esc(e.revisado.por)} el ${fh(e.revisado.fecha)}${e.pagado ? ` · Pagado por ${esc(e.pagado.por)} el ${fh(e.pagado.fecha)}` : ""}</div>` : ""}
         ${cambio ? `<div class="notice" style="margin:6px 0 0;border-color:#d03b3b">⚠ Las horas de esta semana cambiaron después de revisarla (antes ${num(e.revisado.firma.h)} h${val ? " · " + money(e.revisado.firma.v) : ""}). Vuelva a revisarla.</div>` : ""}
+        ${repS.length ? `<div class="notice" style="margin:6px 0 0;border-color:#c62828"><b>⚠ ${repS.length} registros repetidos</b> (mismo colaborador, día y hora en dos hojas): el plano los sumaría dos veces. Quite la fila sobrante en la hoja o en Llegada antes de revisar.
+          ${[...new Map(repS.map(x => [x.r.c + x.r.f, x])).values()].slice(0, 6).map(x => `<br>· ${esc(x.r.n)} · ${fc(x.r.f)} → ${[x.f].concat(RS[x.f.id + "|" + x.r.id].map(y => y.f)).map(h => `<a href="#hoja-${h.id}">${esc(h.titulo)}</a>`).join(" y ")}`).join("")}</div>` : ""}
         ${s.pend && s.pend.size && !NOM.aut ? `<div class="tag" style="color:#a15c00">${s.pend.size} autorizaciones de esta semana aún no se han legalizado (no están en el plano).</div>` : ""}
       </div>
       <div class="actions"><button class="btn small primary" data-nplano="${s.sem}">${svg("xls")}Descargar plano</button>
         <button class="btn small" data-nver="${s.sem}">${abierta ? "Ocultar detalle" : "Ver detalle"}</button>
-        ${puedeNomina() ? (e.pagado ? `<button class="btn small" data-nquita="pagado" data-s="${s.sem}">Quitar pagado</button>`
+        ${puedeNomina() && repS.length && !e.pagado ? `<span class="tag" style="color:#c62828">Quite los repetidos para revisar o pagar</span>` : puedeNomina() ? (e.pagado ? `<button class="btn small" data-nquita="pagado" data-s="${s.sem}">Quitar pagado</button>`
           : e.revisado ? `<button class="btn small accent" data-nmarca="pagado" data-s="${s.sem}">${svg("check")}Marcar pagado</button>${cambio ? `<button class="btn small" data-nmarca="revisado" data-s="${s.sem}">Revisar de nuevo</button>` : ""}<button class="btn small" data-nquita="revisado" data-s="${s.sem}">Quitar revisado</button>`
-          : `<button class="btn small accent" data-nmarca="revisado" data-s="${s.sem}">${svg("check")}Marcar revisado</button>`) : ""}</div></div>
+          : `<button class="btn small accent" data-nmarca="revisado" data-s="${s.sem}" ${repS.length ? 'disabled title="Hay registros repetidos: quítelos antes de revisar"' : ""}>${svg("check")}Marcar revisado</button>`) : ""}</div></div>
       ${abierta ? tablaSemana(s, val) : ""}</div>`;
   };
-  app.innerHTML = topbar("Nómina", "Planos semanales de sábado a viernes, festivos incluidos") +
+  app.innerHTML = topbar("Nómina", NOM.mes === "curso" ? "Semanas por revisar · planos de sábado a viernes, festivos incluidos" : `Semanas revisadas de ${nombreMes(NOM.mes)}`) +
     `<div class="stats"><div class="stat"><span>Semanas por revisar</span><b>${pendRev}</b></div><div class="stat"><span>Revisadas sin pagar</span><b>${pendPag}</b></div><div class="stat"><span>Semanas pagadas</span><b>${ss.length - pendRev - pendPag}</b></div></div>
-    <div class="card" style="padding:10px 12px;margin-bottom:12px"><div class="actions" style="gap:6px;align-items:center">${anios.map(a => `<button class="pill" data-nanio="${a}" aria-pressed="${a === NOM.anio}">${a}</button>`).join("")}
+    <div class="card" style="padding:10px 12px;margin-bottom:12px"><div class="actions" style="gap:6px;align-items:center">
+      <button class="pill" data-nmes="curso" aria-pressed="${NOM.mes === "curso"}">Por revisar (${pendRev + ss.filter(s => nomCambiada(s, est)).length})</button>
+      ${anios.map(a => `<button class="pill" data-nanio="${a}" aria-expanded="${NOM.anioAbierto === a}" aria-pressed="${NOM.mes !== "curso" && NOM.mes.startsWith(a)}">${a} ${NOM.anioAbierto === a ? "▴" : "▾"}${NOM.mes !== "curso" && NOM.mes.startsWith(a) && NOM.anioAbierto !== a ? " · " + MESES[+NOM.mes.slice(5, 7) - 1] : ""}</button>`).join("")}
       <label class="check" style="margin-left:auto"><input type="checkbox" id="n-aut" ${NOM.aut ? "checked" : ""}> Incluir autorizaciones que aún no se han legalizado</label></div>
-      <p class="hint" style="margin:6px 0 0">El plano trae una fila por colaborador, centro de costo y concepto (código de jornada), lista para cargar en nómina, y una hoja con el detalle de cada registro. Por defecto se pagan las <b>legalizaciones</b>.</p></div>
-    ${ver.length ? ver.map(tarjeta).join("") : '<div class="empty"><p>No hay horas extras legalizadas para nómina.</p></div>'}`;
-  $$("[data-nanio]").forEach(b => b.onclick = () => { NOM.anio = b.dataset.nanio; render(false); });
+      ${NOM.anioAbierto && anios.includes(NOM.anioAbierto) ? `<div class="actions" style="gap:6px;margin-top:8px">${Object.keys(mm).filter(k => k.startsWith(NOM.anioAbierto)).sort().reverse().map(k => `<button class="pill" data-nmes="${k}" aria-pressed="${NOM.mes === k}" style="text-transform:capitalize">${MESES[+k.slice(5, 7) - 1]} (${mm[k]})</button>`).join("")}</div>` : ""}
+      ${puedeNomina() ? `<div class="actions" style="gap:6px;margin-top:8px;align-items:center"><label for="n-ocu" class="tag">Ocultar semanas hasta:</label>
+        <select class="inp" id="n-ocu" style="width:auto;min-width:200px"><option value="">No ocultar ninguna</option>${[...new Set(todasSem.map(mesNom))].sort().reverse().map(k => `<option value="${k}" ${ocHasta === k ? "selected" : ""}>${nombreMes(k)} (y anteriores)</option>`).join("")}</select>
+        ${ocultas.length ? `<button class="btn small" id="n-verocu" type="button">${NOM.verOcultas ? "Esconder" : "Ver"} ${ocultas.length} ${ocultas.length === 1 ? "semana oculta" : "semanas ocultas"}</button>` : ""}</div>` : ""}
+      <p class="hint" style="margin:6px 0 0">Al <b>marcar revisada</b> una semana se archiva en su año y mes (el del viernes en que cierra), aquí y debajo de Nómina en el menú. El plano trae una fila por colaborador, centro de costo y concepto (código de jornada), lista para cargar en nómina, y una hoja con el detalle de cada registro. Por defecto se pagan las <b>legalizaciones</b>.</p></div>
+    ${mesTot ? `<div class="notice" style="margin:0 0 12px"><b>${nombreMes(NOM.mes)}:</b> ${ver.length} ${ver.length === 1 ? "semana revisada" : "semanas revisadas"} · ${num(mesTot.h)} h extras${val ? " · " + money(mesTot.v) : ""} · ${mesTot.pag} ${mesTot.pag === 1 ? "pagada" : "pagadas"}${ver.length - mesTot.pag ? `, <b>${ver.length - mesTot.pag} por pagar</b>` : ""}</div>` : ""}
+    ${ver.length ? ver.map(tarjeta).join("") : `<div class="empty"><p>${NOM.mes === "curso" ? "No hay semanas por revisar. Las revisadas están archivadas por año y mes." : "No hay semanas en este mes."}</p></div>`}`;
+  if ($("#n-ocu")) $("#n-ocu").onchange = () => ejecutar(async () => {
+    const n = JSON.parse(JSON.stringify(estadoNom())); if ($("#n-ocu").value) n.ocultarHasta = $("#n-ocu").value; else delete n.ocultarHasta;
+    await guardarCat("nomina", n); S.nomina = n; NOM.verOcultas = false; NOM.mes = "curso";
+    toast(n.ocultarHasta ? `Ocultas las semanas hasta ${nombreMes(n.ocultarHasta)}.` : "Se muestran todas las semanas."); render(false); renderNav(); });
+  if ($("#n-verocu")) $("#n-verocu").onclick = () => { NOM.verOcultas = !NOM.verOcultas; render(false); renderNav(); };
+  $$("[data-nanio]").forEach(b => b.onclick = () => { NOM.anioAbierto = NOM.anioAbierto === b.dataset.nanio ? "" : b.dataset.nanio; render(false); });
+  $$("[data-nmes]").forEach(b => b.onclick = () => { NOM.mes = b.dataset.nmes; NOM.abierta = null; render(false); renderNav(); });
   $("#n-aut") && ($("#n-aut").onchange = e => { NOM.aut = e.target.checked; render(false); });
   $$("[data-nver]").forEach(b => b.onclick = () => { NOM.abierta = NOM.abierta === b.dataset.nver ? null : b.dataset.nver; render(false); });
   $$("[data-nplano]").forEach(b => b.onclick = () => descargarPlano(ss.find(s => s.sem === b.dataset.nplano)));
@@ -2223,11 +2904,11 @@ function vNomina(app) {
     const e = n.semanas[s.sem] || (n.semanas[s.sem] = {});
     if (k === "pagado" && !e.revisado) throw new Error("Primero marque la semana como revisada.");
     e[k] = { por: S.yo.nombre, fecha: ahora(), firma: firmaSem(s) };
-    await guardarCat("nomina", n); S.nomina = n; toast(k === "pagado" ? "Semana marcada como pagada" : "Semana marcada como revisada"); render(false); }));
+    await guardarCat("nomina", n); S.nomina = n; toast(k === "pagado" ? "Semana marcada como pagada" : `Semana revisada: quedó archivada en Nómina → ${nombreMes(mesNom(s))}`); render(false); renderNav(); }));
   $$("[data-nquita]").forEach(b => b.onclick = () => ejecutar(async () => {
     const k = b.dataset.nquita; if (!await confirmar(`¿Quitar la marca de ${k} de esta semana?`, "Quitar marca", "Quitar")) return;
     const n = JSON.parse(JSON.stringify(estadoNom())), e = n.semanas[b.dataset.s] || {}; delete e[k]; if (k === "revisado") delete e.pagado;
-    await guardarCat("nomina", n); S.nomina = n; render(false); }));
+    await guardarCat("nomina", n); S.nomina = n; render(false); renderNav(); }));
 }
 /* Una fila por colaborador + centro de costo + concepto. */
 function planoSemana(s) {
@@ -2265,9 +2946,9 @@ async function descargarPlano(s) {
     // 2) DETALLE: cada registro de horas
     const d = wb.addWorksheet("DETALLE");
     d.columns = [["FECHA", 12], ["DIA", 11], ["TIPO_DIA", 11], ["HOJA", 28], ["TIPO_HOJA", 14], ["ESTADO_HOJA", 13], ["RESPONSABLE", 24], ["PROYECTO", 26], ["CENTRO_COSTO", 14], ["CEDULA", 14], ["NOMBRE", 36], ["AREA", 24],
-      ["CONCEPTO", 10], ["JORNADA", 24], ["INICIO", 8], ["FIN", 8], ["HORAS", 8], ["FACTOR", 8], ["SALARIO", 13], ["VALOR", 13], ["SOPORTE", 40], ["LLEGADA", 9], ["ASISTENCIA", 12]].map(([header, width]) => ({ header, width }));
+      ["CONCEPTO", 10], ["JORNADA", 24], ["INICIO", 8], ["FIN", 8], ["HORAS", 8], ["FACTOR", 8], ["SALARIO", 13], ["VALOR", 13], ["SOPORTE", 40], ["LLEGADA", 9], ["SALIDA", 9], ["HORAS REALES", 10], ["ASISTENCIA", 12]].map(([header, width]) => ({ header, width }));
     s.filas.slice().sort((a, b) => a.r.f.localeCompare(b.r.f) || a.r.n.localeCompare(b.r.n)).forEach(({ r, f }) =>
-      d.addRow([fecha(r.f), diaDe(r.f), tipoDia(r), f.titulo, TIPOS[f.tipo], (ESTADOS[f.estado] || [""])[0], f.duenoNombre || "", f.proy ? nombreProy(f.proy) : "", f.cc || "", r.c, r.n, r.a || "", r.j, r.jn, r.hi, r.hf, r.h, r.r, r.s, Math.round(r.co || 0), r.so || "", r.ll || "", r.as === "si" ? "ASISTIÓ" : r.as === "no" ? "NO ASISTIÓ" : "SIN CONFIRMAR"]));
+      d.addRow([fecha(r.f), diaDe(r.f), tipoDia(r), f.titulo, TIPOS[f.tipo], (ESTADOS[f.estado] || [""])[0], f.duenoNombre || "", proyDe(r, f) ? nombreProy(proyDe(r, f)) : "", f.cc || "", r.c, r.n, r.a || "", r.j, r.jn, r.hi, r.hf, r.h, r.r, r.s, Math.round(r.co || 0), r.so || "", r.ll || "", r.sa || "", horasReales(r) !== null ? +horasReales(r).toFixed(2) : "", r.as === "si" ? "ASISTIÓ" : r.as === "no" ? "NO ASISTIÓ" : "SIN CONFIRMAR"]));
     d.getColumn(1).numFmt = "dd/mm/yyyy"; d.getColumn(17).numFmt = d.getColumn(18).numFmt = "0.00"; d.getColumn(19).numFmt = d.getColumn(20).numFmt = '"$" #,##0'; cab(d);
     // 3) CONTROL: totales por concepto y estado de revisión/pago
     const c = wb.addWorksheet("CONTROL");
@@ -2359,7 +3040,7 @@ function dibujarHoja(doc, f, fir, s, c, logo, op) {
   doc.text(`${f.titulo} · ${fc(f.fi)}${f.ff !== f.fi ? " al " + fc(f.ff) : ""}${f.cc ? " · CC " + f.cc : ""}${f.proy ? " · " + nombreProy(f.proy) : ""}`, M + CW * .72, M + t1 + t2 * .78, { align: "center", maxWidth: CW * .54 });
   const h12 = t => { const [h, m] = t.split(":").map(Number); return `${(h % 12) || 12}:${String(m).padStart(2, "0")} ${h < 12 ? "am" : "pm"}`; };
   const val = (x, r) => ({ f: fc(r.f), jn: r.jn, r: num(r.r), c: r.c, n: r.n, s: money(r.s), a: r.a || "", hi: h12(r.hi), hf: h12(r.hf), h: num(r.h), co: money(r.co),
-    so: (r.so || "") + (r.ju ? "\n" + r.ju : ""), fi: "" })[x.k];
+    so: (r.so || "") + (r.ju ? "\n" + r.ju : "") + (proyFilaTxt(r, f) ? "\n" + proyFilaTxt(r, f) : ""), fi: "" })[x.k];
   const body = f.filas.map(r => cols.map(x => val(x, r)));
   const iH = cols.findIndex(x => x.k === "h"), iF = nC - 1;
   const foot = [[{ content: "TOTAL HORAS EXTRAS", colSpan: iH, styles: { halign: "center" } }, ...cols.slice(iH).map(x => x.k === "h" ? num(f.th) : x.k === "co" ? money(f.tc) : "")]];
@@ -2490,7 +3171,7 @@ async function exportarExcel(ids) {
       h.eachCell(x => { x.font = { bold: true }; x.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFD9E1F2" } }; x.border = borde; x.alignment = { horizontal: "center", vertical: "middle", wrapText: true }; });
       f.filas.forEach((r, i) => {
         const row = ws.getRow(6 + i), sg = fir[r.id];
-        const v = { f: fecha(r.f), jn: r.jn, r: r.r, c: r.c, n: r.n, s: r.s, a: r.a, hi: hora(r.hi), hf: hora(r.hf), h: r.h, co: r.co, so: (r.so || "") + (r.ju ? "\n" + r.ju : ""), fi: "" };
+        const v = { f: fecha(r.f), jn: r.jn, r: r.r, c: r.c, n: r.n, s: r.s, a: r.a, hi: hora(r.hi), hf: hora(r.hf), h: r.h, co: r.co, so: (r.so || "") + (r.ju ? "\n" + r.ju : "") + (proyFilaTxt(r, f) ? "\n" + proyFilaTxt(r, f) : ""), fi: "" };
         row.values = cols.map(x => v[x.k]); row.height = sg ? 34 : 30;
         cols.forEach((x, j) => { const cl = row.getCell(j + 1); cl.border = borde; cl.alignment = { vertical: "middle", wrapText: true, horizontal: CENTRO.includes(x.k) ? "center" : undefined };
           cl.numFmt = { f: "dd/mm/yyyy", r: "0.00", h: "0.00", s: '"$" #,##0', co: '"$" #,##0', hi: "h:mm AM/PM", hf: "h:mm AM/PM" }[x.k] || cl.numFmt; });
@@ -2564,8 +3245,10 @@ async function entrar(){
   if(!e.usuario){ mostrarIngreso(); return; }
   S.yo=e.usuario; S.ultimo=0; S.cargado=false;
   $('#auth').hidden=true; $('#app').hidden=false;
-  render(true);
-  await sync(); render(true); cargarUsuarios();
+  const pintar=()=>{ try{ render(true); }catch(err){ console.error(err); const m=$('#main')||$('#app');
+    if(m) m.innerHTML=`<div class="warnbox" style="margin:16px">Esta pantalla tuvo un error (${esc(err.message)}). Use el menú para ir a otra o toque Reparar la app.<br><button class="btn" onclick="repararApp()">Reparar la app</button></div>`; } };
+  pintar();
+  await sync(); pintar(); cargarUsuarios();
 }
 
 /* ================= Eventos ================= */
@@ -2573,29 +3256,47 @@ document.addEventListener('click', e=>{
   const am=e.target.closest('[data-amodo]'); if(am){ mostrarIngreso(am.dataset.amodo); return; }
   const ua=e.target.closest('[data-uacc]'); if(ua){ accionUsuario(ua); return; }
   const na=e.target.closest('[data-navanio]'); if(na){ e.preventDefault(); F.navAbierto = F.navAbierto===na.dataset.navanio ? "" : na.dataset.navanio; renderNav(); return; }
+  const nna=e.target.closest('[data-navnanio]'); if(nna){ e.preventDefault(); NOM.navAbierto = NOM.navAbierto===nna.dataset.navnanio ? "" : nna.dataset.navnanio; renderNav(); return; }
+  const nnm=e.target.closest('[data-navnmes]'); if(nnm){ e.preventDefault(); NOM.mes=nnm.dataset.navnmes; NOM.abierta=null; NOM.anioAbierto = NOM.mes==="curso" ? "" : NOM.mes.slice(0,4); if(S.vista==='nomina') render(false); else ir('nomina'); renderNav(); return; }
   const nm=e.target.closest('[data-navmes]'); if(nm){ e.preventDefault(); F.mes=nm.dataset.navmes; Object.assign(F,{desde:"",hasta:"",q:""}); F.sel.clear(); if(S.vista==='libro') render(false); else ir('libro'); renderNav(); return; }
-  const g=e.target.closest('[data-go]'); if(g){ e.preventDefault(); ir(g.dataset.go); return; }
+  const g=e.target.closest('[data-go]'); if(g){ e.preventDefault(); if(S.masAbierto){ S.masAbierto=false; renderNav(); } ir(g.dataset.go); return; }
   const m=$('#a-menu'); if(m && !e.target.closest('.menu')) m.hidden=true;
 });
 document.addEventListener('submit', e=>{ if(e.target.id==='afrm'){ e.preventDefault(); enviarIngreso(e.target); } });
 document.addEventListener('change', e=>{ if(e.target.classList.contains('f-excel')){ const f=e.target.files[0]; e.target.value=''; const t=e.target; importarLibro(f, t.dataset.dueno ? { id: t.dataset.dueno, nombre: t.dataset.dnom } : null); } });
 window.addEventListener('hashchange', () => render(true));
 window.addEventListener('beforeunload', e => { if (S.vista === 'editar' || S.vista === 'nuevo') { if (S.editor && S.editor.filas.length) { e.preventDefault(); e.returnValue = ''; } } });
-setInterval(()=>{ if(S.yo && document.visibilityState==='visible') sync(); }, 15000);
+setInterval(()=>{ if(S.yo && document.visibilityState==='visible') sync(); }, 30000); // cada 30 s: alivia la base en horas pico
 setInterval(()=>{ if(S.yo && esPrincipal() && document.visibilityState==='visible') cargarUsuarios(true); }, 60000);
 document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible') sync(); });
 /* Arranque: si el servidor estaba dormido, se muestra un aviso con el tiempo transcurrido y se reintenta solo
-   hasta que responda (en el plan gratuito de Render puede tardar alrededor de un minuto). */
+   hasta que responda (en el plan gratuito de Render puede tardar alrededor de un minuto). Si el problema no es de
+   conexión sino un error de la app, se muestra de una vez con la causa, y siempre hay un botón para repararla. */
+async function repararApp(){
+  try{ const rs = await navigator.serviceWorker?.getRegistrations?.() || []; for(const r of rs) await r.unregister(); }catch(e){}
+  try{ for(const k of await caches.keys()) await caches.delete(k); }catch(e){}
+  location.reload();
+}
 async function arrancar(){
-  const t0=Date.now();
-  const aviso=setTimeout(()=>{ $('#auth').hidden=false; $('#auth').innerHTML=authCard(`<div class="okbox" id="despertar" style="text-align:center">
-    <div class="spin" aria-hidden="true"></div><b>Conectando con el servidor…</b><br><span id="desp-t">0</span> s<br>
-    <small>Si nadie lo ha usado en un rato, el servidor tarda alrededor de un minuto en despertar. No cierre la página.</small></div>`);
-    const it=setInterval(()=>{ const el=$('#desp-t'); if(!el) return clearInterval(it); el.textContent=Math.round((Date.now()-t0)/1000); },1000); }, 1500);
-  for(let i=0;;i++){
+  const t0=Date.now(); let ultimo='';
+  const pantalla=(final)=>{ $('#auth').hidden=false; $('#auth').innerHTML=authCard(`<div class="${final?'warnbox':'okbox'}" style="text-align:center">
+    ${final?'':'<div class="spin" aria-hidden="true"></div>'}<b>${final?'No se pudo abrir la app':'Conectando con el servidor…'}</b><br>${final?'':'<span id="desp-t">0</span> s<br>'}
+    <small>${final?'':'Si nadie la ha usado en un rato, el servidor tarda alrededor de un minuto en despertar.'}</small>
+    <div id="desp-e" style="margin-top:8px;font-weight:400;font-size:13px">${ultimo?esc('Detalle: '+ultimo):''}</div></div>
+    <div class="actions" style="justify-content:center;margin-top:10px"><button class="btn primary" onclick="location.reload()">Reintentar</button>
+    <button class="btn" onclick="repararApp()">Reparar la app</button></div>
+    <p class="hint" style="text-align:center">"Reparar la app" borra la copia guardada en este equipo y descarga la versión actual. No se pierde ningún dato.</p>`); };
+  const aviso=setTimeout(()=>{ pantalla(false);
+    const it=setInterval(()=>{ const el=$('#desp-t'); if(!el) return clearInterval(it); el.textContent=Math.round((Date.now()-t0)/1000);
+      const de=$('#desp-e'); if(de && ultimo) de.textContent='Detalle: '+ultimo; },1000); }, 1500);
+  for(;;){
     try{ await entrar(); clearTimeout(aviso); return; }
-    catch(e){ if(Date.now()-t0>150000){ clearTimeout(aviso); $('#auth').hidden=false; $('#auth').innerHTML=authCard(`<div class="warnbox">No se pudo conectar con el servidor. Revise el internet e intente de nuevo.</div><button class="btn primary" onclick="location.reload()">Reintentar</button>`); return; }
-      await new Promise(r=>setTimeout(r, 3000)); }
+    catch(e){
+      const deRed = e && (e.status >= 500 || /conexión/i.test(e.message||''));
+      ultimo = e && e.status ? `el servidor respondió ${e.status}${e.message?' · '+e.message:''}` : (e && e.message) || String(e);
+      if(!deRed || Date.now()-t0>150000){ clearTimeout(aviso); pantalla(true); console.error(e); return; }
+      await new Promise(r=>setTimeout(r, 3000));
+    }
   }
 }
 arrancar();
